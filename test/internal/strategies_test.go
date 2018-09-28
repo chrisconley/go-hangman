@@ -27,3 +27,16 @@ func TestLogProbability(t *testing.T) {
 	assertAlmostEqual(game.LogProbability(0.01), 0.0664, 4, t)
 	assertAlmostEqual(game.LogProbability(0.99), 0.0144, 4, t)
 }
+
+func TestMaximizeEntropy(t *testing.T) {
+	// potentialOutcomes := map[string]map[string]int{}
+	// potentialOutcomes["a"]["-a-"] = 2
+	potentialOutcomes := game.PotentialOutcomes{}
+	potentialOutcomes["a"] = game.PossibleResponses{}
+	potentialOutcomes["a"]["-a-"] = 4
+	potentialOutcomes["a"]["--a"] = 1
+	potentialOutcomes["a"]["a--"] = 1
+	potentialOutcomes["a"]["!"] = 2
+	actual := game.MaximizeEntropy(potentialOutcomes)
+	assertAlmostEqual(actual["a"], 1.75, 4, t)
+}

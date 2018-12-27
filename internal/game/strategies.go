@@ -17,7 +17,7 @@ func LogProbability(probability float64) float64 {
 	return -probability * (math.Log2(probability))
 }
 
-func MaximizeEntropy(potentialOutcomes PotentialOutcomes) GuessWeights {
+func Entropy(potentialOutcomes PotentialOutcomes) GuessWeights {
 	guessWeights := map[string]float64{}
 	// guessWeights["a"] = 1.0
 	for guess, possibleResponses := range potentialOutcomes {

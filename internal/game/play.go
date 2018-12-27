@@ -2,10 +2,6 @@ package game
 
 import "fmt"
 
-// ### The true state of the world ###
-// Special moniker for the solution, codeword, nature, reality
-type Truth World
-
 // ### The system ###
 type World string
 type Action string
@@ -52,7 +48,7 @@ func Decide(predictions Predictions, motivation Motivation) (action Action) {
 	return Action("a")
 }
 
-func Act(action Action, agreement Agreement, truth Truth) (reaction Reaction) {
+func Act(action Action, agreement Agreement, world World) (reaction Reaction) {
 	return Reaction("!")
 }
 
@@ -63,7 +59,7 @@ func UpdatePerspective(reaction Reaction, perspective Perspective) (newPerspecti
 // ### Process implementation ###
 func HangmanAgreement(w World, d Action) (r Reaction) { return Reaction("hi") }
 func main() {
-	truth := Truth("abc")
+	truth := World("abc")
 	perspective := Perspective{
 		possibleWorlds:  PossibleWorlds{PossibleWorld{"abc", 0.5}, PossibleWorld{"cab", 0.5}},
 		possibleActions: PossibleActions{"a", "b", "c"},

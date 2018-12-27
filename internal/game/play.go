@@ -33,10 +33,10 @@ type Perspective struct {
 type Predictions map[Action]PredictedActionUtility
 
 type PredictedActionUtility struct {
-	action Action
-	reward float32
-	info   float32
-	time   float32
+	Action Action
+	//reward float32
+	Entropy float64
+	//time   float32
 }
 
 // ### Process ###

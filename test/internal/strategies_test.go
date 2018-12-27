@@ -29,14 +29,12 @@ func TestLogProbability(t *testing.T) {
 }
 
 func TestEntropy(t *testing.T) {
-	// potentialOutcomes := map[string]map[string]int{}
-	// potentialOutcomes["a"]["-a-"] = 2
-	potentialOutcomes := game.PotentialOutcomes{}
-	potentialOutcomes["a"] = game.PossibleResponses{}
-	potentialOutcomes["a"]["-a-"] = 4
-	potentialOutcomes["a"]["--a"] = 1
-	potentialOutcomes["a"]["a--"] = 1
-	potentialOutcomes["a"]["!"] = 2
-	actual := game.Entropy(potentialOutcomes)
-	assertAlmostEqual(actual["a"], 1.75, 4, t)
+	reactionCountsByAction := game.ReactionCountsByAction{}
+	reactionCountsByAction["a"] = game.ReactionCounts{}
+	reactionCountsByAction["a"]["-a-"] = 4
+	reactionCountsByAction["a"]["--a"] = 1
+	reactionCountsByAction["a"]["a--"] = 1
+	reactionCountsByAction["a"]["!"] = 2
+	actual := game.BuildPredictions(reactionCountsByAction)
+	assertAlmostEqual(actual[game.Action("a")].Entropy, 1.75, 4, t)
 }

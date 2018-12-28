@@ -5,7 +5,11 @@ import "fmt"
 // ### The system ###
 type World string
 type Action string
-type Reaction string
+type Response string
+type Reaction struct {
+	Response Response
+	Reward   float32
+}
 type Agreement func(w World, action Action) (reaction Reaction)
 
 // ### The protagonist, player
@@ -49,7 +53,7 @@ func Decide(predictions Predictions, motivation Motivation) (action Action) {
 }
 
 func Act(action Action, agreement Agreement, world World) (reaction Reaction) {
-	return Reaction("!")
+	return Reaction{"!", 0.5}
 }
 
 func UpdatePerspective(reaction Reaction, perspective Perspective) (newPerspective Perspective) {
@@ -57,7 +61,7 @@ func UpdatePerspective(reaction Reaction, perspective Perspective) (newPerspecti
 }
 
 // ### Process implementation ###
-func HangmanAgreement(w World, d Action) (r Reaction) { return Reaction("hi") }
+func HangmanAgreement(w World, d Action) (r Reaction) { return Reaction{"hi", 1.0} }
 func main() {
 	truth := World("abc")
 	perspective := Perspective{

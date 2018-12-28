@@ -4,30 +4,41 @@ import (
 	"math"
 )
 
-type Count int
+type ResponseCounts map[Response]*Counts
 
-type ReactionCounts map[Reaction]Count
+type Counts struct {
+	Weight float32
+	Count  int
+}
+type Reward struct {
+	Utility float64
+	Regret  float64
+}
+type ReactionCounts struct {
+	ResponseCounts ResponseCounts
+	Reward         Reward
+}
 type ReactionCountsByAction map[Action]ReactionCounts
 
-func (p ReactionCounts) GetTotal() Count {
-	total := Count(0)
-	for _, Count := range p {
-		total += Count
+func (p ReactionCounts) GetTotal() int {
+	total := int(0)
+	for _, count := range p.ResponseCounts {
+		total += count.Count
 	}
 	return total
 }
 
-func CountReactions(possibleWorlds PossibleWorlds, actions PossibleActions, agreement Agreement) ReactionCountsByAction {
+func ExploreReactions(possibleWorlds PossibleWorlds, actions PossibleActions, agreement Agreement) ReactionCountsByAction {
 	reactionCounts := ReactionCountsByAction{}
 	for _, action := range actions {
-		reactionCounts[action] = ReactionCounts{}
+		reactionCounts[action] = ReactionCounts{ResponseCounts: ResponseCounts{}, Reward: Reward{0, 0}}
 		for _, possibleWorld := range possibleWorlds {
 			reaction := agreement(possibleWorld.World, action)
-			_, ok := reactionCounts[action][reaction]
+			_, ok := reactionCounts[action].ResponseCounts[reaction.Response]
 			if ok {
-				reactionCounts[action][reaction]++
+				reactionCounts[action].ResponseCounts[reaction.Response].Count += 1
 			} else {
-				reactionCounts[action][reaction] = 1
+				reactionCounts[action].ResponseCounts[reaction.Response] = &Counts{Weight: 0, Count: 1}
 			}
 		}
 	}
@@ -48,10 +59,10 @@ func buildActionForecasts(action Action, reactionCounts ReactionCounts) Predicte
 	return forecast
 }
 
-func calcEntropy(total Count, reactionCounts ReactionCounts) float64 {
+func calcEntropy(total int, reactionCounts ReactionCounts) float64 {
 	entropy := 0.0
-	for _, count := range reactionCounts {
-		entropy += LogProbability(float64(count) / float64(total))
+	for _, count := range reactionCounts.ResponseCounts {
+		entropy += LogProbability(float64(count.Count) / float64(total))
 	}
 	return entropy
 }

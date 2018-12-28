@@ -11,8 +11,8 @@ type Agreement func(w World, action Action) (reaction Reaction)
 // ### The protagonist, player
 // TODO: How can this be simplified? There are too many interfaces
 type PossibleWorld struct {
-	world  World
-	weight float32
+	World  World
+	Weight float32
 }
 type PossibleWorlds []PossibleWorld
 

@@ -4,17 +4,34 @@ import (
 	"math"
 )
 
-type count int
+type Count int
 
-type ReactionCounts map[Reaction]count
+type ReactionCounts map[Reaction]Count
 type ReactionCountsByAction map[Action]ReactionCounts
 
-func (p ReactionCounts) GetTotal() count {
-	total := count(0)
-	for _, count := range p {
-		total += count
+func (p ReactionCounts) GetTotal() Count {
+	total := Count(0)
+	for _, Count := range p {
+		total += Count
 	}
 	return total
+}
+
+func CountReactions(possibleWorlds PossibleWorlds, actions PossibleActions, agreement Agreement) ReactionCountsByAction {
+	reactionCounts := ReactionCountsByAction{}
+	for _, action := range actions {
+		reactionCounts[action] = ReactionCounts{}
+		for _, possibleWorld := range possibleWorlds {
+			reaction := agreement(possibleWorld.World, action)
+			_, ok := reactionCounts[action][reaction]
+			if ok {
+				reactionCounts[action][reaction]++
+			} else {
+				reactionCounts[action][reaction] = 1
+			}
+		}
+	}
+	return reactionCounts
 }
 
 func BuildPredictions(reactionCountsByAction ReactionCountsByAction) Predictions {
@@ -31,7 +48,7 @@ func buildActionForecasts(action Action, reactionCounts ReactionCounts) Predicte
 	return forecast
 }
 
-func calcEntropy(total count, reactionCounts ReactionCounts) float64 {
+func calcEntropy(total Count, reactionCounts ReactionCounts) float64 {
 	entropy := 0.0
 	for _, count := range reactionCounts {
 		entropy += LogProbability(float64(count) / float64(total))

@@ -1,6 +1,8 @@
 package game
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // ### The system ###
 type World string
@@ -41,6 +43,10 @@ type PredictedActionUtility struct {
 	//reward float32
 	Entropy float64
 	//time   float32
+}
+
+func (p Predictions) GetEntropy(action string) float64 {
+	return p[Action(action)].Entropy
 }
 
 // ### Process ###

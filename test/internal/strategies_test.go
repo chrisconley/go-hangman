@@ -31,13 +31,12 @@ func TestLogProbability(t *testing.T) {
 
 func TestEntropy(t *testing.T) {
 	reactionCountsByAction := game.ReactionCountsByAction{}
-	reactionCountsByAction["a"] = game.ReactionCounts{ResponseCounts: game.ResponseCounts{}, Reward: game.Reward{0, 0}}
-	reactionCountsByAction["a"].ResponseCounts["-a-"] = &game.Counts{Weight: 0, Count: 4}
-	reactionCountsByAction["a"].ResponseCounts["--a"] = &game.Counts{Weight: 0, Count: 1}
-	reactionCountsByAction["a"].ResponseCounts["a--"] = &game.Counts{Weight: 0, Count: 1}
-	reactionCountsByAction["a"].ResponseCounts["!"] = &game.Counts{Weight: 0, Count: 2}
+	reactionCountsByAction.SetResponseCounts("a", "-a-", 0, 4)
+	reactionCountsByAction.SetResponseCounts("a", "--a", 0, 1)
+	reactionCountsByAction.SetResponseCounts("a", "a--", 0, 1)
+	reactionCountsByAction.SetResponseCounts("a", "!", 0, 2)
 	actual := game.BuildPredictions(reactionCountsByAction)
-	assertAlmostEqual(actual[game.Action("a")].Entropy, 1.75, 4, t)
+	assertAlmostEqual(actual.GetEntropy("a"), 1.75, 4, t)
 }
 
 func testAgreement(w game.World, a game.Action) (r game.Reaction) {
@@ -52,7 +51,23 @@ func TestExploreReactions(t *testing.T) {
 	worlds := game.PossibleWorlds{game.PossibleWorld{"abc", 0.5}, game.PossibleWorld{"aab", 0.5}}
 	actions := game.PossibleActions{"a", "b", "c"}
 	actual := game.ExploreReactions(worlds, actions, testAgreement)
-	assertDeepEqual(actual["a"].ResponseCounts["a"].Count, 2, t)
-	assertDeepEqual(actual["c"].ResponseCounts["c"].Count, 1, t)
-	assertDeepEqual(actual["c"].ResponseCounts["!"].Count, 1, t)
+	assertDeepEqual(actual.GetResponseCount("a", "a"), 2, t)
+	assertDeepEqual(actual.GetResponseCount("c", "c"), 1, t)
+	assertDeepEqual(actual.GetResponseCount("c", "!"), 1, t)
+}
+
+func TestIntegration(t *testing.T) {
+	worlds := game.PossibleWorlds{
+		game.PossibleWorld{"abc", 0.5},
+		game.PossibleWorld{"aab", 0.5},
+		game.PossibleWorld{"bbb", 0.5},
+	}
+	actions := game.PossibleActions{"a", "b", "c"}
+
+	reactions := game.ExploreReactions(worlds, actions, testAgreement)
+	actual := game.BuildPredictions(reactions)
+
+	assertAlmostEqual(actual.GetEntropy("a"), 0.9183, 4, t)
+	assertAlmostEqual(actual.GetEntropy("b"), 0.0000, 4, t)
+	assertAlmostEqual(actual.GetEntropy("c"), 0.9183, 4, t)
 }

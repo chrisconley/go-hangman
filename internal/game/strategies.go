@@ -28,18 +28,42 @@ func (p ReactionCounts) GetTotal() int {
 	return total
 }
 
+func (r ReactionCountsByAction) findOrInitializeResponse(action Action, response Response) {
+	_, ok := r[action]
+	if ok {
+
+	} else {
+		r[action] = ReactionCounts{ResponseCounts: ResponseCounts{}, Reward: Reward{0, 0}}
+	}
+	_, ok = r[action].ResponseCounts[response]
+	if ok {
+
+	} else {
+		r[action].ResponseCounts[response] = &Counts{Weight: 0, Count: 0}
+	}
+}
+
+func (r ReactionCountsByAction) GetResponseCount(action Action, response Response) int {
+	r.findOrInitializeResponse(action, response)
+	return r[action].ResponseCounts[response].Count
+}
+
+func (r ReactionCountsByAction) IncrementResponseCount(action Action, response Response) {
+	r.findOrInitializeResponse(action, response)
+	r[action].ResponseCounts[response].Count += 1
+}
+
+func (r ReactionCountsByAction) SetResponseCounts(action Action, response Response, weight float32, count int) {
+	r.findOrInitializeResponse(action, response)
+	r[action].ResponseCounts[response] = &Counts{Weight: weight, Count: count}
+}
+
 func ExploreReactions(possibleWorlds PossibleWorlds, actions PossibleActions, agreement Agreement) ReactionCountsByAction {
 	reactionCounts := ReactionCountsByAction{}
 	for _, action := range actions {
-		reactionCounts[action] = ReactionCounts{ResponseCounts: ResponseCounts{}, Reward: Reward{0, 0}}
 		for _, possibleWorld := range possibleWorlds {
 			reaction := agreement(possibleWorld.World, action)
-			_, ok := reactionCounts[action].ResponseCounts[reaction.Response]
-			if ok {
-				reactionCounts[action].ResponseCounts[reaction.Response].Count += 1
-			} else {
-				reactionCounts[action].ResponseCounts[reaction.Response] = &Counts{Weight: 0, Count: 1}
-			}
+			reactionCounts.IncrementResponseCount(action, reaction.Response)
 		}
 	}
 	return reactionCounts
@@ -48,6 +72,7 @@ func ExploreReactions(possibleWorlds PossibleWorlds, actions PossibleActions, ag
 func BuildPredictions(reactionCountsByAction ReactionCountsByAction) Predictions {
 	predictions := Predictions{}
 	for action, reactionCounts := range reactionCountsByAction {
+		// TODO: Refactor this so there is no direct dict/map access on predictions
 		predictions[action] = buildActionForecasts(action, reactionCounts)
 	}
 	return predictions

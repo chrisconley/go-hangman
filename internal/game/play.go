@@ -10,7 +10,7 @@ type Action string
 type Response string
 type Reaction struct {
 	Response Response
-	Reward   float32
+	Reward   float64
 }
 type Agreement func(w World, action Action) (reaction Reaction)
 
@@ -67,7 +67,7 @@ func UpdatePerspective(reaction Reaction, perspective Perspective) (newPerspecti
 }
 
 // ### Process implementation ###
-func HangmanAgreement(w World, d Action) (r Reaction) { return Reaction{"hi", 1.0} }
+func PlaceholderHangmanAgreement(w World, d Action) (r Reaction) { return Reaction{"hi", 1.0} }
 func main() {
 	truth := World("abc")
 	perspective := Perspective{
@@ -76,9 +76,9 @@ func main() {
 		motivation:      Motivation{0.5, 0.25, 0.25},
 	}
 
-	predictions := Explore(perspective, HangmanAgreement)
+	predictions := Explore(perspective, PlaceholderHangmanAgreement)
 	action := Decide(predictions, perspective.motivation)
-	reaction := Act(action, HangmanAgreement, truth)
+	reaction := Act(action, PlaceholderHangmanAgreement, truth)
 	newPerspective := UpdatePerspective(reaction, perspective)
 	fmt.Printf("\n%+v", newPerspective)
 }

@@ -3,7 +3,6 @@ package test
 import (
 	"math"
 	"reflect"
-	"strings"
 	"testing"
 
 	"github.com/chrisconley/go-hangman/internal/game"
@@ -37,14 +36,6 @@ func TestEntropy(t *testing.T) {
 	reactionCountsByAction.SetResponseCounts("a", "!", 0, 2)
 	actual := game.BuildPredictions(reactionCountsByAction)
 	assertAlmostEqual(actual.GetEntropy("a"), 1.75, 4, t)
-}
-
-func testAgreement(w game.World, a game.Action) (r game.Reaction) {
-	if strings.Contains(string(w), string(a)) {
-		return game.Reaction{Response: game.Response(a), Reward: 1.0}
-	} else {
-		return game.Reaction{Response: "!", Reward: 0.0}
-	}
 }
 
 func TestExploreReactions(t *testing.T) {

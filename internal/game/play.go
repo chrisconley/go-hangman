@@ -72,8 +72,8 @@ func Decide(predictions Predictions, motivation Motivation) (action Action) {
 	return maxAction
 }
 
-func Act(action Action, agreement Agreement, world World) (reaction Reaction) {
-	return Reaction{"!", 0.5}
+func Act(action Action, agreement Agreement, truth World) (reaction Reaction) {
+	return agreement(truth, action)
 }
 
 func UpdatePerspective(reaction Reaction, perspective Perspective) (newPerspective Perspective) {

@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"math"
 )
 
 // ### The system ###
@@ -25,9 +26,9 @@ type PossibleWorlds []PossibleWorld
 type PossibleActions []Action
 
 type Motivation struct {
-	reward float32
-	info   float32
-	time   float32
+	Reward  float64
+	Entropy float64
+	Time    float64
 }
 
 type Perspective struct {
@@ -39,8 +40,8 @@ type Perspective struct {
 type Predictions map[Action]PredictedActionUtility
 
 type PredictedActionUtility struct {
-	Action Action
-	//reward float32
+	Action  Action
+	Reward  float64
 	Entropy float64
 	//time   float32
 }
@@ -49,13 +50,26 @@ func (p Predictions) GetEntropy(action string) float64 {
 	return p[Action(action)].Entropy
 }
 
+func (p Predictions) AddPrediction(action Action, prediction PredictedActionUtility) {
+	p[action] = prediction
+}
+
 // ### Process ###
 func Explore(perspective Perspective, agreement Agreement) (predictions Predictions) {
 	return Predictions{}
 }
 
 func Decide(predictions Predictions, motivation Motivation) (action Action) {
-	return Action("a")
+	maxWeight := 0.0
+	maxAction := Action("")
+	for _, prediction := range predictions {
+		weight := math.Pow(prediction.Entropy, motivation.Entropy) * math.Pow(prediction.Reward, motivation.Reward)
+		if weight > maxWeight {
+			maxWeight = weight
+			maxAction = prediction.Action
+		}
+	}
+	return maxAction
 }
 
 func Act(action Action, agreement Agreement, world World) (reaction Reaction) {
@@ -75,7 +89,7 @@ func main() {
 		possibleActions: PossibleActions{"a", "b", "c"},
 		motivation:      Motivation{0.5, 0.25, 0.25},
 	}
-
+	// Where does the Goal come into play? Is that implicit in the Agreement?
 	predictions := Explore(perspective, PlaceholderHangmanAgreement)
 	action := Decide(predictions, perspective.motivation)
 	reaction := Act(action, PlaceholderHangmanAgreement, truth)

@@ -73,7 +73,7 @@ func BuildPredictions(reactionCountsByAction ReactionCountsByAction) Predictions
 	predictions := Predictions{}
 	for action, reactionCounts := range reactionCountsByAction {
 		// TODO: Refactor this so there is no direct dict/map access on predictions
-		predictions[action] = buildActionForecasts(action, reactionCounts)
+		predictions.AddPrediction(action, buildActionForecasts(action, reactionCounts))
 	}
 	return predictions
 }

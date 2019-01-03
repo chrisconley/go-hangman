@@ -94,5 +94,6 @@ func main() {
 	action := Decide(predictions, perspective.motivation)
 	reaction := Act(action, PlaceholderHangmanAgreement, truth)
 	newPerspective := UpdatePerspective(reaction, perspective)
+	// TODO: Change this to Observe, which captures reaction and keeps world state
 	fmt.Printf("\n%+v", newPerspective)
 }

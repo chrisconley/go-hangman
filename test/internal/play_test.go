@@ -39,5 +39,10 @@ func TestAct(t *testing.T) {
 }
 
 func TestObserve(t *testing.T) {
+	perspective := &game.Perspective{}
+	perspective.Knowledge = game.Knowledge{}
 
+	reaction := game.Reaction{Response: "a", Reward: 1.0}
+	game.Observe(reaction, perspective)
+	assertDeepEqual(perspective.Knowledge, game.Knowledge{reaction}, t)
 }

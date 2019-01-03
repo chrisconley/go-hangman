@@ -15,6 +15,8 @@ type Reaction struct {
 }
 type Agreement func(w World, action Action) (reaction Reaction)
 
+type Knowledge []Reaction
+
 // ### The protagonist, player
 // TODO: How can this be simplified? There are too many interfaces
 type PossibleWorld struct {
@@ -32,9 +34,14 @@ type Motivation struct {
 }
 
 type Perspective struct {
+	Knowledge       Knowledge
 	possibleWorlds  PossibleWorlds
 	possibleActions PossibleActions
 	motivation      Motivation
+}
+
+func (p *Perspective) UpdateKnowledge(reaction Reaction) {
+	p.Knowledge = append(p.Knowledge, reaction)
 }
 
 type Predictions map[Action]PredictedActionUtility
@@ -76,24 +83,24 @@ func Act(action Action, agreement Agreement, truth World) (reaction Reaction) {
 	return agreement(truth, action)
 }
 
-func UpdatePerspective(reaction Reaction, perspective Perspective) (newPerspective Perspective) {
-	return perspective
+func Observe(reaction Reaction, perspective *Perspective) {
+	perspective.UpdateKnowledge(reaction)
 }
 
 // ### Process implementation ###
 func PlaceholderHangmanAgreement(w World, d Action) (r Reaction) { return Reaction{"hi", 1.0} }
 func main() {
 	truth := World("abc")
-	perspective := Perspective{
+	perspective := &Perspective{
+		Knowledge:       Knowledge{},
 		possibleWorlds:  PossibleWorlds{PossibleWorld{"abc", 0.5}, PossibleWorld{"cab", 0.5}},
 		possibleActions: PossibleActions{"a", "b", "c"},
 		motivation:      Motivation{0.5, 0.25, 0.25},
 	}
 	// Where does the Goal come into play? Is that implicit in the Agreement?
-	predictions := Explore(perspective, PlaceholderHangmanAgreement)
+	predictions := Explore(*perspective, PlaceholderHangmanAgreement)
 	action := Decide(predictions, perspective.motivation)
 	reaction := Act(action, PlaceholderHangmanAgreement, truth)
-	newPerspective := UpdatePerspective(reaction, perspective)
-	// TODO: Change this to Observe, which captures reaction and keeps world state
-	fmt.Printf("\n%+v", newPerspective)
+	Observe(reaction, perspective)
+	fmt.Printf("\n%+v", perspective.Knowledge)
 }

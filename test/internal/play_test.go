@@ -43,6 +43,23 @@ func TestObserve(t *testing.T) {
 	perspective.Knowledge = game.Knowledge{}
 
 	reaction := game.Reaction{Response: "a", Reward: 1.0}
-	game.Observe(reaction, perspective)
+	game.Observe(game.Action("a"), reaction, perspective)
 	assertDeepEqual(perspective.Knowledge, game.Knowledge{reaction}, t)
+}
+
+func TestPlayGame(t *testing.T) {
+	perspective := &game.Perspective{}
+	perspective.Knowledge = game.Knowledge{}
+	perspective.PossibleWorlds = game.PossibleWorlds{
+		game.PossibleWorld{"abc", 0.5},
+		game.PossibleWorld{"aab", 0.5},
+		game.PossibleWorld{"bbb", 0.5},
+	}
+	perspective.PossibleActions = game.PossibleActions{"a", "b", "c"}
+	perspective.Agreement = game.HangmanAgreement
+	perspective.Motivation = game.Motivation{0.5, 0.25, 0.25}
+
+	truth := game.World("bbb")
+	actual := game.PlayGame(truth, perspective)
+	assertDeepEqual(actual, truth, t)
 }

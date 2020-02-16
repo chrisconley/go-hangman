@@ -2,7 +2,8 @@ package game
 
 import (
 	"fmt"
-	"math"
+	// "math"
+	// "regexp"
 )
 
 // ### The system ###
@@ -10,6 +11,7 @@ type World string
 type Action string
 type Response string
 type Reaction struct {
+	Action Action
 	Response Response
 	Reward   float64
 }
@@ -35,9 +37,10 @@ type Motivation struct {
 
 type Perspective struct {
 	Knowledge       Knowledge
-	possibleWorlds  PossibleWorlds
-	possibleActions PossibleActions
-	motivation      Motivation
+	PossibleWorlds  PossibleWorlds
+	PossibleActions PossibleActions
+	Agreement		Agreement
+	Motivation      Motivation
 }
 
 func (p *Perspective) UpdateKnowledge(reaction Reaction) {
@@ -63,19 +66,25 @@ func (p Predictions) AddPrediction(action Action, prediction PredictedActionUtil
 
 // ### Process ###
 func Explore(perspective Perspective, agreement Agreement) (predictions Predictions) {
-	return Predictions{}
+	reactions := ExploreReactions(perspective.PossibleWorlds, perspective.PossibleActions, agreement)
+	predictions = BuildPredictions(reactions)
+	return predictions
 }
 
 func Decide(predictions Predictions, motivation Motivation) (action Action) {
 	maxWeight := 0.0
 	maxAction := Action("")
 	for _, prediction := range predictions {
-		weight := math.Pow(prediction.Entropy, motivation.Entropy) * math.Pow(prediction.Reward, motivation.Reward)
+		// fmt.Printf("\nPREDICTION: %+v", prediction)
+		// weight := math.Pow(prediction.Entropy, motivation.Entropy) * math.Pow(prediction.Reward, motivation.Reward)
+		weight := prediction.Entropy * motivation.Entropy + prediction.Reward * motivation.Reward
+		// fmt.Printf("\nWEIGHT: %+v", weight)
 		if weight > maxWeight {
 			maxWeight = weight
 			maxAction = prediction.Action
 		}
 	}
+	// fmt.Printf("\nMAXACTION: %+v", maxAction)
 	return maxAction
 }
 
@@ -83,24 +92,53 @@ func Act(action Action, agreement Agreement, truth World) (reaction Reaction) {
 	return agreement(truth, action)
 }
 
-func Observe(reaction Reaction, perspective *Perspective) {
+func Observe(action Action, reaction Reaction, perspective *Perspective) {
 	perspective.UpdateKnowledge(reaction)
+	perspective.PossibleActions = UpdatePossibleActions(reaction, perspective.PossibleActions)
+
+	perspective.PossibleWorlds = UpdatePossibleWorlds(reaction, perspective.PossibleWorlds)
+	fmt.Printf("\nPOSSIBLE ACTIONS: %+v\n", perspective.PossibleActions)
+	fmt.Printf("\nPOSSIBLE WORLDS: %+v\n", perspective.PossibleWorlds)
+
 }
 
 // ### Process implementation ###
-func PlaceholderHangmanAgreement(w World, d Action) (r Reaction) { return Reaction{"hi", 1.0} }
+// func PlaceholderHangmanAgreement(w World, d Action) (r Reaction) { return Reaction{"hi", 1.0} }
+
+func PlayGame(truth World, perspective *Perspective) (World) {
+	for true {
+		playTurn(truth, perspective)
+		if len(perspective.PossibleWorlds) == 1 {
+			break
+		}
+	}
+	fmt.Printf("\nGAME OVER: %+v\n", perspective.PossibleWorlds[0])
+	return perspective.PossibleWorlds[0].World
+
+}
+
+func playTurn(truth World, perspective *Perspective) (reaction Reaction) {
+	predictions := Explore(*perspective, HangmanAgreement)
+	action := Decide(predictions, perspective.Motivation)
+	fmt.Printf("\nACTION: %+v", action)
+	reaction = Act(action, HangmanAgreement, truth)
+	fmt.Printf("\nREACTION: %+v", reaction)
+	Observe(action, reaction, perspective)
+	return reaction
+}
+
 func main() {
 	truth := World("abc")
 	perspective := &Perspective{
 		Knowledge:       Knowledge{},
-		possibleWorlds:  PossibleWorlds{PossibleWorld{"abc", 0.5}, PossibleWorld{"cab", 0.5}},
-		possibleActions: PossibleActions{"a", "b", "c"},
-		motivation:      Motivation{0.5, 0.25, 0.25},
+		PossibleWorlds:  PossibleWorlds{PossibleWorld{"abc", 0.5}, PossibleWorld{"cab", 0.5}},
+		PossibleActions: PossibleActions{"a", "b", "c"},
+		Motivation:      Motivation{0.5, 0.25, 0.25},
 	}
 	// Where does the Goal come into play? Is that implicit in the Agreement?
-	predictions := Explore(*perspective, PlaceholderHangmanAgreement)
-	action := Decide(predictions, perspective.motivation)
-	reaction := Act(action, PlaceholderHangmanAgreement, truth)
-	Observe(reaction, perspective)
+	predictions := Explore(*perspective, HangmanAgreement)
+	action := Decide(predictions, perspective.Motivation)
+	reaction := Act(action, HangmanAgreement, truth)
+	Observe(action, reaction, perspective)
 	fmt.Printf("\n%+v", perspective.Knowledge)
 }

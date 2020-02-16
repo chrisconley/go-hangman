@@ -1,6 +1,7 @@
 package game
 
 import (
+	// "fmt"
 	"math"
 )
 
@@ -66,6 +67,7 @@ func ExploreReactions(possibleWorlds PossibleWorlds, actions PossibleActions, ag
 			reactionCounts.IncrementResponseCount(action, reaction.Response)
 		}
 	}
+	// fmt.Printf("\nREACTIONCOUNTS: %+v", reactionCounts)
 	return reactionCounts
 }
 

@@ -6,6 +6,60 @@ import (
 	"github.com/chrisconley/go-hangman/internal/game"
 )
 
+func TestUpdatePossibleActions(t *testing.T) {
+	reaction := game.Reaction{
+		Action: game.Action("a"),
+		Response: game.Response("a--"),
+		Reward: 1.0,
+	}
+	possibleActions := game.PossibleActions{"a", "b", "c"}
+
+	actual := game.UpdatePossibleActions(reaction, possibleActions)
+	expected := game.PossibleActions{"b", "c"}
+	assertDeepEqual(actual, expected, t)
+}
+
+func TestUpdatePossibleWorldsPositiveResponse(t *testing.T) {
+	reaction := game.Reaction{
+		Action: game.Action("a"),
+		Response: game.Response("a--"),
+		Reward: 1.0,
+	}
+	possibleWorlds := game.PossibleWorlds{
+		game.PossibleWorld{"abc", 0.5},
+		game.PossibleWorld{"aab", 0.5},
+		game.PossibleWorld{"bab", 0.5},
+		game.PossibleWorld{"bbb", 0.5},
+	}
+
+	actual := game.UpdatePossibleWorlds(reaction, possibleWorlds)
+	expected := game.PossibleWorlds{
+		game.PossibleWorld{"abc", 0.5},
+		game.PossibleWorld{"aab", 0.5},
+	}
+	assertDeepEqual(actual, expected, t)
+}
+
+func TestUpdatePossibleWorldsNegativeResponse(t *testing.T) {
+	reaction := game.Reaction{
+		Action: game.Action("a"),
+		Response: game.Response("!"),
+		Reward: 1.0,
+	}
+	possibleWorlds := game.PossibleWorlds{
+		game.PossibleWorld{"abc", 0.5},
+		game.PossibleWorld{"aab", 0.5},
+		game.PossibleWorld{"bab", 0.5},
+		game.PossibleWorld{"bbb", 0.5},
+	}
+
+	actual := game.UpdatePossibleWorlds(reaction, possibleWorlds)
+	expected := game.PossibleWorlds{
+		game.PossibleWorld{"bbb", 0.5},
+	}
+	assertDeepEqual(actual, expected, t)
+}
+
 func TestHangmanAgreement(t *testing.T) {
 	reaction := game.HangmanAgreement(game.World("abc"), game.Action("a"))
 	assertDeepEqual(reaction.Response, game.Response("a--"), t)

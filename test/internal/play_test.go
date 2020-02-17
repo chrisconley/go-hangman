@@ -9,8 +9,8 @@ import (
 
 func TestDecide(t *testing.T) {
 	predictions := game.Predictions{
-		"a": game.PredictedActionUtility{Action: "a", Entropy: 1.75, Reward: 0.9},
-		"b": game.PredictedActionUtility{Action: "b", Entropy: 2.50, Reward: 0.1},
+		"a": game.Prediction{Action: "a", Entropy: 1.75, Reward: 0.9},
+		"b": game.Prediction{Action: "b", Entropy: 2.50, Reward: 0.1},
 	}
 
 	// All Entropy

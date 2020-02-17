@@ -5,6 +5,23 @@ import (
 	"math"
 )
 
+type Predictions map[Action]Prediction
+
+type Prediction struct {
+	Action  Action
+	Reward  float64
+	Entropy float64
+	//time   float32
+}
+
+func (p Predictions) GetEntropy(action string) float64 {
+	return p[Action(action)].Entropy
+}
+
+func (p Predictions) AddPrediction(action Action, prediction Prediction) {
+	p[action] = prediction
+}
+
 type ResponseCounts map[Response]*Counts
 
 type Counts struct {
@@ -80,8 +97,8 @@ func BuildPredictions(reactionCountsByAction ReactionCountsByAction) Predictions
 	return predictions
 }
 
-func buildActionForecasts(action Action, reactionCounts ReactionCounts) PredictedActionUtility {
-	forecast := PredictedActionUtility{Action: action}
+func buildActionForecasts(action Action, reactionCounts ReactionCounts) Prediction {
+	forecast := Prediction{Action: action}
 	forecast.Entropy = calcEntropy(reactionCounts.GetTotal(), reactionCounts)
 	return forecast
 }

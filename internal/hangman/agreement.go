@@ -1,13 +1,15 @@
-package game
+package hangman
 
 import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/chrisconley/go-hangman/internal/game"
 )
 
-func UpdatePossibleActions(reaction Reaction, possibleActions PossibleActions) (a PossibleActions) {
-	a = PossibleActions{}
+func UpdatePossibleActions(reaction game.Reaction, possibleActions game.PossibleActions) (a game.PossibleActions) {
+	a = game.PossibleActions{}
 	for _, possibleAction := range possibleActions {
 		if possibleAction != reaction.Action {
 			a = append(a, possibleAction)
@@ -16,8 +18,8 @@ func UpdatePossibleActions(reaction Reaction, possibleActions PossibleActions) (
 	return a
 }
 
-func UpdatePossibleWorlds(reaction Reaction, possibleWorlds PossibleWorlds) (p PossibleWorlds) {
-	p = PossibleWorlds{}
+func UpdatePossibleWorlds(reaction game.Reaction, possibleWorlds game.PossibleWorlds) (p game.PossibleWorlds) {
+	p = game.PossibleWorlds{}
 	if reaction.Response == "!" {
 		re := regexp.MustCompile(string(reaction.Action))
 		for _, possibleWorld := range possibleWorlds {
@@ -42,25 +44,25 @@ func UpdatePossibleWorlds(reaction Reaction, possibleWorlds PossibleWorlds) (p P
 	return p
 }
 
-func HangmanAgreement(world World, action Action) (r Reaction) {
+func HangmanAgreement(world game.World, action game.Action) (r game.Reaction) {
 	// fmt.Printf("\nACTION IN HANGMENTAGREEMENT: %+v", action)
 	actionLength := len(action)
 	worldString := string(world)
 	actionString := string(action)
 
 	if actionLength > 1 && actionString == worldString {
-		return Reaction{Action: action, Response: Response(world), Reward: 1.0}
+		return game.Reaction{Action: action, Response: game.Response(world), Reward: 1.0}
 
 	} else if actionLength > 1 && actionString != worldString {
-		return Reaction{Action: action, Response: Response("!"), Reward: 0.0}
+		return game.Reaction{Action: action, Response: game.Response("!"), Reward: 0.0}
 
 	} else if strings.Contains(worldString, actionString) {
 		re := regexp.MustCompile(fmt.Sprintf("[^%s]", actionString))
 		response := re.ReplaceAllString(worldString, "-")
-		return Reaction{Action: action, Response: Response(response), Reward: 1.0}
+		return game.Reaction{Action: action, Response: game.Response(response), Reward: 1.0}
 
 	} else {
-		return Reaction{Action: action, Response: Response("!"), Reward: 0.0}
+		return game.Reaction{Action: action, Response: game.Response("!"), Reward: 0.0}
 
 	}
 }

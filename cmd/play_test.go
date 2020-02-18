@@ -1,10 +1,11 @@
-package test
+package main
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/chrisconley/go-hangman/internal/game"
+	"github.com/chrisconley/go-hangman/internal/hangman"
+	"github.com/chrisconley/go-hangman/test"
 )
 
 func TestDecide(t *testing.T) {
@@ -15,27 +16,19 @@ func TestDecide(t *testing.T) {
 
 	// All Entropy
 	motivation := game.Motivation{Reward: 0.0, Entropy: 1.0, Time: 0.0}
-	actual := game.Decide(predictions, motivation)
-	assertDeepEqual(actual, game.Action("b"), t)
+	actual := Decide(predictions, motivation)
+	test.AssertDeepEqual(actual, game.Action("b"), t)
 
 	// Weighted Reward with Entropy
 	motivation = game.Motivation{Reward: 0.75, Entropy: 0.25, Time: 0.0}
-	actual = game.Decide(predictions, motivation)
-	assertDeepEqual(actual, game.Action("a"), t)
-}
-
-func testAgreement(w game.World, a game.Action) (r game.Reaction) {
-	if strings.Contains(string(w), string(a)) {
-		return game.Reaction{Response: game.Response(a), Reward: 1.0}
-	} else {
-		return game.Reaction{Response: "!", Reward: 0.0}
-	}
+	actual = Decide(predictions, motivation)
+	test.AssertDeepEqual(actual, game.Action("a"), t)
 }
 
 func TestAct(t *testing.T) {
 	truth := game.World("abc")
-	actual := game.Act(game.Action("a"), testAgreement, truth)
-	assertDeepEqual(actual, game.Reaction{Response: "a", Reward: 1.0}, t)
+	actual := Act(game.Action("a"), test.TestAgreement, truth)
+	test.AssertDeepEqual(actual, game.Reaction{Response: "a", Reward: 1.0}, t)
 }
 
 func TestObserve(t *testing.T) {
@@ -43,8 +36,8 @@ func TestObserve(t *testing.T) {
 	perspective.Knowledge = game.Knowledge{}
 
 	reaction := game.Reaction{Response: "a", Reward: 1.0}
-	game.Observe(game.Action("a"), reaction, perspective)
-	assertDeepEqual(perspective.Knowledge, game.Knowledge{reaction}, t)
+	Observe(game.Action("a"), reaction, perspective)
+	test.AssertDeepEqual(perspective.Knowledge, game.Knowledge{reaction}, t)
 }
 
 func TestPlayGame(t *testing.T) {
@@ -56,10 +49,10 @@ func TestPlayGame(t *testing.T) {
 		game.PossibleWorld{"bbb", 0.5},
 	}
 	perspective.PossibleActions = game.PossibleActions{"a", "b", "c"}
-	perspective.Agreement = game.HangmanAgreement
+	perspective.Agreement = hangman.HangmanAgreement
 	perspective.Motivation = game.Motivation{0.5, 0.25, 0.25}
 
 	truth := game.World("bbb")
-	actual := game.PlayGame(truth, perspective)
-	assertDeepEqual(actual, truth, t)
+	actual := PlayGame(truth, perspective)
+	test.AssertDeepEqual(actual, truth, t)
 }

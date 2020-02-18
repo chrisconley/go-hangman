@@ -1,9 +1,8 @@
 package game
 
-import (
-	// "fmt"
-	"math"
-)
+import "github.com/chrisconley/go-hangman/internal/mth"
+
+// "fmt"
 
 type Predictions map[Action]Prediction
 
@@ -44,6 +43,14 @@ func (p ReactionCounts) GetTotal() int {
 		total += count.Count
 	}
 	return total
+}
+
+func (p ReactionCounts) GetCounts() []int {
+	counts := make([]int, 0, len(p.ResponseCounts))
+	for _, count := range p.ResponseCounts {
+		counts = append(counts, count.Count)
+	}
+	return counts
 }
 
 func (r ReactionCountsByAction) findOrInitializeResponse(action Action, response Response) {
@@ -99,22 +106,6 @@ func BuildPredictions(reactionCountsByAction ReactionCountsByAction) Predictions
 
 func buildActionForecasts(action Action, reactionCounts ReactionCounts) Prediction {
 	forecast := Prediction{Action: action}
-	forecast.Entropy = calcEntropy(reactionCounts.GetTotal(), reactionCounts)
+	forecast.Entropy = mth.CalcEntropy(reactionCounts.GetTotal(), reactionCounts.GetCounts())
 	return forecast
-}
-
-func calcEntropy(total int, reactionCounts ReactionCounts) float64 {
-	entropy := 0.0
-	for _, count := range reactionCounts.ResponseCounts {
-		entropy += LogProbability(float64(count.Count) / float64(total))
-	}
-	return entropy
-}
-
-// LogProbability computes -x * log2(x)
-func LogProbability(probability float64) float64 {
-	if probability == 0 {
-		return 0.0
-	}
-	return -probability * (math.Log2(probability))
 }

@@ -28,7 +28,7 @@ func TestDecide(t *testing.T) {
 func TestAct(t *testing.T) {
 	truth := game.World("abc")
 	actual := Act(game.Action("a"), game.TestAgreement, truth)
-	test.AssertDeepEqual(actual, game.Reaction{Response: "a", Reward: 1.0}, t)
+	test.AssertDeepEqual(actual, game.Reaction{Action: "a", Response: "a", Reward: 1.0}, t)
 }
 
 func TestObserve(t *testing.T) {

@@ -31,3 +31,15 @@ type Motivation struct {
 	Entropy float64
 	Time    float64
 }
+
+func ExploreReactions(possibleWorlds PossibleWorlds, actions PossibleActions, agreement Agreement) ReactionCounter {
+	reactionCounts := ReactionCounter{}
+	for _, action := range actions {
+		for _, possibleWorld := range possibleWorlds {
+			reaction := agreement(possibleWorld.World, action)
+			reactionCounts.Increment(reaction)
+		}
+	}
+	// fmt.Printf("\nREACTIONCOUNTS: %+v", reactionCounts)
+	return reactionCounts
+}

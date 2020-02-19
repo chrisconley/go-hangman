@@ -21,91 +21,13 @@ func (p Predictions) AddPrediction(action Action, prediction Prediction) {
 	p[action] = prediction
 }
 
-type ResponseCounts map[Response]*Counts
-
-type Counts struct {
-	Weight float32
-	Count  int
-}
-type Reward struct {
-	Utility float64
-	Regret  float64
-}
-type ReactionCounts struct {
-	ResponseCounts ResponseCounts
-	Reward         Reward
-}
-type ReactionCountsByAction map[Action]ReactionCounts
-
-func (p ReactionCounts) GetTotal() int {
-	total := int(0)
-	for _, count := range p.ResponseCounts {
-		total += count.Count
-	}
-	return total
-}
-
-func (p ReactionCounts) GetCounts() []int {
-	counts := make([]int, 0, len(p.ResponseCounts))
-	for _, count := range p.ResponseCounts {
-		counts = append(counts, count.Count)
-	}
-	return counts
-}
-
-func (r ReactionCountsByAction) findOrInitializeResponse(action Action, response Response) {
-	_, ok := r[action]
-	if ok {
-
-	} else {
-		r[action] = ReactionCounts{ResponseCounts: ResponseCounts{}, Reward: Reward{0, 0}}
-	}
-	_, ok = r[action].ResponseCounts[response]
-	if ok {
-
-	} else {
-		r[action].ResponseCounts[response] = &Counts{Weight: 0, Count: 0}
-	}
-}
-
-func (r ReactionCountsByAction) GetResponseCount(action Action, response Response) int {
-	r.findOrInitializeResponse(action, response)
-	return r[action].ResponseCounts[response].Count
-}
-
-func (r ReactionCountsByAction) IncrementResponseCount(action Action, response Response) {
-	r.findOrInitializeResponse(action, response)
-	r[action].ResponseCounts[response].Count += 1
-}
-
-func (r ReactionCountsByAction) SetResponseCounts(action Action, response Response, weight float32, count int) {
-	r.findOrInitializeResponse(action, response)
-	r[action].ResponseCounts[response] = &Counts{Weight: weight, Count: count}
-}
-
-func ExploreReactions(possibleWorlds PossibleWorlds, actions PossibleActions, agreement Agreement) ReactionCountsByAction {
-	reactionCounts := ReactionCountsByAction{}
-	for _, action := range actions {
-		for _, possibleWorld := range possibleWorlds {
-			reaction := agreement(possibleWorld.World, action)
-			reactionCounts.IncrementResponseCount(action, reaction.Response)
-		}
-	}
-	// fmt.Printf("\nREACTIONCOUNTS: %+v", reactionCounts)
-	return reactionCounts
-}
-
-func BuildPredictions(reactionCountsByAction ReactionCountsByAction) Predictions {
+func BuildPredictions(reactionCounter ReactionCounter) Predictions {
 	predictions := Predictions{}
-	for action, reactionCounts := range reactionCountsByAction {
+	for _, action := range reactionCounter.Actions() {
 		// TODO: Refactor this so there is no direct dict/map access on predictions
-		predictions.AddPrediction(action, buildActionForecasts(action, reactionCounts))
+		prediction := Prediction{Action: action}
+		prediction.Entropy = mth.CalcEntropy(reactionCounter.TotalCountForAction(action), reactionCounter.AllCountsForAction(action))
+		predictions.AddPrediction(action, prediction)
 	}
 	return predictions
-}
-
-func buildActionForecasts(action Action, reactionCounts ReactionCounts) Prediction {
-	forecast := Prediction{Action: action}
-	forecast.Entropy = mth.CalcEntropy(reactionCounts.GetTotal(), reactionCounts.GetCounts())
-	return forecast
 }

@@ -17,6 +17,10 @@ func (p Predictions) GetEntropy(action string) float64 {
 	return p[Action(action)].Entropy
 }
 
+func (p Predictions) GetReward(action string) float64 {
+	return p[Action(action)].Reward
+}
+
 func (p Predictions) AddPrediction(action Action, prediction Prediction) {
 	p[action] = prediction
 }
@@ -27,6 +31,7 @@ func BuildPredictions(reactionCounter ReactionCounter) Predictions {
 		// TODO: Refactor this so there is no direct dict/map access on predictions
 		prediction := Prediction{Action: action}
 		prediction.Entropy = mth.CalcEntropy(reactionCounter.TotalCountForAction(action), reactionCounter.AllCountsForAction(action))
+		prediction.Reward = reactionCounter.TotalRewardForAction(action) / float64(reactionCounter.TotalCountForAction(action))
 		predictions.AddPrediction(action, prediction)
 	}
 	return predictions

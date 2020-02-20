@@ -1,37 +1,37 @@
 package game
 
-type ResponseCounts map[Response]*Counts
+type ResponseCount struct {
+	Count int
+	Reward         float64
+}
 
-type Counts struct {
-	Weight float32
-	Count  int
-}
-type Reward struct {
-	Utility float64
-	Regret  float64
-}
-type ResponseCounter struct {
-	ResponseCounts ResponseCounts
-	Reward         Reward
-}
+type ResponseCounter map[Response]*ResponseCount
+
 type ReactionCounter map[Action]ResponseCounter
+
+func (p ResponseCounter) RewardTotal() float64 {
+	total := 0.0
+	for _, count := range p {
+		total += count.Reward
+	}
+	return total
+}
 
 func (p ResponseCounter) CountTotal() int {
 	total := int(0)
-	for _, count := range p.ResponseCounts {
+	for _, count := range p {
 		total += count.Count
 	}
 	return total
 }
 
 func (p ResponseCounter) AllCounts() []int {
-	counts := make([]int, 0, len(p.ResponseCounts))
-	for _, count := range p.ResponseCounts {
+	counts := make([]int, 0, len(p))
+	for _, count := range p {
 		counts = append(counts, count.Count)
 	}
 	return counts
 }
-
 
 func (rc ReactionCounter) Actions() []Action {
 	actions := []Action{}
@@ -39,6 +39,11 @@ func (rc ReactionCounter) Actions() []Action {
 		actions = append(actions, action)
 	}
 	return actions
+}
+
+func (rc ReactionCounter) TotalRewardForAction(action Action) float64 {
+	rc.findOrInitializeAction(action)
+	return rc[action].RewardTotal()
 }
 
 func (rc ReactionCounter) TotalCountForAction(action Action) int {
@@ -55,31 +60,32 @@ func (rc ReactionCounter) findOrInitializeAction(action Action) {
 	if ok {
 
 	} else {
-		rc[action] = ResponseCounter{ResponseCounts: ResponseCounts{}, Reward: Reward{0, 0}}
+		rc[action] = ResponseCounter{}
 	}
 }
 
 func (rc ReactionCounter) findOrInitializeResponse(action Action, response Response) {
 	rc.findOrInitializeAction(action)
-	_, ok := rc[action].ResponseCounts[response]
+	_, ok := rc[action][response]
 	if ok {
 
 	} else {
-		rc[action].ResponseCounts[response] = &Counts{Weight: 0, Count: 0}
+		rc[action][response] = &ResponseCount{Count: 0, Reward: 0.0}
 	}
 }
 
 func (rc ReactionCounter) Get(r Reaction) int {
 	rc.findOrInitializeResponse(r.Action, r.Response)
-	return rc[r.Action].ResponseCounts[r.Response].Count
+	return rc[r.Action][r.Response].Count
 }
 
 func (rc ReactionCounter) Increment(r Reaction) {
 	rc.findOrInitializeResponse(r.Action, r.Response)
-	rc[r.Action].ResponseCounts[r.Response].Count += 1
+	rc[r.Action][r.Response].Count += 1
+	rc[r.Action][r.Response].Reward += r.Reward
 }
 
-func (rc ReactionCounter) Set(r Reaction, weight float32, count int) {
+func (rc ReactionCounter) Set(r Reaction, reward float64, count int) {
 	rc.findOrInitializeResponse(r.Action, r.Response)
-	rc[r.Action].ResponseCounts[r.Response] = &Counts{Weight: weight, Count: count}
+	rc[r.Action][r.Response] = &ResponseCount{Count: count, Reward: reward}
 }

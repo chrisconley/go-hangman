@@ -1,8 +1,8 @@
-package main
+package play
 
 import (
 	"fmt"
-	// "math"
+	"math"
 	// "regexp"
 	"github.com/chrisconley/go-hangman/internal/game"
 	"github.com/chrisconley/go-hangman/internal/hangman"
@@ -22,8 +22,7 @@ func Decide(predictions game.Predictions, motivation game.Motivation) (action ga
 	maxAction := game.Action("")
 	for _, prediction := range predictions {
 		// fmt.Printf("\nPREDICTION: %+v", prediction)
-		// weight := math.Pow(prediction.Entropy, motivation.Entropy) * math.Pow(prediction.Reward, motivation.Reward)
-		weight := prediction.Entropy*motivation.Entropy + prediction.Reward*motivation.Reward
+		weight := math.Pow(prediction.Entropy, motivation.Entropy) * math.Pow(prediction.Reward, motivation.Reward)
 		// fmt.Printf("\nWEIGHT: %+v", weight)
 		if weight > maxWeight {
 			maxWeight = weight

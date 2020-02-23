@@ -8,6 +8,7 @@ import (
 	// "io"
 	"github.com/chrisconley/go-hangman/internal/game"
 	"github.com/chrisconley/go-hangman/internal/hangman"
+	// "github.com/chrisconley/go-hangman/internal/mastermind"
 	"github.com/chrisconley/go-hangman/internal/play"
 )
 
@@ -38,10 +39,12 @@ func main() {
     }
 
 	originalWorlds := game.PossibleWorlds{}
+	originalActions := game.PossibleActions{}
 	for j := 0; j < len(lines); j++ {
 		originalWorlds = append(originalWorlds, game.PossibleWorld{game.World(lines[j]), 0.5})
+		// originalActions = append(originalActions, game.Action(lines[j]))
 	}
-	originalActions := game.PossibleActions{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
+	originalActions = game.PossibleActions{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
 
 
 	turns := []int{}
@@ -51,6 +54,7 @@ func main() {
 		perspective.PossibleWorlds = originalWorlds
 		perspective.PossibleActions = originalActions
 		perspective.Agreement = hangman.HangmanAgreement
+		// perspective.Agreement = mastermind.Agreement
 		perspective.Motivation = game.Motivation{0.0, 1.0, 0.0}
 
 		truth := game.World(string(lines[j]))

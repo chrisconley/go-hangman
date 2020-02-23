@@ -20,6 +20,9 @@ func Explore(perspective game.Perspective, agreement game.Agreement) (prediction
 func Decide(predictions game.Predictions, motivation game.Motivation) (action game.Action) {
 	maxWeight := 0.0
 	maxAction := game.Action("")
+	if len(predictions) == 1 {
+		panic("hi")
+	}
 	for _, prediction := range predictions {
 		// fmt.Printf("\nPREDICTION: %+v", prediction)
 		weight := math.Pow(prediction.Entropy, motivation.Entropy) * math.Pow(prediction.Reward, motivation.Reward)
@@ -63,10 +66,10 @@ func PlayGame(truth game.World, perspective *game.Perspective) game.World {
 }
 
 func playTurn(truth game.World, perspective *game.Perspective) (reaction game.Reaction) {
-	predictions := Explore(*perspective, hangman.HangmanAgreement)
+	predictions := Explore(*perspective, perspective.Agreement)
 	action := Decide(predictions, perspective.Motivation)
 	// fmt.Printf("\nACTION: %+v", action)
-	reaction = Act(action, hangman.HangmanAgreement, truth)
+	reaction = Act(action, perspective.Agreement, truth)
 	// fmt.Printf("\nREACTION: %+v", reaction)
 	Observe(action, reaction, perspective)
 	return reaction

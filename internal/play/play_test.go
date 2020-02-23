@@ -5,6 +5,7 @@ import (
 
 	"github.com/chrisconley/go-hangman/internal/game"
 	"github.com/chrisconley/go-hangman/internal/hangman"
+	// "github.com/chrisconley/go-hangman/internal/mastermind"
 	"github.com/chrisconley/go-hangman/test"
 )
 
@@ -40,7 +41,7 @@ func TestObserve(t *testing.T) {
 	test.AssertDeepEqual(perspective.Knowledge, game.Knowledge{reaction}, t)
 }
 
-func TestPlayGame(t *testing.T) {
+func TestPlayHangman(t *testing.T) {
 	perspective := &game.Perspective{}
 	perspective.Knowledge = game.Knowledge{}
 	perspective.PossibleWorlds = game.PossibleWorlds{
@@ -56,3 +57,21 @@ func TestPlayGame(t *testing.T) {
 	actual := PlayGame(truth, perspective)
 	test.AssertDeepEqual(actual, truth, t)
 }
+
+// func TestPlayMastermind(t *testing.T) {
+// 	perspective := &game.Perspective{}
+// 	perspective.Knowledge = game.Knowledge{}
+// 	perspective.PossibleWorlds = game.PossibleWorlds{
+// 		game.PossibleWorld{"111", 0.5},
+// 		game.PossibleWorld{"112", 0.5},
+// 		game.PossibleWorld{"121", 0.5},
+// 		game.PossibleWorld{"211", 0.5},
+// 	}
+// 	perspective.PossibleActions = game.PossibleActions{"111", "112", "121", "211"}
+// 	perspective.Agreement = mastermind.Agreement
+// 	perspective.Motivation = game.Motivation{0.5, 0.25, 0.25}
+
+// 	truth := game.World("bbb")
+// 	actual := PlayGame(truth, perspective)
+// 	test.AssertDeepEqual(actual, truth, t)
+// }

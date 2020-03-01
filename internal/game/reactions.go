@@ -6,6 +6,7 @@ import (
 
 type reactionExplorer struct {
 	tracker map[Action]actionData
+	actions []Action
 }
 
 type actionData struct {
@@ -17,6 +18,7 @@ type actionData struct {
 func NewReactionExplorer() reactionExplorer {
 	re := reactionExplorer{}
 	re.tracker = make(map[Action]actionData)
+	re.actions = make([]Action, 0)
 	return re
 }
 
@@ -50,16 +52,13 @@ func (re *reactionExplorer) ActionRewardTotal(action Action) float64 {
 }
 
 func (re *reactionExplorer) Actions() []Action {
-	actions := []Action{}
-	for action, _ := range re.tracker {
-		actions = append(actions, action)
-	}
-	return actions
+	return re.actions
 }
 
 func (re *reactionExplorer) findOrInitializeAction(action Action) {
 	_, ok := re.tracker[action]
 	if !ok {
+		re.actions = append(re.actions, action)
 		counts := utils.NewGroupedIncrementer()
 		rewards := utils.NewGroupedIncrementer()
 		re.tracker[action] = actionData{

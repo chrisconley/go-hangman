@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/chrisconley/go-hangman/test"
@@ -77,3 +78,39 @@ func TestReactionExplorerActions(t *testing.T) {
 
 	test.AssertDeepEqual(re.Actions(), []Action{"a", "b"}, t)
 }
+
+func BenchmarkActionsSmall(b *testing.B) {
+	re := NewReactionExplorer()
+	numElements := 10
+	for i := 0; i < numElements; i++ {
+		re.Add(Action(fmt.Sprintf("%d", i)), "!", 0.0, "a")
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		re.Actions()
+	}
+}
+
+func BenchmarkActionsLarge(b *testing.B) {
+	re := NewReactionExplorer()
+	numElements := 10000
+	for i := 0; i < numElements; i++ {
+		re.Add(Action(fmt.Sprintf("%d", i)), "!", 0.0, "a")
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		re.Actions()
+	}
+}
+
+// func BenchmarkAllLarge(b *testing.B) {
+// 	gi := NewGroupedIncrementer()
+// 	numElements := 1000000
+// 	for i := 0; i < numElements; i++ {
+// 		gi.Increment(fmt.Sprintf("%d", i), 2.4)
+// 	}
+// 	b.ResetTimer()
+// 	for i := 0; i < b.N; i++ {
+// 		gi.All()
+// 	}
+// }

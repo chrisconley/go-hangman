@@ -98,50 +98,63 @@ func (rc ReactionCounter) Set(r Reaction, reward float64, count int) {
 
 type actionData struct {
 	Responses map[Response][]World
-	Counts    utils.GroupedIncrementer
-	Rewards   utils.GroupedIncrementer
+	Counts    *utils.GroupedIncrementer
+	Rewards   *utils.GroupedIncrementer
 }
 
-type ReactionExplorer struct {
+type reactionExplorer struct {
 	tracker map[Action]actionData
 }
 
-func NewReactionExplorer() ReactionExplorer {
-	re := ReactionExplorer{}
+func NewReactionExplorer() reactionExplorer {
+	re := reactionExplorer{}
 	re.tracker = make(map[Action]actionData)
 	return re
 }
 
-func (re *ReactionExplorer) Add(action Action, response Response, rw float64, world World) {
+func (re *reactionExplorer) Add(action Action, response Response, reward float64, world World) {
 	re.findOrInitializeResponse(action, response)
+	counts := re.tracker[action].Counts
+	counts.Increment(string(response), 1.0)
+	rewards := re.tracker[action].Rewards
+	rewards.Increment(string(response), reward)
 	re.tracker[action].Responses[response] = append(re.tracker[action].Responses[response], world)
 }
 
-func (re *ReactionExplorer) Get(action Action, response Response) []World {
+func (re *reactionExplorer) Get(action Action, response Response) []World {
 	re.findOrInitializeResponse(action, response)
 	return re.tracker[action].Responses[response]
 }
 
-func (re *ReactionExplorer) ActionCounts(a Action) []float64 {
-	return []float64{1.1117}
+func (re *reactionExplorer) ActionCounts(action Action) []float64 {
+	re.findOrInitializeAction(action)
+	return re.tracker[action].Counts.All()
 }
 
-func (re *ReactionExplorer) ActionTotal(a Action) float64 {
-	return 1.1117
+func (re *reactionExplorer) ActionTotal(action Action) float64 {
+	re.findOrInitializeAction(action)
+	return re.tracker[action].Counts.Total()
 }
 
-func (re *ReactionExplorer) ActionRewardTotal(a Action) float64 {
-	return 1.1117
+func (re *reactionExplorer) ActionRewardTotal(action Action) float64 {
+	re.findOrInitializeAction(action)
+	return re.tracker[action].Rewards.Total()
 }
 
-func (re *ReactionExplorer) findOrInitializeAction(action Action) {
+func (re *reactionExplorer) findOrInitializeAction(action Action) {
 	_, ok := re.tracker[action]
 	if !ok {
-		re.tracker[action] = actionData{Responses: make(map[Response][]World)}
+		counts := utils.NewGroupedIncrementer()
+		rewards := utils.NewGroupedIncrementer()
+		re.tracker[action] = actionData{
+			Responses: make(map[Response][]World),
+			Counts:    &counts,
+			Rewards:   &rewards,
+		}
 	}
 }
 
-func (re *ReactionExplorer) findOrInitializeResponse(action Action, response Response) {
+func (re *reactionExplorer) findOrInitializeResponse(action Action, response Response) {
 	re.findOrInitializeAction(action)
 	_, ok := re.tracker[action].Responses[response]
 	if !ok {

@@ -4,10 +4,10 @@ import (
 	"math"
 )
 
-func CalcEntropy(total int, counts []int) float64 {
+func CalcEntropy(total float64, counts []float64) float64 {
 	entropy := 0.0
 	for _, count := range counts {
-		entropy += LogProbability(float64(count) / float64(total))
+		entropy += LogProbability(count / total)
 	}
 	return entropy
 }

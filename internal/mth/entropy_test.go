@@ -15,7 +15,7 @@ func TestLogProbability(t *testing.T) {
 }
 
 func TestEntropy(t *testing.T) {
-	counts := []int{4, 1, 1, 2}
+	counts := []float64{4, 1, 1, 2}
 	actual := CalcEntropy(8, counts)
 	test.AssertAlmostEqual(actual, 1.75, 4, t)
 }

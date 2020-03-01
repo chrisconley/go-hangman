@@ -1,8 +1,6 @@
 package game
 
 import (
-	"fmt"
-
 	"github.com/chrisconley/go-hangman/internal/utils"
 )
 
@@ -141,6 +139,14 @@ func (re *reactionExplorer) ActionRewardTotal(action Action) float64 {
 	return re.tracker[action].Rewards.Total()
 }
 
+func (re *reactionExplorer) Actions() []Action {
+	actions := []Action{}
+	for action, _ := range re.tracker {
+		actions = append(actions, action)
+	}
+	return actions
+}
+
 func (re *reactionExplorer) findOrInitializeAction(action Action) {
 	_, ok := re.tracker[action]
 	if !ok {
@@ -158,7 +164,6 @@ func (re *reactionExplorer) findOrInitializeResponse(action Action, response Res
 	re.findOrInitializeAction(action)
 	_, ok := re.tracker[action].Responses[response]
 	if !ok {
-		fmt.Printf("hi")
 		re.tracker[action].Responses[response] = make([]World, 0)
 	}
 }

@@ -10,7 +10,6 @@ func TestReactionExplorerGet(t *testing.T) {
 	re := NewReactionExplorer()
 	action := Action("a")
 	response := Response("a--")
-	// reaction := Reaction{Action: "a", Response: "a--", Reward: 0.75}
 	actual := re.Get(action, response)
 	test.AssertDeepEqual(actual, make([]World, 0), t)
 
@@ -66,4 +65,15 @@ func TestReactionExplorerActionRewardTotal(t *testing.T) {
 
 	actual = re.ActionRewardTotal(action)
 	test.AssertDeepEqual(actual, 1.95, t)
+}
+
+func TestReactionExplorerActions(t *testing.T) {
+	re := NewReactionExplorer()
+	test.AssertDeepEqual(re.Actions(), []Action{}, t)
+
+	re.Add(Action("a"), Response("a--"), 0.75, "abc")
+	re.Add(Action("a"), Response("a--"), 1.0, "aaa")
+	re.Add(Action("b"), Response("!"), 0.0, "aac")
+
+	test.AssertDeepEqual(re.Actions(), []Action{"a", "b"}, t)
 }

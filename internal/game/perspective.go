@@ -32,14 +32,19 @@ type Motivation struct {
 	Time    float64
 }
 
-func ExploreReactions(possibleWorlds PossibleWorlds, actions PossibleActions, agreement Agreement) ReactionCounter {
-	reactionCounts := ReactionCounter{}
+func ExploreReactions(possibleWorlds PossibleWorlds, actions PossibleActions, agreement Agreement) reactionExplorer {
+	reactionExplorer := NewReactionExplorer()
 	for _, action := range actions {
 		for _, possibleWorld := range possibleWorlds {
 			reaction := agreement(possibleWorld.World, action)
-			reactionCounts.Increment(reaction)
+			reactionExplorer.Add(
+				reaction.Action,
+				reaction.Response,
+				reaction.Reward,
+				possibleWorld.World,
+			)
 		}
 	}
 	// fmt.Printf("\nREACTIONCOUNTS: %+v", reactionCounts)
-	return reactionCounts
+	return reactionExplorer
 }

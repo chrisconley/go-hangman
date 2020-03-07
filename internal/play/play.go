@@ -3,6 +3,7 @@ package play
 import (
 	"fmt"
 	"math"
+
 	// "regexp"
 	"github.com/chrisconley/go-hangman/internal/game"
 	"github.com/chrisconley/go-hangman/internal/hangman"
@@ -11,9 +12,12 @@ import (
 // ###########################
 // ### THE DECISION PROCESS ###
 // ###########################
-func Explore(perspective game.Perspective, agreement game.Agreement) (predictions game.Predictions) {
+func Explore(perspective *game.Perspective, agreement game.Agreement) (predictions game.Predictions) {
 	reactions := game.ExploreReactions(perspective.PossibleWorlds, perspective.PossibleActions, agreement)
 	predictions = game.BuildPredictions(reactions)
+	perspective.UpdateReactionExplorer(reactions)
+	// fmt.Printf("\nEXPLORE: REACTION EXPLORER: %+v\n", perspective.ReactionExplorer)
+	// fmt.Printf("\nEXPLORE: POSSIBLE WORLDS: %+v\n", perspective.PossibleWorlds)
 	return predictions
 }
 
@@ -41,10 +45,20 @@ func Act(action game.Action, agreement game.Agreement, truth game.World) (reacti
 }
 
 func Observe(action game.Action, reaction game.Reaction, perspective *game.Perspective) {
+	// fmt.Printf("\nOBSERVE: REACTION EXPLORER: %+v\n", perspective.ReactionExplorer)
+	// fmt.Printf("\nOBSERVE: REACTION: %+v\n", reaction)
 	perspective.UpdateKnowledge(reaction)
+	newPossibleWorlds := []game.PossibleWorld{}
+	// fmt.Printf("\nOBSERVE: NEXT WORLDS: %+v\n", perspective.ReactionExplorer.Get(reaction.Action, reaction.Response))
+	for _, world := range perspective.ReactionExplorer.Get(reaction.Action, reaction.Response) {
+		newPossibleWorlds = append(newPossibleWorlds, game.PossibleWorld{World: world, Weight: 0.5})
+	}
+	perspective.PossibleWorlds = newPossibleWorlds
 	perspective.PossibleActions = hangman.UpdatePossibleActions(reaction, perspective.PossibleActions)
+	// fmt.Printf("\nOBSERVE: POSSIBLE WORLDS: %+v\n", perspective.PossibleWorlds)
 
-	perspective.PossibleWorlds = hangman.UpdatePossibleWorlds(reaction, perspective.PossibleWorlds)
+	// perspective.PossibleWorlds = hangman.UpdatePossibleWorlds(reaction, perspective.PossibleWorlds)
+
 	// fmt.Printf("\nPOSSIBLE ACTIONS: %+v\n", perspective.PossibleActions)
 	// fmt.Printf("\nPOSSIBLE WORLDS: %+v\n", perspective.PossibleWorlds)
 
@@ -55,6 +69,7 @@ func Observe(action game.Action, reaction game.Reaction, perspective *game.Persp
 // ###########################
 
 func PlayGame(truth game.World, perspective *game.Perspective) game.World {
+	// TODO: Validate that truth is within perspective.PossibleWorlds
 	for true {
 		playTurn(truth, perspective)
 		if len(perspective.PossibleWorlds) == 1 {
@@ -66,7 +81,7 @@ func PlayGame(truth game.World, perspective *game.Perspective) game.World {
 }
 
 func playTurn(truth game.World, perspective *game.Perspective) (reaction game.Reaction) {
-	predictions := Explore(*perspective, perspective.Agreement)
+	predictions := Explore(perspective, perspective.Agreement)
 	action := Decide(predictions, perspective.Motivation)
 	// fmt.Printf("\nACTION: %+v", action)
 	reaction = Act(action, perspective.Agreement, truth)

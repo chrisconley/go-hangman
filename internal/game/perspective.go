@@ -5,15 +5,20 @@ package game
 // ###########################
 
 type Perspective struct {
-	Knowledge       Knowledge
-	PossibleWorlds  PossibleWorlds
-	PossibleActions PossibleActions
-	Agreement       Agreement
-	Motivation      Motivation
+	Knowledge        Knowledge
+	PossibleWorlds   PossibleWorlds
+	PossibleActions  PossibleActions
+	Agreement        Agreement
+	Motivation       Motivation
+	ReactionExplorer reactionExplorer
 }
 
 func (p *Perspective) UpdateKnowledge(reaction Reaction) {
 	p.Knowledge = append(p.Knowledge, reaction)
+}
+
+func (p *Perspective) UpdateReactionExplorer(reactionExplorer reactionExplorer) {
+	p.ReactionExplorer = reactionExplorer
 }
 
 type Knowledge []Reaction

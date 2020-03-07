@@ -1,13 +1,15 @@
-package main 
+package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"os"
-	"bufio"
+
 	// "io"
 	"github.com/chrisconley/go-hangman/internal/game"
 	"github.com/chrisconley/go-hangman/internal/hangman"
+
 	// "github.com/chrisconley/go-hangman/internal/mastermind"
 	"github.com/chrisconley/go-hangman/internal/play"
 )
@@ -18,9 +20,9 @@ func main() {
 	fmt.Printf("\n EXAMPLE: %s\n", *examplePtr)
 
 	info, err := os.Stdin.Stat()
-    if err != nil {
-        panic(err)
-    }
+	if err != nil {
+		panic(err)
+	}
 
 	if info.Mode()&os.ModeCharDevice != 0 || info.Size() <= 0 {
 		fmt.Println("The command is intended to work with pipes.")
@@ -35,8 +37,8 @@ func main() {
 		lines = append(lines, scanner.Text())
 	}
 	if err := scanner.Err(); err != nil {
-        fmt.Printf("ERROR")
-    }
+		fmt.Printf("ERROR")
+	}
 
 	originalWorlds := game.PossibleWorlds{}
 	originalActions := game.PossibleActions{}
@@ -46,9 +48,8 @@ func main() {
 	}
 	originalActions = game.PossibleActions{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
 
-
 	turns := []int{}
-	for j := 0; j < 100; j++ {
+	for j := 0; j < 250; j++ {
 		perspective := &game.Perspective{}
 		perspective.Knowledge = game.Knowledge{}
 		perspective.PossibleWorlds = originalWorlds

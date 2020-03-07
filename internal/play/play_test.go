@@ -52,7 +52,13 @@ func TestPlayHangman(t *testing.T) {
 		game.PossibleWorld{"aab", 0.5},
 		game.PossibleWorld{"bbb", 0.5},
 	}
-	perspective.PossibleActions = game.PossibleActions{"a", "b", "c"}
+	// perspective.PossibleActions = game.PossibleActions{"a", "b", "c"}
+	worlds := []game.World{
+		game.World("abc"),
+		game.World("aab"),
+		game.World("bbb"),
+	}
+	perspective.AvailableActions = game.BuildAvailableActions(worlds)
 	perspective.Agreement = hangman.HangmanAgreement
 	perspective.Motivation = game.Motivation{0.5, 0.25, 0.25}
 
@@ -70,7 +76,13 @@ func TestPlayMastermind(t *testing.T) {
 		game.PossibleWorld{"121", 0.5},
 		game.PossibleWorld{"211", 0.5},
 	}
-	perspective.PossibleActions = game.PossibleActions{"111", "112", "121", "211"}
+	worlds := []game.World{
+		game.World("111"),
+		game.World("112"),
+		game.World("121"),
+		game.World("211"),
+	}
+	perspective.AvailableActions = game.BuildAvailableActions(worlds)
 	perspective.Agreement = mastermind.Agreement
 	perspective.Motivation = game.Motivation{0.5, 0.25, 0.25}
 

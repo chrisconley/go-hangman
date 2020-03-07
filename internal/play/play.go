@@ -6,14 +6,13 @@ import (
 
 	// "regexp"
 	"github.com/chrisconley/go-hangman/internal/game"
-	"github.com/chrisconley/go-hangman/internal/hangman"
 )
 
 // ###########################
 // ### THE DECISION PROCESS ###
 // ###########################
 func Explore(perspective *game.Perspective, agreement game.Agreement) (predictions game.Predictions) {
-	reactions := game.ExploreReactions(perspective.PossibleWorlds, perspective.PossibleActions, agreement)
+	reactions := game.ExploreReactions(perspective.PossibleWorlds, perspective.AvailableActions, agreement)
 	predictions = game.BuildPredictions(reactions)
 	perspective.UpdateReactionExplorer(reactions)
 	// fmt.Printf("\nEXPLORE: REACTION EXPLORER: %+v\n", perspective.ReactionExplorer)
@@ -54,7 +53,7 @@ func Observe(action game.Action, reaction game.Reaction, perspective *game.Persp
 		newPossibleWorlds = append(newPossibleWorlds, game.PossibleWorld{World: world, Weight: 0.5})
 	}
 	perspective.PossibleWorlds = newPossibleWorlds
-	perspective.PossibleActions = hangman.UpdatePossibleActions(reaction, perspective.PossibleActions)
+	// perspective.PossibleActions = hangman.UpdatePossibleActions(reaction, perspective.PossibleActions)
 	// fmt.Printf("\nOBSERVE: POSSIBLE WORLDS: %+v\n", perspective.PossibleWorlds)
 
 	// perspective.PossibleWorlds = hangman.UpdatePossibleWorlds(reaction, perspective.PossibleWorlds)
@@ -83,7 +82,7 @@ func PlayGame(truth game.World, perspective *game.Perspective) game.World {
 func playTurn(truth game.World, perspective *game.Perspective) (reaction game.Reaction) {
 	predictions := Explore(perspective, perspective.Agreement)
 	action := Decide(predictions, perspective.Motivation)
-	// fmt.Printf("\nACTION: %+v", action)
+	// fmt.Printf("\nACTION: %+v\n", action)
 	reaction = Act(action, perspective.Agreement, truth)
 	// fmt.Printf("\nREACTION: %+v", reaction)
 	Observe(action, reaction, perspective)

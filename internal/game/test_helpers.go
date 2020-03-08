@@ -9,3 +9,7 @@ func TestAgreement(w World, a Action) (r Reaction) {
 		return Reaction{Action: a, Response: "!", Reward: 0.0}
 	}
 }
+
+func TestActionFilter(remainingWorlds Worlds, aa AvailableActions) []Action {
+	return []Action{"hi"}
+}

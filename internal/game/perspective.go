@@ -9,6 +9,7 @@ type Perspective struct {
 	PossibleWorlds   Worlds
 	AvailableActions AvailableActions
 	Agreement        Agreement
+	ActionFilter     ActionFilter
 	Motivation       Motivation
 	ReactionExplorer reactionExplorer
 }
@@ -33,6 +34,10 @@ func (p *Perspective) UpdateReactionExplorer(reactionExplorer reactionExplorer) 
 	p.ReactionExplorer = reactionExplorer
 }
 
+func (p *Perspective) PlausibleActions(remainingWorlds Worlds) []Action {
+	return p.ActionFilter(remainingWorlds, p.AvailableActions)
+}
+
 type Knowledge []Reaction
 
 type Worlds []World
@@ -43,9 +48,9 @@ type Motivation struct {
 	Time    float64
 }
 
-func ExploreReactions(possibleWorlds Worlds, actions AvailableActions, agreement Agreement) reactionExplorer {
+func ExploreReactions(possibleWorlds Worlds, actions []Action, agreement Agreement) reactionExplorer {
 	reactionExplorer := NewReactionExplorer()
-	for _, action := range actions.All() {
+	for _, action := range actions {
 		for _, possibleWorld := range possibleWorlds {
 			reaction := agreement(possibleWorld, action)
 			reactionExplorer.Add(

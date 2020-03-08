@@ -12,7 +12,7 @@ import (
 // ### THE DECISION PROCESS ###
 // ###########################
 func Explore(perspective *game.Perspective, agreement game.Agreement) (predictions game.Predictions) {
-	reactions := game.ExploreReactions(perspective.PossibleWorlds, perspective.AvailableActions, agreement)
+	reactions := game.ExploreReactions(perspective.PossibleWorlds, perspective.PlausibleActions(perspective.PossibleWorlds), agreement)
 	predictions = game.BuildPredictions(reactions)
 	perspective.UpdateReactionExplorer(reactions)
 	// fmt.Printf("\nEXPLORE: REACTION EXPLORER: %+v\n", perspective.ReactionExplorer)

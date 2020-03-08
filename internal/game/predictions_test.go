@@ -14,7 +14,7 @@ func TestBuildPredictions(t *testing.T) {
 	}
 	aa := BuildAvailableActions(worlds)
 
-	reactions := ExploreReactions(worlds, aa, TestAgreement)
+	reactions := ExploreReactions(worlds, aa.AllActions(), TestAgreement)
 	actual := BuildPredictions(reactions)
 
 	test.AssertAlmostEqual(actual.GetEntropy("a"), 0.9183, 4, t)

@@ -54,6 +54,7 @@ func main() {
 		perspective.AvailableActions = game.BuildAvailableActions(worlds)
 		// fmt.Printf("\nAVAILABLE ACTIONS: %+v", perspective.AvailableActions)
 		perspective.Agreement = hangman.HangmanAgreement
+		perspective.ActionFilter = hangman.ActionFilter
 		// perspective.Agreement = mastermind.Agreement
 		perspective.Motivation = game.Motivation{0.0, 1.0, 0.0}
 

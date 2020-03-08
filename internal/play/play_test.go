@@ -55,6 +55,7 @@ func TestPlayHangman(t *testing.T) {
 	perspective.PossibleWorlds = worlds
 	perspective.AvailableActions = game.BuildAvailableActions(worlds)
 	perspective.Agreement = hangman.HangmanAgreement
+	perspective.ActionFilter = hangman.ActionFilter
 	perspective.Motivation = game.Motivation{0.5, 0.25, 0.25}
 
 	truth := game.World("bbb")
@@ -79,6 +80,7 @@ func TestPlayMastermind(t *testing.T) {
 	perspective.PossibleWorlds = worlds
 	perspective.AvailableActions = game.BuildAvailableActions(worlds)
 	perspective.Agreement = mastermind.Agreement
+	perspective.ActionFilter = mastermind.ActionFilter
 	perspective.Motivation = game.Motivation{0.5, 0.25, 0.25}
 
 	truth := game.World("111")

@@ -8,39 +8,25 @@ import (
 	"github.com/chrisconley/go-hangman/internal/game"
 )
 
-func UpdatePossibleActions(reaction game.Reaction, possibleActions game.PossibleActions) (a game.PossibleActions) {
-	a = game.PossibleActions{}
-	for _, possibleAction := range possibleActions {
-		if possibleAction != reaction.Action {
-			a = append(a, possibleAction)
-		}
-	}
-	return a
-}
-
-func UpdatePossibleWorlds(reaction game.Reaction, possibleWorlds game.PossibleWorlds) (p game.PossibleWorlds) {
-	return possibleWorlds
-}
-
 func Agreement(world game.World, action game.Action) (r game.Reaction) {
 	// In An Optimal Mastermind (4,7) Strategy and More Results in the Expected Case
-    // https://arxiv.org/pdf/1305.1010.pdf, the author "double" counts duplicate guesses
-    // that garner a "white" response.
+	// https://arxiv.org/pdf/1305.1010.pdf, the author "double" counts duplicate guesses
+	// that garner a "white" response.
 
-    // Example: The code word is 3632. Let's work out the response for guess 6326:
-    // 6 garners a "white" response
-    // 3 garners a "white" response
-    // 2 garners a "white" response
-    // 6 garners a "white" response again
-    // This results in a response of 'WWWW'.
+	// Example: The code word is 3632. Let's work out the response for guess 6326:
+	// 6 garners a "white" response
+	// 3 garners a "white" response
+	// 2 garners a "white" response
+	// 6 garners a "white" response again
+	// This results in a response of 'WWWW'.
 
 	// In contrast, the code below is implemented so that duplicate white responses are not returned.
 	// This matches the rules of the game and what Knuth implemented his original minimax solution:
-    // 6 garners a "white" response
-    // 3 garners a "white" response
-    // 2 garners a "white" response
-    // 6 does not garner a "white" response becuase the "6" in the code word was already "used"
-    //     for the first "6" in the guess
+	// 6 garners a "white" response
+	// 3 garners a "white" response
+	// 2 garners a "white" response
+	// 6 does not garner a "white" response becuase the "6" in the code word was already "used"
+	//     for the first "6" in the guess
 	// This results in a response of 'WWW'.
 
 	worldString := string(world)

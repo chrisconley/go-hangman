@@ -45,19 +45,14 @@ func TestObserve(t *testing.T) {
 }
 
 func TestPlayHangman(t *testing.T) {
-	perspective := &game.Perspective{}
-	perspective.Knowledge = game.Knowledge{}
-	perspective.PossibleWorlds = game.PossibleWorlds{
-		game.PossibleWorld{"abc", 0.5},
-		game.PossibleWorld{"aab", 0.5},
-		game.PossibleWorld{"bbb", 0.5},
-	}
-	// perspective.PossibleActions = game.PossibleActions{"a", "b", "c"}
 	worlds := []game.World{
 		game.World("abc"),
 		game.World("aab"),
 		game.World("bbb"),
 	}
+	perspective := &game.Perspective{}
+	perspective.Knowledge = game.Knowledge{}
+	perspective.PossibleWorlds = worlds
 	perspective.AvailableActions = game.BuildAvailableActions(worlds)
 	perspective.Agreement = hangman.HangmanAgreement
 	perspective.Motivation = game.Motivation{0.5, 0.25, 0.25}
@@ -68,20 +63,20 @@ func TestPlayHangman(t *testing.T) {
 }
 
 func TestPlayMastermind(t *testing.T) {
-	perspective := &game.Perspective{}
-	perspective.Knowledge = game.Knowledge{}
-	perspective.PossibleWorlds = game.PossibleWorlds{
-		game.PossibleWorld{"111", 0.5},
-		game.PossibleWorld{"112", 0.5},
-		game.PossibleWorld{"121", 0.5},
-		game.PossibleWorld{"211", 0.5},
-	}
 	worlds := []game.World{
 		game.World("111"),
 		game.World("112"),
 		game.World("121"),
 		game.World("211"),
 	}
+	// perspective := NewPerspective(
+	// 	worlds: worlds,
+	// 	motivation: game.Motivation{0.5, 0.25, 0.25},
+	// 	game: "mastermind"
+	// )
+	perspective := &game.Perspective{}
+	perspective.Knowledge = game.Knowledge{}
+	perspective.PossibleWorlds = worlds
 	perspective.AvailableActions = game.BuildAvailableActions(worlds)
 	perspective.Agreement = mastermind.Agreement
 	perspective.Motivation = game.Motivation{0.5, 0.25, 0.25}

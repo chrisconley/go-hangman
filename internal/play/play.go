@@ -16,7 +16,6 @@ func Explore(perspective *game.Perspective, agreement game.Agreement) (predictio
 	predictions = game.BuildPredictions(reactions)
 	perspective.UpdateReactionExplorer(reactions)
 	// fmt.Printf("\nEXPLORE: REACTION EXPLORER: %+v\n", perspective.ReactionExplorer)
-	// fmt.Printf("\nEXPLORE: POSSIBLE WORLDS: %+v\n", perspective.PossibleWorlds)
 	return predictions
 }
 
@@ -47,18 +46,13 @@ func Observe(action game.Action, reaction game.Reaction, perspective *game.Persp
 	// fmt.Printf("\nOBSERVE: REACTION EXPLORER: %+v\n", perspective.ReactionExplorer)
 	// fmt.Printf("\nOBSERVE: REACTION: %+v\n", reaction)
 	perspective.UpdateKnowledge(reaction)
-	newPossibleWorlds := []game.PossibleWorld{}
+	newPossibleWorlds := []game.World{}
 	// fmt.Printf("\nOBSERVE: NEXT WORLDS: %+v\n", perspective.ReactionExplorer.Get(reaction.Action, reaction.Response))
 	for _, world := range perspective.ReactionExplorer.Get(reaction.Action, reaction.Response) {
-		newPossibleWorlds = append(newPossibleWorlds, game.PossibleWorld{World: world, Weight: 0.5})
+		newPossibleWorlds = append(newPossibleWorlds, world)
 	}
 	perspective.PossibleWorlds = newPossibleWorlds
-	// perspective.PossibleActions = hangman.UpdatePossibleActions(reaction, perspective.PossibleActions)
 	// fmt.Printf("\nOBSERVE: POSSIBLE WORLDS: %+v\n", perspective.PossibleWorlds)
-
-	// perspective.PossibleWorlds = hangman.UpdatePossibleWorlds(reaction, perspective.PossibleWorlds)
-
-	// fmt.Printf("\nPOSSIBLE ACTIONS: %+v\n", perspective.PossibleActions)
 	// fmt.Printf("\nPOSSIBLE WORLDS: %+v\n", perspective.PossibleWorlds)
 
 }
@@ -76,7 +70,7 @@ func PlayGame(truth game.World, perspective *game.Perspective) game.World {
 		}
 	}
 	// fmt.Printf("\nGAME OVER: %+v\n", perspective.PossibleWorlds[0])
-	return perspective.PossibleWorlds[0].World
+	return perspective.PossibleWorlds[0]
 }
 
 func playTurn(truth game.World, perspective *game.Perspective) (reaction game.Reaction) {

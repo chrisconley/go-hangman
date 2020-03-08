@@ -7,14 +7,14 @@ import (
 )
 
 func TestBuildPredictions(t *testing.T) {
-	worlds := PossibleWorlds{
-		PossibleWorld{"abc", 0.5},
-		PossibleWorld{"aab", 0.5},
-		PossibleWorld{"bbb", 0.5},
+	worlds := Worlds{
+		World("abc"),
+		World("aab"),
+		World("bbb"),
 	}
-	actions := PossibleActions{"a", "b", "c"}
+	aa := BuildAvailableActions(worlds)
 
-	reactions := ExploreReactions(worlds, actions, TestAgreement)
+	reactions := ExploreReactions(worlds, aa, TestAgreement)
 	actual := BuildPredictions(reactions)
 
 	test.AssertAlmostEqual(actual.GetEntropy("a"), 0.9183, 4, t)

@@ -40,23 +40,19 @@ func main() {
 		fmt.Printf("ERROR")
 	}
 
-	originalWorlds := game.PossibleWorlds{}
 	worlds := []game.World{}
-	originalActions := game.PossibleActions{}
 	for j := 0; j < len(lines); j++ {
-		originalWorlds = append(originalWorlds, game.PossibleWorld{game.World(lines[j]), 0.5})
 		worlds = append(worlds, game.World(game.World(lines[j])))
-		// originalActions = append(originalActions, game.Action(lines[j]))
 	}
-	originalActions = game.PossibleActions{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
+	// fmt.Printf("\nWORLDS: %+v", worlds)
 
 	turns := []int{}
 	for j := 0; j < 50; j++ {
 		perspective := &game.Perspective{}
 		perspective.Knowledge = game.Knowledge{}
-		perspective.PossibleWorlds = originalWorlds
-		perspective.PossibleActions = originalActions
-		perspective.AvailableActions = game.BuildAvailableActions((worlds))
+		perspective.PossibleWorlds = worlds
+		perspective.AvailableActions = game.BuildAvailableActions(worlds)
+		// fmt.Printf("\nAVAILABLE ACTIONS: %+v", perspective.AvailableActions)
 		perspective.Agreement = hangman.HangmanAgreement
 		// perspective.Agreement = mastermind.Agreement
 		perspective.Motivation = game.Motivation{0.0, 1.0, 0.0}

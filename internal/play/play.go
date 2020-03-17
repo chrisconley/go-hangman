@@ -61,10 +61,13 @@ func Observe(action game.Action, reaction game.Reaction, perspective *game.Persp
 // ### THE GAME ###
 // ###########################
 
-func PlayGame(truth game.World, perspective *game.Perspective) game.World {
+func PlayGame(truth game.World, perspective *game.Perspective, memory game.DecisionMemory) game.World {
 	// TODO: Validate that truth is within perspective.PossibleWorlds
+	gameState := game.GameState{}
 	for true {
-		playTurn(truth, perspective)
+		reaction, possibleWorlds := playTurn(truth, perspective)
+		gameState.Add(reaction)
+		memory.Add(gameState, possibleWorlds)
 		if len(perspective.PossibleWorlds) == 1 {
 			break
 		}
@@ -73,14 +76,14 @@ func PlayGame(truth game.World, perspective *game.Perspective) game.World {
 	return perspective.PossibleWorlds[0]
 }
 
-func playTurn(truth game.World, perspective *game.Perspective) (reaction game.Reaction) {
+func playTurn(truth game.World, perspective *game.Perspective) (game.Reaction, []game.World) {
 	predictions := Explore(perspective, perspective.Agreement)
 	action := Decide(predictions, perspective.Motivation)
 	// fmt.Printf("\nACTION: %+v\n", action)
-	reaction = Act(action, perspective.Agreement, truth)
+	reaction := Act(action, perspective.Agreement, truth)
 	// fmt.Printf("\nREACTION: %+v", reaction)
 	Observe(action, reaction, perspective)
-	return reaction
+	return reaction, perspective.PossibleWorlds
 }
 
 func main() {

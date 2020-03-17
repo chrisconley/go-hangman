@@ -60,7 +60,7 @@ func main() {
 
 		truth := game.World(string(lines[j]))
 		fmt.Printf("TRUTH: %s | ", truth)
-		result := play.PlayGame(truth, perspective)
+		result := play.PlayGame(truth, perspective, &game.NoMemory{})
 		fmt.Printf("RESULT: %s | ", result)
 		fmt.Printf("TURNS: %d\n", len(perspective.Knowledge))
 		turns = append(turns, len(perspective.Knowledge))

@@ -47,7 +47,7 @@ func main() {
 	// fmt.Printf("\nWORLDS: %+v", worlds)
 
 	turns := []int{}
-	for j := 0; j < 50; j++ {
+	for j := 0; j < 100; j++ {
 		perspective := &game.Perspective{}
 		perspective.Knowledge = game.Knowledge{}
 		perspective.PossibleWorlds = worlds
@@ -60,7 +60,9 @@ func main() {
 
 		truth := game.World(string(lines[j]))
 		fmt.Printf("TRUTH: %s | ", truth)
-		result := play.PlayGame(truth, perspective, &game.NoMemory{})
+		// memory := game.InitMemory(&game.NaiveMemory{})
+		memory := game.InitMemory(&game.NoMemory{})
+		result := play.PlayGame(truth, perspective, memory)
 		fmt.Printf("RESULT: %s | ", result)
 		fmt.Printf("TURNS: %d\n", len(perspective.Knowledge))
 		turns = append(turns, len(perspective.Knowledge))

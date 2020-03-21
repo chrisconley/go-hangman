@@ -40,8 +40,6 @@ func (p *Perspective) PlausibleActions(remainingWorlds Worlds) []Action {
 
 type Knowledge []Reaction
 
-type Worlds []World
-
 type Motivation struct {
 	Reward  float64
 	Entropy float64

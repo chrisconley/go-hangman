@@ -46,12 +46,7 @@ func Observe(action game.Action, reaction game.Reaction, perspective *game.Persp
 	// fmt.Printf("\nOBSERVE: REACTION EXPLORER: %+v\n", perspective.ReactionExplorer)
 	// fmt.Printf("\nOBSERVE: REACTION: %+v\n", reaction)
 	perspective.UpdateKnowledge(reaction)
-	newPossibleWorlds := []game.World{}
-	// fmt.Printf("\nOBSERVE: NEXT WORLDS: %+v\n", perspective.ReactionExplorer.Get(reaction.Action, reaction.Response))
-	for _, world := range perspective.ReactionExplorer.Get(reaction.Action, reaction.Response) {
-		newPossibleWorlds = append(newPossibleWorlds, world)
-	}
-	perspective.PossibleWorlds = newPossibleWorlds
+	perspective.PossibleWorlds = perspective.ReactionExplorer.Get(reaction.Action, reaction.Response)
 	// fmt.Printf("\nOBSERVE: POSSIBLE WORLDS: %+v\n", perspective.PossibleWorlds)
 	// fmt.Printf("\nPOSSIBLE WORLDS: %+v\n", perspective.PossibleWorlds)
 

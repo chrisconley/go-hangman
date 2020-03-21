@@ -10,6 +10,6 @@ func TestAgreement(w World, a Action) (r Reaction) {
 	}
 }
 
-func TestActionFilter(remainingWorlds Worlds, aa AvailableActions) []Action {
+func TestActionFilter(remainingWorlds PossibleWorlds, aa AvailableActions) []Action {
 	return []Action{"hi"}
 }

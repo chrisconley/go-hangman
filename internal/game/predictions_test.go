@@ -7,11 +7,11 @@ import (
 )
 
 func TestBuildPredictions(t *testing.T) {
-	worlds := Worlds{
+	worlds := BuildPossibleWorlds([]World{
 		World("abc"),
 		World("aab"),
 		World("bbb"),
-	}
+	})
 	aa := BuildAvailableActions(worlds)
 
 	reactions := ExploreReactions(worlds, aa.AllActions(), TestAgreement)

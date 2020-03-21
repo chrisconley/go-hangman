@@ -45,11 +45,11 @@ func TestObserve(t *testing.T) {
 }
 
 func TestPlayHangman(t *testing.T) {
-	worlds := []game.World{
+	worlds := game.BuildPossibleWorlds([]game.World{
 		game.World("abc"),
 		game.World("aab"),
 		game.World("bbb"),
-	}
+	})
 	perspective := &game.Perspective{}
 	perspective.Knowledge = game.Knowledge{}
 	perspective.PossibleWorlds = worlds
@@ -64,12 +64,12 @@ func TestPlayHangman(t *testing.T) {
 }
 
 func TestPlayMastermind(t *testing.T) {
-	worlds := []game.World{
+	worlds := game.BuildPossibleWorlds([]game.World{
 		game.World("111"),
 		game.World("112"),
 		game.World("121"),
 		game.World("211"),
-	}
+	})
 	// perspective := NewPerspective(
 	// 	worlds: worlds,
 	// 	motivation: game.Motivation{0.5, 0.25, 0.25},

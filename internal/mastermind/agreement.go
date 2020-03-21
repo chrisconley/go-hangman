@@ -8,7 +8,7 @@ import (
 	"github.com/chrisconley/go-hangman/internal/game"
 )
 
-func ActionFilter(remainingWorlds game.Worlds, aa game.AvailableActions) []game.Action {
+func ActionFilter(remainingWorlds game.PossibleWorlds, aa game.AvailableActions) []game.Action {
 	return aa.WorldActions()
 }
 

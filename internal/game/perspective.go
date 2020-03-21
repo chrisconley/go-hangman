@@ -6,7 +6,7 @@ package game
 
 type Perspective struct {
 	Knowledge        Knowledge
-	PossibleWorlds   Worlds
+	PossibleWorlds   PossibleWorlds
 	AvailableActions AvailableActions
 	Agreement        Agreement
 	ActionFilter     ActionFilter
@@ -34,7 +34,7 @@ func (p *Perspective) UpdateReactionExplorer(reactionExplorer reactionExplorer) 
 	p.ReactionExplorer = reactionExplorer
 }
 
-func (p *Perspective) PlausibleActions(remainingWorlds Worlds) []Action {
+func (p *Perspective) PlausibleActions(remainingWorlds PossibleWorlds) []Action {
 	return p.ActionFilter(remainingWorlds, p.AvailableActions)
 }
 
@@ -46,10 +46,10 @@ type Motivation struct {
 	Time    float64
 }
 
-func ExploreReactions(possibleWorlds Worlds, actions []Action, agreement Agreement) reactionExplorer {
+func ExploreReactions(possibleWorlds PossibleWorlds, actions []Action, agreement Agreement) reactionExplorer {
 	reactionExplorer := NewReactionExplorer()
 	for _, action := range actions {
-		for _, possibleWorld := range possibleWorlds {
+		for _, possibleWorld := range possibleWorlds.Worlds {
 			reaction := agreement(possibleWorld, action)
 			reactionExplorer.Add(
 				reaction.Action,

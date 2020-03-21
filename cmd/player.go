@@ -44,14 +44,15 @@ func main() {
 	for j := 0; j < len(lines); j++ {
 		worlds = append(worlds, game.World(game.World(lines[j])))
 	}
+	possibleWorlds := game.BuildPossibleWorlds(worlds)
 	// fmt.Printf("\nWORLDS: %+v", worlds)
 
 	turns := []int{}
 	for j := 0; j < 100; j++ {
 		perspective := &game.Perspective{}
 		perspective.Knowledge = game.Knowledge{}
-		perspective.PossibleWorlds = worlds
-		perspective.AvailableActions = game.BuildAvailableActions(worlds)
+		perspective.PossibleWorlds = possibleWorlds
+		perspective.AvailableActions = game.BuildAvailableActions(possibleWorlds)
 		// fmt.Printf("\nAVAILABLE ACTIONS: %+v", perspective.AvailableActions)
 		perspective.Agreement = hangman.HangmanAgreement
 		perspective.ActionFilter = hangman.ActionFilter

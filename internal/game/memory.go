@@ -23,8 +23,8 @@ func (gs *GameState) Key() string {
 
 type DecisionMemory interface {
 	Init()
-	Add(gs GameState, w []World)
-	Get(gs GameState) ([]World, bool)
+	Add(gs GameState, w PossibleWorlds)
+	Get(gs GameState) (PossibleWorlds, bool)
 }
 
 func InitMemory(m DecisionMemory) DecisionMemory {
@@ -38,30 +38,30 @@ type NoMemory struct {
 func (nm *NoMemory) Init() {
 }
 
-func (nm *NoMemory) Add(gs GameState, w []World) {
+func (nm *NoMemory) Add(gs GameState, w PossibleWorlds) {
 }
 
-func (nm *NoMemory) Get(gs GameState) ([]World, bool) {
-	return []World{}, false
+func (nm *NoMemory) Get(gs GameState) (PossibleWorlds, bool) {
+	return BuildPossibleWorlds([]World{}), false
 }
 
 type NaiveMemory struct {
-	memory map[string][]World
+	memory map[string]PossibleWorlds
 }
 
 func (nm *NaiveMemory) Init() {
-	nm.memory = make(map[string][]World)
+	nm.memory = make(map[string]PossibleWorlds)
 }
 
-func (nm *NaiveMemory) Add(gs GameState, w []World) {
+func (nm *NaiveMemory) Add(gs GameState, w PossibleWorlds) {
 	nm.memory[gs.Key()] = w
 
 }
 
-func (nm *NaiveMemory) Get(gs GameState) ([]World, bool) {
+func (nm *NaiveMemory) Get(gs GameState) (PossibleWorlds, bool) {
 	if worlds, ok := nm.memory[gs.Key()]; ok {
 		return worlds, true
 	} else {
-		return []World{}, false
+		return BuildPossibleWorlds([]World{}), false
 	}
 }

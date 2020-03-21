@@ -46,7 +46,9 @@ func Observe(action game.Action, reaction game.Reaction, perspective *game.Persp
 	// fmt.Printf("\nOBSERVE: REACTION EXPLORER: %+v\n", perspective.ReactionExplorer)
 	// fmt.Printf("\nOBSERVE: REACTION: %+v\n", reaction)
 	perspective.UpdateKnowledge(reaction)
-	perspective.PossibleWorlds = perspective.ReactionExplorer.Get(reaction.Action, reaction.Response)
+	perspective.PossibleWorlds = game.BuildPossibleWorlds(
+		perspective.ReactionExplorer.Get(reaction.Action, reaction.Response),
+	)
 	// fmt.Printf("\nOBSERVE: POSSIBLE WORLDS: %+v\n", perspective.PossibleWorlds)
 	// fmt.Printf("\nPOSSIBLE WORLDS: %+v\n", perspective.PossibleWorlds)
 
@@ -63,15 +65,15 @@ func PlayGame(truth game.World, perspective *game.Perspective, memory game.Decis
 		reaction, possibleWorlds := playTurn(truth, perspective)
 		gameState.Add(reaction)
 		memory.Add(gameState, possibleWorlds)
-		if len(perspective.PossibleWorlds) == 1 {
+		if perspective.PossibleWorlds.Len() == 1 {
 			break
 		}
 	}
 	// fmt.Printf("\nGAME OVER: %+v\n", perspective.PossibleWorlds[0])
-	return perspective.PossibleWorlds[0]
+	return perspective.PossibleWorlds.Worlds[0]
 }
 
-func playTurn(truth game.World, perspective *game.Perspective) (game.Reaction, []game.World) {
+func playTurn(truth game.World, perspective *game.Perspective) (game.Reaction, game.PossibleWorlds) {
 	predictions := Explore(perspective, perspective.Agreement)
 	action := Decide(predictions, perspective.Motivation)
 	// fmt.Printf("\nACTION: %+v\n", action)

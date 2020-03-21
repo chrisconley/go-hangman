@@ -7,14 +7,14 @@ type AvailableActions struct {
 	worldSize    int
 }
 
-func BuildAvailableActions(worlds []World) AvailableActions {
+func BuildAvailableActions(worlds PossibleWorlds) AvailableActions {
 	aa := AvailableActions{
 		actions:      []Action{},
 		worldActions: []Action{},
-		worldSize:    len(worlds[0]),
+		worldSize:    len(worlds.Worlds[0]),
 	}
 	keys := make(map[Action]bool)
-	for _, world := range worlds {
+	for _, world := range worlds.Worlds {
 		worldAction := Action(world)
 		aa.worldActions = append(aa.worldActions, worldAction)
 		for i := 0; i < len(worldAction); i++ {

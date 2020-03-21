@@ -9,11 +9,11 @@ import (
 )
 
 // TODO: Make sure this results in optimal number of turns appropriately
-func ActionFilter(remainingWorlds game.Worlds, aa game.AvailableActions) []game.Action {
+func ActionFilter(remainingWorlds game.PossibleWorlds, aa game.AvailableActions) []game.Action {
 	// Only use world actions when there are only a few choices left
-	if len(remainingWorlds) < aa.ActionsLength() {
+	if remainingWorlds.Len() < aa.ActionsLength() {
 		worldActions := []game.Action{}
-		for _, world := range remainingWorlds {
+		for _, world := range remainingWorlds.Worlds {
 			worldActions = append(worldActions, game.Action(world))
 		}
 		return append(aa.Actions(), worldActions...)

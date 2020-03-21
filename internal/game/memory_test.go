@@ -30,12 +30,12 @@ func TestNoMemory(t *testing.T) {
 	gs.Add(Reaction{Action: "a", Response: "a-"})
 
 	actualValue, actualResult := noMemory.Get(gs)
-	test.AssertDeepEqual(actualValue, []World{}, t)
+	test.AssertDeepEqual(actualValue.Worlds, []World{}, t)
 	test.AssertDeepEqual(actualResult, false, t)
 
-	noMemory.Add(gs, []World{"abc"})
+	noMemory.Add(gs, BuildPossibleWorlds([]World{"abc"}))
 	actualValue, actualResult = noMemory.Get(gs)
-	test.AssertDeepEqual(actualValue, []World{}, t)
+	test.AssertDeepEqual(actualValue.Worlds, []World{}, t)
 	test.AssertDeepEqual(actualResult, false, t)
 }
 
@@ -44,16 +44,16 @@ func TestNaiveMemory(t *testing.T) {
 	gs := GameState{}
 
 	actualValue, actualResult := naiveMemory.Get(gs)
-	test.AssertDeepEqual(actualValue, []World{}, t)
+	test.AssertDeepEqual(actualValue.Worlds, []World{}, t)
 	test.AssertDeepEqual(actualResult, false, t)
 
 	gs.Add(Reaction{Action: "a", Response: "a-"})
 	actualValue, actualResult = naiveMemory.Get(gs)
-	test.AssertDeepEqual(actualValue, []World{}, t)
+	test.AssertDeepEqual(actualValue.Worlds, []World{}, t)
 	test.AssertDeepEqual(actualResult, false, t)
 
-	naiveMemory.Add(gs, []World{"abc"})
+	naiveMemory.Add(gs, BuildPossibleWorlds([]World{"abc"}))
 	actualValue, actualResult = naiveMemory.Get(gs)
-	test.AssertDeepEqual(actualValue, []World{"abc"}, t)
+	test.AssertDeepEqual(actualValue.Worlds, []World{"abc"}, t)
 	test.AssertDeepEqual(actualResult, true, t)
 }

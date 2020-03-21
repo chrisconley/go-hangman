@@ -8,14 +8,16 @@ import (
 )
 
 func TestBuildAvailableActions(t *testing.T) {
-	aa := BuildAvailableActions([]World{"aa", "bb"})
+	worlds := BuildPossibleWorlds([]World{"aa", "bb"})
+	aa := BuildAvailableActions(worlds)
 	actual := aa.AllActions()
 	expected := []Action{"a", "b", "aa", "bb"}
 	test.AssertDeepEqual(actual, expected, t)
 }
 
 func TestAvailableActionsUpdate(t *testing.T) {
-	aa := BuildAvailableActions([]World{"aa", "bb"})
+	worlds := BuildPossibleWorlds([]World{"aa", "bb"})
+	aa := BuildAvailableActions(worlds)
 	aa.Update(Action("a"))
 	actual := aa.AllActions()
 	expected := []Action{"b", "aa", "bb"}
@@ -23,7 +25,8 @@ func TestAvailableActionsUpdate(t *testing.T) {
 }
 
 func TestAvailableActionsWorldActionsLength(t *testing.T) {
-	aa := BuildAvailableActions([]World{"aa", "bb"})
+	worlds := BuildPossibleWorlds([]World{"aa", "bb"})
+	aa := BuildAvailableActions(worlds)
 	actual := aa.WorldActionsLength()
 	test.AssertDeepEqual(actual, 2, t)
 
@@ -37,7 +40,8 @@ func TestAvailableActionsWorldActionsLength(t *testing.T) {
 }
 
 func TestAvailableActionsActionsLength(t *testing.T) {
-	aa := BuildAvailableActions([]World{"aa", "bb"})
+	worlds := BuildPossibleWorlds([]World{"aa", "bb"})
+	aa := BuildAvailableActions(worlds)
 	actual := aa.ActionsLength()
 	test.AssertDeepEqual(actual, 2, t)
 
@@ -56,7 +60,7 @@ func BenchmarkAvailableActionsActionsLengthSmall(b *testing.B) {
 	for i := 0; i < numElements; i++ {
 		worlds = append(worlds, World(fmt.Sprintf("hi%d", i)))
 	}
-	aa := BuildAvailableActions(worlds)
+	aa := BuildAvailableActions(BuildPossibleWorlds(worlds))
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		aa.ActionsLength()
@@ -69,7 +73,7 @@ func BenchmarkAvailableActionsActionsLengthLarge(b *testing.B) {
 	for i := 0; i < numElements; i++ {
 		worlds = append(worlds, World(fmt.Sprintf("hi%d", i)))
 	}
-	aa := BuildAvailableActions(worlds)
+	aa := BuildAvailableActions(BuildPossibleWorlds(worlds))
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		aa.ActionsLength()

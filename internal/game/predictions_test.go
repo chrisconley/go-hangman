@@ -7,10 +7,10 @@ import (
 )
 
 func TestBuildPredictions(t *testing.T) {
-	worlds := BuildPossibleWorlds([]World{
-		World("abc"),
-		World("aab"),
-		World("bbb"),
+	worlds := BuildPossibleWorlds([]string{
+		"abc",
+		"aab",
+		"bbb",
 	})
 	aa := BuildAvailableActions(worlds)
 

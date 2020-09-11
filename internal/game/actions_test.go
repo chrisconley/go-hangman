@@ -8,7 +8,7 @@ import (
 )
 
 func TestBuildAvailableActions(t *testing.T) {
-	worlds := BuildPossibleWorlds([]World{"aa", "bb"})
+	worlds := BuildPossibleWorlds([]string{"aa", "bb"})
 	aa := BuildAvailableActions(worlds)
 	actual := aa.AllActions()
 	expected := []Action{"a", "b", "aa", "bb"}
@@ -16,7 +16,7 @@ func TestBuildAvailableActions(t *testing.T) {
 }
 
 func TestAvailableActionsUpdate(t *testing.T) {
-	worlds := BuildPossibleWorlds([]World{"aa", "bb"})
+	worlds := BuildPossibleWorlds([]string{"aa", "bb"})
 	aa := BuildAvailableActions(worlds)
 	aa.Update(Action("a"))
 	actual := aa.AllActions()
@@ -25,7 +25,7 @@ func TestAvailableActionsUpdate(t *testing.T) {
 }
 
 func TestAvailableActionsWorldActionsLength(t *testing.T) {
-	worlds := BuildPossibleWorlds([]World{"aa", "bb"})
+	worlds := BuildPossibleWorlds([]string{"aa", "bb"})
 	aa := BuildAvailableActions(worlds)
 	actual := aa.WorldActionsLength()
 	test.AssertDeepEqual(actual, 2, t)
@@ -40,7 +40,7 @@ func TestAvailableActionsWorldActionsLength(t *testing.T) {
 }
 
 func TestAvailableActionsActionsLength(t *testing.T) {
-	worlds := BuildPossibleWorlds([]World{"aa", "bb"})
+	worlds := BuildPossibleWorlds([]string{"aa", "bb"})
 	aa := BuildAvailableActions(worlds)
 	actual := aa.ActionsLength()
 	test.AssertDeepEqual(actual, 2, t)
@@ -55,10 +55,10 @@ func TestAvailableActionsActionsLength(t *testing.T) {
 }
 
 func BenchmarkAvailableActionsActionsLengthSmall(b *testing.B) {
-	worlds := []World{}
+	worlds := []string{}
 	numElements := 10
 	for i := 0; i < numElements; i++ {
-		worlds = append(worlds, World(fmt.Sprintf("hi%d", i)))
+		worlds = append(worlds, fmt.Sprintf("hi%d", i))
 	}
 	aa := BuildAvailableActions(BuildPossibleWorlds(worlds))
 	b.ResetTimer()
@@ -68,10 +68,10 @@ func BenchmarkAvailableActionsActionsLengthSmall(b *testing.B) {
 }
 
 func BenchmarkAvailableActionsActionsLengthLarge(b *testing.B) {
-	worlds := []World{}
+	worlds := []string{}
 	numElements := 10000
 	for i := 0; i < numElements; i++ {
-		worlds = append(worlds, World(fmt.Sprintf("hi%d", i)))
+		worlds = append(worlds, fmt.Sprintf("hi%d", i))
 	}
 	aa := BuildAvailableActions(BuildPossibleWorlds(worlds))
 	b.ResetTimer()

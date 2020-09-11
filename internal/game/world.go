@@ -7,7 +7,20 @@ type PossibleWorlds struct {
 	key    string
 }
 
-func BuildPossibleWorlds(worlds []World) PossibleWorlds {
+func BuildPossibleWorlds(lines []string) PossibleWorlds {
+	sort.SliceStable(lines, func(i, j int) bool {
+		return lines[i] < lines[j]
+	})
+	key := ""
+	worlds := []World{}
+	for _, line := range lines {
+		key += string(line)
+		worlds = append(worlds, World(line))
+	}
+	return PossibleWorlds{Worlds: worlds, key: key}
+}
+
+func BuildPossibleWorldsDeprecated(worlds []World) PossibleWorlds {
 	sort.SliceStable(worlds, func(i, j int) bool {
 		return worlds[i] < worlds[j]
 	})

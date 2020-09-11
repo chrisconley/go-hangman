@@ -33,7 +33,7 @@ func TestNoMemory(t *testing.T) {
 	test.AssertDeepEqual(actualValue.Worlds, []World{}, t)
 	test.AssertDeepEqual(actualResult, false, t)
 
-	noMemory.Add(gs, BuildPossibleWorlds([]World{"abc"}))
+	noMemory.Add(gs, BuildPossibleWorlds([]string{"abc"}))
 	actualValue, actualResult = noMemory.Get(gs)
 	test.AssertDeepEqual(actualValue.Worlds, []World{}, t)
 	test.AssertDeepEqual(actualResult, false, t)
@@ -52,7 +52,7 @@ func TestNaiveMemory(t *testing.T) {
 	test.AssertDeepEqual(actualValue.Worlds, []World{}, t)
 	test.AssertDeepEqual(actualResult, false, t)
 
-	naiveMemory.Add(gs, BuildPossibleWorlds([]World{"abc"}))
+	naiveMemory.Add(gs, BuildPossibleWorlds([]string{"abc"}))
 	actualValue, actualResult = naiveMemory.Get(gs)
 	test.AssertDeepEqual(actualValue.Worlds, []World{"abc"}, t)
 	test.AssertDeepEqual(actualResult, true, t)

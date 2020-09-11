@@ -42,7 +42,7 @@ func (nm *NoMemory) Add(gs GameState, w PossibleWorlds) {
 }
 
 func (nm *NoMemory) Get(gs GameState) (PossibleWorlds, bool) {
-	return BuildPossibleWorlds([]World{}), false
+	return BuildPossibleWorlds([]string{}), false
 }
 
 type NaiveMemory struct {
@@ -62,6 +62,6 @@ func (nm *NaiveMemory) Get(gs GameState) (PossibleWorlds, bool) {
 	if worlds, ok := nm.memory[gs.Key()]; ok {
 		return worlds, true
 	} else {
-		return BuildPossibleWorlds([]World{}), false
+		return BuildPossibleWorlds([]string{}), false
 	}
 }

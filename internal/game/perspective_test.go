@@ -7,7 +7,7 @@ import (
 )
 
 func TestPerspectivePlausibleActions(t *testing.T) {
-	remainingWorlds := BuildPossibleWorlds([]World{World("abc"), World("aab")})
+	remainingWorlds := BuildPossibleWorlds([]string{"abc", "aab"})
 	perspective := &Perspective{}
 	perspective.AvailableActions = BuildAvailableActions(remainingWorlds)
 	perspective.ActionFilter = TestActionFilter
@@ -17,7 +17,7 @@ func TestPerspectivePlausibleActions(t *testing.T) {
 }
 
 func TestExploreReactions(t *testing.T) {
-	worlds := BuildPossibleWorlds([]World{World("cab"), World("aab")})
+	worlds := BuildPossibleWorlds([]string{"cab", "aab"})
 	aa := BuildAvailableActions(worlds)
 	actual := ExploreReactions(worlds, aa.AllActions(), TestAgreement)
 	test.AssertDeepEqual(actual.Get("a", "a"), []World{"aab", "cab"}, t)

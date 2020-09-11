@@ -42,21 +42,17 @@ func readLinesFromStdin() ([]string, error) {
 }
 
 func main() {
+	examplePtr := flag.String("example", "defaultValue", " Help text.")
+	flag.Parse()
+	fmt.Printf("\n EXAMPLE: %s\n", *examplePtr)
+
 	lines, err := readLinesFromStdin()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(2)
 	}
 
-	examplePtr := flag.String("example", "defaultValue", " Help text.")
-	flag.Parse()
-	fmt.Printf("\n EXAMPLE: %s\n", *examplePtr)
-
-	worlds := []game.World{}
-	for j := 0; j < len(lines); j++ {
-		worlds = append(worlds, game.World(game.World(lines[j])))
-	}
-	possibleWorlds := game.BuildPossibleWorlds(worlds)
+	possibleWorlds := game.BuildPossibleWorlds(lines)
 	// fmt.Printf("\nWORLDS: %+v", worlds)
 
 	turns := []int{}

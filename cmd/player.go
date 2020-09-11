@@ -1,7 +1,11 @@
+// Example usage
+// cat ./fixtures/nine-letter-words.txt | go run cmd/player.go
+
 package main
 
 import (
 	"bufio"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -14,24 +18,18 @@ import (
 	"github.com/chrisconley/go-hangman/internal/play"
 )
 
-func main() {
-	examplePtr := flag.String("example", "defaultValue", " Help text.")
-	flag.Parse()
-	fmt.Printf("\n EXAMPLE: %s\n", *examplePtr)
-
+func readLinesFromStdin() ([]string, error) {
+	var lines []string
 	info, err := os.Stdin.Stat()
 	if err != nil {
 		panic(err)
 	}
 
 	if info.Mode()&os.ModeCharDevice != 0 || info.Size() <= 0 {
-		fmt.Println("The command is intended to work with pipes.")
-		fmt.Println("Usage: fortune | gocowsay")
-		return
+		return lines, errors.New("The command is intended to work with pipes: cat ./fixtures/nine-letter-words.txt | go run cmd/player.go")
 	}
 
 	scanner := bufio.NewScanner(os.Stdin)
-	var lines []string
 
 	for scanner.Scan() {
 		lines = append(lines, scanner.Text())
@@ -39,6 +37,20 @@ func main() {
 	if err := scanner.Err(); err != nil {
 		fmt.Printf("ERROR")
 	}
+
+	return lines, nil
+}
+
+func main() {
+	lines, err := readLinesFromStdin()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(2)
+	}
+
+	examplePtr := flag.String("example", "defaultValue", " Help text.")
+	flag.Parse()
+	fmt.Printf("\n EXAMPLE: %s\n", *examplePtr)
 
 	worlds := []game.World{}
 	for j := 0; j < len(lines); j++ {

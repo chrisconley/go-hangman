@@ -14,17 +14,14 @@ type Perspective struct {
 	ReactionExplorer reactionExplorer
 }
 
-// func NewPerspective(worlds Worlds, motivation Motivation, game string) *Perspective {
-// 	perspective := &Perspective{}
-// 	perspective.Knowledge = Knowledge{}
-// 	perspective.PossibleWorlds = worlds
-// 	perspective.AvailableActions = BuildAvailableActions(worlds)
-// 	if game == "hangman" {
-// 		perspective.Agreement = hangman.HangmanAgreement
-// 	} else if game == "mastermind" {
-// 		perspective.Agreement = mastermind.Agreement
-// 	}
-// }
+func NewPerspective(possibleWorlds PossibleWorlds, motivation Motivation) *Perspective {
+	perspective := &Perspective{}
+	perspective.Motivation = motivation
+	perspective.Knowledge = Knowledge{}
+	perspective.PossibleWorlds = possibleWorlds
+	perspective.AvailableActions = BuildAvailableActions(possibleWorlds)
+	return perspective
+}
 
 func (p *Perspective) UpdateKnowledge(reaction Reaction) {
 	p.Knowledge = append(p.Knowledge, reaction)

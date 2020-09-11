@@ -53,21 +53,16 @@ func main() {
 	}
 
 	possibleWorlds := game.BuildPossibleWorlds(lines)
-	// fmt.Printf("\nWORLDS: %+v", worlds)
 
 	turns := []int{}
-	for j := 0; j < 100; j++ {
-		perspective := &game.Perspective{}
-		perspective.Knowledge = game.Knowledge{}
-		perspective.PossibleWorlds = possibleWorlds
-		perspective.AvailableActions = game.BuildAvailableActions(possibleWorlds)
-		// fmt.Printf("\nAVAILABLE ACTIONS: %+v", perspective.AvailableActions)
+	for j := 0; j < 4; j++ {
+		fmt.Printf("possibleWorlds length: %d | ", possibleWorlds.Len())
+		motivation := game.Motivation{0.0, 1.0, 0.0}
+		perspective := game.NewPerspective(possibleWorlds, motivation)
 		perspective.Agreement = hangman.HangmanAgreement
 		perspective.ActionFilter = hangman.ActionFilter
-		// perspective.Agreement = mastermind.Agreement
-		perspective.Motivation = game.Motivation{0.0, 1.0, 0.0}
 
-		truth := game.World(string(lines[j]))
+		truth := possibleWorlds.Worlds[j]
 		fmt.Printf("TRUTH: %s | ", truth)
 		// memory := game.InitMemory(&game.NaiveMemory{})
 		memory := game.InitMemory(&game.NoMemory{})

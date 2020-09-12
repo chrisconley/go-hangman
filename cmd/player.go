@@ -65,11 +65,11 @@ func main() {
 		perspective.ActionFilter = hangman.ActionFilter
 
 		truth := possibleWorlds.Worlds[j]
-		fmt.Printf("TRUTH: %s | ", truth)
 		// memory := game.InitMemory(&game.NaiveMemory{})
 		memory := game.InitMemory(&game.NoMemory{})
 		_ = play.PlayGame(truth, perspective, memory)
 		// fmt.Printf("RESULT: %s | ", result)
+		fmt.Printf("TRUTH: %s | ", truth)
 		fmt.Printf("TURNS: %d\n", len(perspective.Knowledge))
 		turns = append(turns, len(perspective.Knowledge))
 	}
@@ -77,6 +77,6 @@ func main() {
 	for i := 0; i < len(turns); i++ {
 		sum = sum + turns[i]
 	}
-	// avg := float64(sum) / float64(len(turns))
-	// fmt.Printf("AVG TURNS: %f\n", avg)
+	avg := float64(sum) / float64(len(turns))
+	fmt.Printf("AVG TURNS: %.4f\n", avg)
 }

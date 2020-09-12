@@ -18,6 +18,7 @@ import (
 	"github.com/chrisconley/go-hangman/internal/hangman"
 	"github.com/chrisconley/go-hangman/internal/play"
 	"github.com/chrisconley/go-hangman/internal/utils"
+	"github.com/pkg/profile"
 	// "github.com/chrisconley/go-hangman/internal/mastermind"
 )
 
@@ -31,6 +32,7 @@ func main() {
 		os.Exit(2)
 	}
 
+	defer profile.Start().Stop()
 	possibleWorlds := game.BuildPossibleWorlds(lines)
 
 	turns := []int{}

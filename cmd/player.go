@@ -9,8 +9,6 @@
 package main
 
 import (
-	"bufio"
-	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -19,37 +17,15 @@ import (
 	"github.com/chrisconley/go-hangman/internal/game"
 	"github.com/chrisconley/go-hangman/internal/hangman"
 	"github.com/chrisconley/go-hangman/internal/play"
+	"github.com/chrisconley/go-hangman/internal/utils"
 	// "github.com/chrisconley/go-hangman/internal/mastermind"
 )
-
-func readLinesFromStdin() ([]string, error) {
-	var lines []string
-	info, err := os.Stdin.Stat()
-	if err != nil {
-		panic(err)
-	}
-
-	if info.Mode()&os.ModeCharDevice != 0 || info.Size() <= 0 {
-		return lines, errors.New("The command is intended to work with pipes: cat ./fixtures/nine-letter-words.txt | go run cmd/player.go")
-	}
-
-	scanner := bufio.NewScanner(os.Stdin)
-
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
-	}
-	if err := scanner.Err(); err != nil {
-		fmt.Printf("ERROR")
-	}
-
-	return lines, nil
-}
 
 func main() {
 	limit := flag.Int("limit", 10, " Help text.")
 	flag.Parse()
 
-	lines, err := readLinesFromStdin()
+	lines, err := utils.ReadLinesFromStdin()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(2)

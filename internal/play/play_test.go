@@ -28,6 +28,18 @@ func TestDecide(t *testing.T) {
 	test.AssertDeepEqual(actual, game.Action("a"), t)
 }
 
+func TestDecideLexicallySortsOnTie(t *testing.T) {
+	predictions := game.Predictions{
+		"b": game.Prediction{Action: "b", Entropy: 1.0, Reward: 0.5},
+		"a": game.Prediction{Action: "a", Entropy: 1.0, Reward: 0.5},
+	}
+
+	// All Entropy
+	motivation := game.Motivation{Reward: 0.0, Entropy: 1.0, Time: 0.0}
+	actual := Decide(predictions, motivation)
+	test.AssertDeepEqual(actual, game.Action("a"), t)
+}
+
 func TestAct(t *testing.T) {
 	truth := game.World("abc")
 	actual := Act(game.Action("a"), game.TestAgreement, truth)

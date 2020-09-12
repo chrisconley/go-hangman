@@ -23,18 +23,23 @@ func Decide(predictions game.Predictions, motivation game.Motivation) (action ga
 	maxWeight := 0.0
 	maxAction := game.Action("")
 	if len(predictions) == 1 {
-		panic("hi")
+		panic("There is only one prediction for the decision.")
 	}
 	for _, prediction := range predictions {
 		// fmt.Printf("\nPREDICTION: %+v", prediction)
 		weight := math.Pow(prediction.Entropy, motivation.Entropy) * math.Pow(prediction.Reward, motivation.Reward)
-		// fmt.Printf("\nWEIGHT: %+v", weight)
+
+		// Decide whether or not to swap out maxAction with the new action
 		if weight > maxWeight {
+			// If there is a clear winner, use it
 			maxWeight = weight
+			maxAction = prediction.Action
+		} else if weight == maxWeight && action < prediction.Action {
+			// If the new weight is equal to current max
+			// AND the new action is lexicographically before maxAction, use it
 			maxAction = prediction.Action
 		}
 	}
-	// fmt.Printf("\nMAXACTION: %+v", maxAction)
 	return maxAction
 }
 

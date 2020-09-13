@@ -31,6 +31,18 @@ func BuildPossibleWorldsDeprecated(worlds []World) PossibleWorlds {
 	return PossibleWorlds{Worlds: worlds, key: key}
 }
 
+func NewPossibleWorlds() PossibleWorlds {
+	possibleWorlds := PossibleWorlds{}
+	possibleWorlds.Worlds = []World{}
+	possibleWorlds.key = ""
+	return possibleWorlds
+}
+
+func (w *PossibleWorlds) Add(world World) {
+	w.key += string(world)
+	w.Worlds = append(w.Worlds, world)
+}
+
 func (w *PossibleWorlds) Key() string {
 	return w.key
 }

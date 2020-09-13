@@ -20,7 +20,7 @@ func TestExploreReactions(t *testing.T) {
 	worlds := BuildPossibleWorlds([]string{"cab", "aab"})
 	aa := BuildAvailableActions(worlds)
 	actual := ExploreReactions(worlds, aa.AllActions(), TestAgreement)
-	test.AssertDeepEqual(actual.Get("a", "a"), []World{"aab", "cab"}, t)
-	test.AssertDeepEqual(actual.Get("c", "c"), []World{"cab"}, t)
-	test.AssertDeepEqual(actual.Get("c", "!"), []World{"aab"}, t)
+	test.AssertDeepEqual(actual.Get("a", "a").Worlds, []World{"aab", "cab"}, t)
+	test.AssertDeepEqual(actual.Get("c", "c").Worlds, []World{"cab"}, t)
+	test.AssertDeepEqual(actual.Get("c", "!").Worlds, []World{"aab"}, t)
 }

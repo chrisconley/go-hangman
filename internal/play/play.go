@@ -51,9 +51,7 @@ func Observe(action game.Action, reaction game.Reaction, perspective *game.Persp
 	// fmt.Printf("\nOBSERVE: REACTION EXPLORER: %+v\n", perspective.ReactionExplorer)
 	// fmt.Printf("\nOBSERVE: REACTION: %+v\n", reaction)
 	perspective.UpdateKnowledge(reaction)
-	perspective.PossibleWorlds = game.BuildPossibleWorldsDeprecated(
-		perspective.ReactionExplorer.Get(reaction.Action, reaction.Response),
-	)
+	perspective.PossibleWorlds = perspective.ReactionExplorer.Get(reaction.Action, reaction.Response)
 	// fmt.Printf("\nOBSERVE: POSSIBLE WORLDS: %+v\n", perspective.PossibleWorlds)
 	// fmt.Printf("\nPOSSIBLE WORLDS: %+v\n", perspective.PossibleWorlds)
 

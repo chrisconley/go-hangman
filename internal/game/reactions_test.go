@@ -12,15 +12,15 @@ func TestReactionExplorerGet(t *testing.T) {
 	action := Action("a")
 	response := Response("a--")
 	actual := re.Get(action, response)
-	test.AssertDeepEqual(actual, make([]World, 0), t)
+	test.AssertDeepEqual(actual.Worlds, make([]World, 0), t)
 
 	re.Add(action, response, 0.75, "abc")
 	actual = re.Get(action, response)
-	test.AssertDeepEqual(actual, []World{"abc"}, t)
+	test.AssertDeepEqual(actual.Worlds, []World{"abc"}, t)
 
 	re.Add(action, response, 0.5, "aaa")
 	actual = re.Get(action, response)
-	test.AssertDeepEqual(actual, []World{"abc", "aaa"}, t)
+	test.AssertDeepEqual(actual.Worlds, []World{"abc", "aaa"}, t)
 }
 
 func TestReactionExplorerActionCounts(t *testing.T) {

@@ -1,5 +1,12 @@
 package game
 
+import (
+	"fmt"
+
+	"github.com/chrisconley/go-hangman/internal/utils"
+	"github.com/mitchellh/hashstructure"
+)
+
 // ###########################
 // ### THE PLAYER ###
 // ###########################
@@ -12,6 +19,7 @@ type Perspective struct {
 	ActionFilter     ActionFilter
 	Motivation       Motivation
 	ReactionExplorer reactionExplorer
+	BPossibleWorlds  BPossibleWorlds
 }
 
 func NewPerspective(possibleWorlds PossibleWorlds, motivation Motivation) *Perspective {
@@ -43,18 +51,47 @@ type Motivation struct {
 	Time    float64
 }
 
-func ExploreReactions(possibleWorlds PossibleWorlds, actions []Action, agreement Agreement) reactionExplorer {
+func ExploreReactions(possibleWorlds BPossibleWorlds, actions []Action, agreement Agreement) reactionExplorer {
 	reactionExplorer := NewReactionExplorer()
 	for _, action := range actions {
-		for _, possibleWorld := range possibleWorlds.Worlds {
-			reaction := agreement(possibleWorld, action)
-			reactionExplorer.Add(
-				reaction.Action,
-				reaction.Response,
-				reaction.Reward,
-				possibleWorld,
-			)
+		counts := utils.NewGroupedIncrementer()
+		rewards := utils.NewGroupedIncrementer()
+		responseWorlds := make(map[string]BPossibleWorlds)
+		for index, world := range BUniverse {
+			if possibleWorlds.GetBit(uint64(index)) {
+				reaction := agreement(World(world.Name), action)
+				response := string(reaction.Response)
+				if _, ok := responseWorlds[response]; !ok {
+					responseWorlds[response] = NewPossibleWorlds(uint64(len(BUniverse)))
+				}
+				counts.Increment(response, 1.0)
+				rewards.Increment(response, reaction.Reward)
+				if reaction.Response != "!" {
+					fmt.Printf("Keeping world with index: %d\n", index)
+					responseWorlds[response].Bits.SetBit(world.Index)
+				}
+			} else {
+				fmt.Printf("Skipping world with index: %d\n", index)
+			}
+
+			// reactionExplorer.Add(
+			// 	reaction.Action,
+			// 	reaction.Response,
+			// 	reaction.Reward,
+			// 	World(world.Name),
+			// )
 		}
+		actionHash, err := hashstructure.Hash(action, nil)
+		if err != nil {
+			panic(err)
+		}
+		hash, err := hashstructure.Hash([]uint64{actionHash, possibleWorlds.GetHash()}, nil)
+		if err != nil {
+			panic(err)
+		}
+		BCountsStore[hash] = counts
+		BRewardsStore[hash] = rewards
+		BBPossibleWorldsStore[hash] = responseWorlds
 	}
 	// fmt.Printf("\nREACTIONCOUNTS: %+v", reactionCounts)
 	return reactionExplorer

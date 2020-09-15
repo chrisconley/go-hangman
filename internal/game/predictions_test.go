@@ -1,23 +1,17 @@
 package game
 
-import (
-	"testing"
+// func TestBuildPredictions(t *testing.T) {
+// 	worlds := BuildPossibleWorlds([]string{
+// 		"abc",
+// 		"aab",
+// 		"bbb",
+// 	})
+// 	aa := BuildAvailableActions(worlds)
 
-	"github.com/chrisconley/go-hangman/test"
-)
+// 	reactions := ExploreReactions(worlds, aa.AllActions(), TestAgreement)
+// 	actual := BuildPredictions(reactions)
 
-func TestBuildPredictions(t *testing.T) {
-	worlds := BuildPossibleWorlds([]string{
-		"abc",
-		"aab",
-		"bbb",
-	})
-	aa := BuildAvailableActions(worlds)
-
-	reactions := ExploreReactions(worlds, aa.AllActions(), TestAgreement)
-	actual := BuildPredictions(reactions)
-
-	test.AssertAlmostEqual(actual.GetEntropy("a"), 0.9183, 4, t)
-	test.AssertAlmostEqual(actual.GetEntropy("b"), 0.0000, 4, t)
-	test.AssertAlmostEqual(actual.GetEntropy("c"), 0.9183, 4, t)
-}
+// 	test.AssertAlmostEqual(actual.GetEntropy("a"), 0.9183, 4, t)
+// 	test.AssertAlmostEqual(actual.GetEntropy("b"), 0.0000, 4, t)
+// 	test.AssertAlmostEqual(actual.GetEntropy("c"), 0.9183, 4, t)
+// }

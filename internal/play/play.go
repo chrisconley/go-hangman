@@ -5,15 +5,18 @@ import (
 	"math"
 
 	// "regexp"
+
 	"github.com/chrisconley/go-hangman/internal/game"
+	"github.com/mitchellh/hashstructure"
 )
 
 // ###########################
 // ### THE DECISION PROCESS ###
 // ###########################
 func Explore(perspective *game.Perspective, agreement game.Agreement) (predictions game.Predictions) {
-	reactions := game.ExploreReactions(perspective.PossibleWorlds, perspective.PlausibleActions(perspective.PossibleWorlds), agreement)
-	predictions = game.BuildPredictions(reactions)
+	actions := perspective.PlausibleActions(perspective.PossibleWorlds)
+	reactions := game.ExploreReactions(perspective.BPossibleWorlds, actions, agreement)
+	predictions = game.BBuildPredictions(actions, perspective.BPossibleWorlds)
 	perspective.UpdateReactionExplorer(reactions)
 	// fmt.Printf("\nEXPLORE: REACTION EXPLORER: %+v\n", perspective.ReactionExplorer)
 	return predictions
@@ -40,6 +43,7 @@ func Decide(predictions game.Predictions, motivation game.Motivation) (action ga
 			maxAction = prediction.Action
 		}
 	}
+	fmt.Printf("DECISION: %v\n", maxAction)
 	return maxAction
 }
 
@@ -51,9 +55,20 @@ func Observe(action game.Action, reaction game.Reaction, perspective *game.Persp
 	// fmt.Printf("\nOBSERVE: REACTION EXPLORER: %+v\n", perspective.ReactionExplorer)
 	// fmt.Printf("\nOBSERVE: REACTION: %+v\n", reaction)
 	perspective.UpdateKnowledge(reaction)
-	perspective.PossibleWorlds = game.BuildPossibleWorldsDeprecated(
-		perspective.ReactionExplorer.Get(reaction.Action, reaction.Response),
-	)
+	// perspective.PossibleWorlds = game.BuildPossibleWorldsDeprecated(
+	// 	perspective.ReactionExplorer.Get(reaction.Action, reaction.Response),
+	// )
+	actionHash, err := hashstructure.Hash(action, nil)
+	if err != nil {
+		panic(err)
+	}
+	hash, err := hashstructure.Hash([]uint64{actionHash, perspective.BPossibleWorlds.GetHash()}, nil)
+	if err != nil {
+		panic(err)
+	}
+	response := string(reaction.Response)
+	fmt.Printf("New possible worlds: %v\n", game.BBPossibleWorldsStore[hash][response])
+	perspective.BPossibleWorlds = game.BBPossibleWorldsStore[hash][response]
 	// fmt.Printf("\nOBSERVE: POSSIBLE WORLDS: %+v\n", perspective.PossibleWorlds)
 	// fmt.Printf("\nPOSSIBLE WORLDS: %+v\n", perspective.PossibleWorlds)
 
@@ -70,12 +85,15 @@ func PlayGame(truth game.World, perspective *game.Perspective, memory game.Decis
 		reaction, possibleWorlds := playTurn(truth, perspective)
 		gameState.Add(reaction)
 		memory.Add(gameState, possibleWorlds)
-		if perspective.PossibleWorlds.Len() == 1 {
+		remainingWorldIndices := perspective.BPossibleWorlds.Bits.ToNums()
+		if len(remainingWorldIndices) == 1 {
 			break
 		}
 	}
 	// fmt.Printf("\nGAME OVER: %+v\n", perspective.PossibleWorlds[0])
-	return perspective.PossibleWorlds.Worlds[0]
+	remainingWorldIndices := perspective.BPossibleWorlds.Bits.ToNums()
+	lastWorldIndex := remainingWorldIndices[0]
+	return game.World(game.BUniverse[lastWorldIndex].Name)
 }
 
 func playTurn(truth game.World, perspective *game.Perspective) (game.Reaction, game.PossibleWorlds) {

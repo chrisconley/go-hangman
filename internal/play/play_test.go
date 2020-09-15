@@ -56,6 +56,35 @@ func TestObserve(t *testing.T) {
 	test.AssertDeepEqual(perspective.Knowledge, game.Knowledge{reaction}, t)
 }
 
+func TestPlayBHangman(t *testing.T) {
+	lines := []string{
+		"abc",
+		"bba",
+		"cab",
+	}
+	universeLength := uint64(len(lines))
+	// game.BUniverse = game.BUniverse[:universeLength]
+	pw := game.NewPossibleWorlds(universeLength)
+	for index, name := range lines {
+		game.BUniverse[index] = game.BWorld{Index: uint64(index), Name: name}
+		pw.Bits.SetBit(uint64(index))
+	}
+
+	worlds := game.BuildPossibleWorlds(lines)
+	perspective := &game.Perspective{}
+	perspective.Knowledge = game.Knowledge{}
+	// perspective.PossibleWorlds = worlds
+	perspective.BPossibleWorlds = pw
+	perspective.AvailableActions = game.BuildAvailableActions(worlds)
+	perspective.Agreement = hangman.HangmanAgreement
+	perspective.ActionFilter = hangman.ActionFilter
+	perspective.Motivation = game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25}
+
+	truth := game.World("bba")
+	actual := PlayGame(truth, perspective, &game.NoMemory{})
+	test.AssertDeepEqual(actual, truth, t)
+}
+
 func TestPlayHangman(t *testing.T) {
 	worlds := game.BuildPossibleWorlds([]string{
 		"abc",

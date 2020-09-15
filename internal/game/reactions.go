@@ -1,8 +1,55 @@
 package game
 
 import (
+	"fmt"
+
+	"github.com/Workiva/go-datastructures/bitarray"
 	"github.com/chrisconley/go-hangman/internal/utils"
+	"github.com/mitchellh/hashstructure"
 )
+
+type BPossibleWorlds struct {
+	Bits bitarray.BitArray
+}
+
+func (pw *BPossibleWorlds) GetHash() uint64 {
+	hash, err := hashstructure.Hash(pw, nil)
+	if err != nil {
+		panic(err)
+	}
+	return hash
+}
+
+func (pw *BPossibleWorlds) GetBit(index uint64) bool {
+	bool, err := pw.Bits.GetBit(index)
+	if err != nil {
+		panic(err)
+	}
+	return bool
+}
+
+func (pw *BPossibleWorlds) GetName(index uint64) string {
+	return BUniverse[index].Name
+}
+
+func NewPossibleWorlds(length uint64) BPossibleWorlds {
+	pw := BPossibleWorlds{}
+	fmt.Printf("Length: %d\n", length)
+	pw.Bits = bitarray.NewBitArray(length)
+	pw.Bits.Reset()
+	return pw
+}
+
+type BWorld struct {
+	Index uint64
+	Name  string
+}
+
+var BUniverse = make([]BWorld, 3)
+var BPossibleWorldsStore = make(map[uint64]BPossibleWorlds)
+var BBPossibleWorldsStore = make(map[uint64]map[string]BPossibleWorlds)
+var BCountsStore = make(map[uint64]utils.GroupedIncrementer)
+var BRewardsStore = make(map[uint64]utils.GroupedIncrementer)
 
 type reactionExplorer struct {
 	tracker map[Action]actionData

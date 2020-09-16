@@ -43,11 +43,12 @@ func Decide(predictions game.Predictions, motivation game.Motivation) (action ga
 			maxAction = prediction.Action
 		}
 	}
-	fmt.Printf("DECISION: %v\n", maxAction)
+	// fmt.Printf("DECISION: %v\n", maxAction)
 	return maxAction
 }
 
 func Act(action game.Action, agreement game.Agreement, truth game.World) (reaction game.Reaction) {
+	// fmt.Printf("ACT: %s, %s\n", truth, action)
 	return agreement(truth, action)
 }
 
@@ -67,7 +68,13 @@ func Observe(action game.Action, reaction game.Reaction, perspective *game.Persp
 		panic(err)
 	}
 	response := string(reaction.Response)
-	fmt.Printf("New possible worlds: %v\n", game.BBPossibleWorldsStore[hash][response])
+	// fmt.Printf(
+	// 	"New possible worlds: %d, %s, %s, %v\n",
+	// 	hash,
+	// 	action,
+	// 	response,
+	// 	game.BBPossibleWorldsStore[hash][response].Bits.ToNums(),
+	// )
 	perspective.BPossibleWorlds = game.BBPossibleWorldsStore[hash][response]
 	// fmt.Printf("\nOBSERVE: POSSIBLE WORLDS: %+v\n", perspective.PossibleWorlds)
 	// fmt.Printf("\nPOSSIBLE WORLDS: %+v\n", perspective.PossibleWorlds)

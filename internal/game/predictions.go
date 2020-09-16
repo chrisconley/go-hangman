@@ -1,8 +1,6 @@
 package game
 
 import (
-	"fmt"
-
 	"github.com/chrisconley/go-hangman/internal/mth"
 	"github.com/mitchellh/hashstructure"
 )
@@ -66,6 +64,6 @@ func BBuildPredictions(actions []Action, bpw BPossibleWorlds) Predictions {
 		prediction.Reward = rewards.Total() / float64(counts.Total())
 		predictions.AddPrediction(action, prediction)
 	}
-	fmt.Printf("PREDICTIONS %v\n", predictions)
+	// fmt.Printf("PREDICTIONS %v\n", predictions)
 	return predictions
 }

@@ -1,8 +1,6 @@
 package game
 
 import (
-	"fmt"
-
 	"github.com/Workiva/go-datastructures/bitarray"
 	"github.com/chrisconley/go-hangman/internal/utils"
 	"github.com/mitchellh/hashstructure"
@@ -34,7 +32,6 @@ func (pw *BPossibleWorlds) GetName(index uint64) string {
 
 func NewPossibleWorlds(length uint64) BPossibleWorlds {
 	pw := BPossibleWorlds{}
-	fmt.Printf("Length: %d\n", length)
 	pw.Bits = bitarray.NewBitArray(length)
 	pw.Bits.Reset()
 	return pw
@@ -45,7 +42,7 @@ type BWorld struct {
 	Name  string
 }
 
-var BUniverse = make([]BWorld, 3)
+var BUniverse = []BWorld{}
 var BPossibleWorldsStore = make(map[uint64]BPossibleWorlds)
 var BBPossibleWorldsStore = make(map[uint64]map[string]BPossibleWorlds)
 var BCountsStore = make(map[uint64]utils.GroupedIncrementer)

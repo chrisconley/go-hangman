@@ -1,8 +1,6 @@
 package game
 
 import (
-	"fmt"
-
 	"github.com/chrisconley/go-hangman/internal/utils"
 	"github.com/mitchellh/hashstructure"
 )
@@ -66,12 +64,7 @@ func ExploreReactions(possibleWorlds BPossibleWorlds, actions []Action, agreemen
 				}
 				counts.Increment(response, 1.0)
 				rewards.Increment(response, reaction.Reward)
-				if reaction.Response != "!" {
-					fmt.Printf("Keeping world with index: %d\n", index)
-					responseWorlds[response].Bits.SetBit(world.Index)
-				}
-			} else {
-				fmt.Printf("Skipping world with index: %d\n", index)
+				responseWorlds[response].Bits.SetBit(world.Index)
 			}
 
 			// reactionExplorer.Add(
@@ -92,6 +85,17 @@ func ExploreReactions(possibleWorlds BPossibleWorlds, actions []Action, agreemen
 		BCountsStore[hash] = counts
 		BRewardsStore[hash] = rewards
 		BBPossibleWorldsStore[hash] = responseWorlds
+		// for response, pw := range responseWorlds {
+		// 	remainingWorldIndices := pw.Bits.ToNums()
+		// 	fmt.Printf(
+		// 		"remaining world indices: %d, %s, %s, %v\n",
+		// 		hash,
+		// 		action,
+		// 		response,
+		// 		remainingWorldIndices,
+		// 	)
+
+		// }
 	}
 	// fmt.Printf("\nREACTIONCOUNTS: %+v", reactionCounts)
 	return reactionExplorer

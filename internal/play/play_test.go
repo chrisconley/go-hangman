@@ -5,7 +5,6 @@ import (
 
 	"github.com/chrisconley/go-hangman/internal/game"
 	"github.com/chrisconley/go-hangman/internal/hangman"
-	"github.com/chrisconley/go-hangman/internal/mastermind"
 
 	// "github.com/chrisconley/go-hangman/internal/mastermind"
 	"github.com/chrisconley/go-hangman/test"
@@ -57,74 +56,87 @@ func TestObserve(t *testing.T) {
 }
 
 func TestPlayBHangman(t *testing.T) {
+	// lines := []string{
+	// 	"abc",
+	// 	"bba",
+	// 	"cab",
+	// }
 	lines := []string{
-		"abc",
-		"bba",
-		"cab",
+		"aardvarks",
+		"aasvogels",
+		"abamperes",
+		"abandoned",
+		"abandoner",
+		"abasement",
+		"abashment",
+		"abatement",
+		"abattises",
+		"abattoirs",
 	}
 	universeLength := uint64(len(lines))
-	// game.BUniverse = game.BUniverse[:universeLength]
+	game.BUniverse = make([]game.BWorld, universeLength)
 	pw := game.NewPossibleWorlds(universeLength)
 	for index, name := range lines {
 		game.BUniverse[index] = game.BWorld{Index: uint64(index), Name: name}
 		pw.Bits.SetBit(uint64(index))
 	}
 
-	worlds := game.BuildPossibleWorlds(lines)
-	perspective := &game.Perspective{}
-	perspective.Knowledge = game.Knowledge{}
-	// perspective.PossibleWorlds = worlds
-	perspective.BPossibleWorlds = pw
-	perspective.AvailableActions = game.BuildAvailableActions(worlds)
-	perspective.Agreement = hangman.HangmanAgreement
-	perspective.ActionFilter = hangman.ActionFilter
-	perspective.Motivation = game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25}
-
-	truth := game.World("bba")
-	actual := PlayGame(truth, perspective, &game.NoMemory{})
-	test.AssertDeepEqual(actual, truth, t)
+	for _, line := range lines {
+		worlds := game.BuildPossibleWorlds(lines)
+		perspective := &game.Perspective{}
+		perspective.Knowledge = game.Knowledge{}
+		// perspective.PossibleWorlds = worlds
+		perspective.BPossibleWorlds = pw
+		perspective.AvailableActions = game.BuildAvailableActions(worlds)
+		perspective.Agreement = hangman.HangmanAgreement
+		perspective.ActionFilter = hangman.ActionFilter
+		perspective.Motivation = game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25}
+		truth := game.World(line)
+		actual := PlayGame(truth, perspective, &game.NoMemory{})
+		test.AssertDeepEqual(actual, truth, t)
+	}
 }
 
-func TestPlayHangman(t *testing.T) {
-	worlds := game.BuildPossibleWorlds([]string{
-		"abc",
-		"aab",
-		"bbb",
-	})
-	perspective := &game.Perspective{}
-	perspective.Knowledge = game.Knowledge{}
-	perspective.PossibleWorlds = worlds
-	perspective.AvailableActions = game.BuildAvailableActions(worlds)
-	perspective.Agreement = hangman.HangmanAgreement
-	perspective.ActionFilter = hangman.ActionFilter
-	perspective.Motivation = game.Motivation{0.5, 0.25, 0.25}
+// func TestPlayHangman(t *testing.T) {
+// 	worlds := game.BuildPossibleWorlds([]string{
+// 		"abc",
+// 		"aab",
+// 		"bbb",
+// 	})
+// 	perspective := &game.Perspective{}
+// 	perspective.Knowledge = game.Knowledge{}
+// 	perspective.PossibleWorlds = worlds
+// 	perspective.AvailableActions = game.BuildAvailableActions(worlds)
+// 	perspective.Agreement = hangman.HangmanAgreement
+// 	perspective.ActionFilter = hangman.ActionFilter
+// 	perspective.Motivation = game.Motivation{0.5, 0.25, 0.25}
 
-	truth := game.World("bbb")
-	actual := PlayGame(truth, perspective, &game.NoMemory{})
-	test.AssertDeepEqual(actual, truth, t)
-}
+// 	truth := game.World("bbb")
+// 	actual := PlayGame(truth, perspective, &game.NoMemory{})
+// 	test.AssertDeepEqual(actual, truth, t)
+// }
 
-func TestPlayMastermind(t *testing.T) {
-	worlds := game.BuildPossibleWorlds([]string{
-		"111",
-		"112",
-		"121",
-		"211",
-	})
-	// perspective := NewPerspective(
-	// 	worlds: worlds,
-	// 	motivation: game.Motivation{0.5, 0.25, 0.25},
-	// 	game: "mastermind"
-	// )
-	perspective := &game.Perspective{}
-	perspective.Knowledge = game.Knowledge{}
-	perspective.PossibleWorlds = worlds
-	perspective.AvailableActions = game.BuildAvailableActions(worlds)
-	perspective.Agreement = mastermind.Agreement
-	perspective.ActionFilter = mastermind.ActionFilter
-	perspective.Motivation = game.Motivation{0.5, 0.25, 0.25}
+// func TestPlayMastermind(t *testing.T) {
+// 	worlds := game.BuildPossibleWorlds([]string{
+// 		"111",
+// 		"112",
+// 		"121",
+// 		"211",
+// 	})
+// 	// perspective := NewPerspective(
+// 	// 	worlds: worlds,
+// 	// 	motivation: game.Motivation{0.5, 0.25, 0.25},
+// 	// 	game: "mastermind"
+// 	// )
+// 	perspective := &game.Perspective{}
+// 	perspective.Knowledge = game.Knowledge{}
+// 	perspective.PossibleWorlds = worlds
+// 	perspective.AvailableActions = game.BuildAvailableActions(worlds)
+// 	perspective.Agreement = mastermind.Agreement
+// 	perspective.ActionFilter = mastermind.ActionFilter
+// 	perspective.Motivation = game.Motivation{0.5, 0.25, 0.25}
 
-	truth := game.World("111")
-	actual := PlayGame(truth, perspective, &game.NoMemory{})
-	test.AssertDeepEqual(actual, truth, t)
-}
+// 	truth := game.World("111")
+// 	actual := PlayGame(truth, perspective, &game.NoMemory{})
+// 	test.AssertDeepEqual(actual, truth, t)
+// }

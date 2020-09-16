@@ -12,13 +12,26 @@ import (
 
 func TestAverageGuesses(t *testing.T) {
 	lines := utils.LoadLinesFromFilePath("../fixtures/nine-letter-words.txt")
-	possibleWorlds := game.BuildPossibleWorlds(lines[:1000])
+	lines = lines[:1000]
+
+	possibleWorlds := game.BuildPossibleWorlds(lines)
+	universeLength := uint64(len(possibleWorlds.Worlds))
+	game.BUniverse = make([]game.BWorld, universeLength)
+	pw := game.NewPossibleWorlds(universeLength)
+	for index, name := range lines {
+		game.BUniverse[index] = game.BWorld{Index: uint64(index), Name: name}
+		pw.Bits.SetBit(uint64(index))
+	}
 	turns := []int{}
 	for j := 0; j < 5; j++ {
-		motivation := game.Motivation{Reward: 0.0, Entropy: 1.0, Time: 0.0}
-		perspective := game.NewPerspective(possibleWorlds, motivation)
+		perspective := &game.Perspective{}
+		perspective.Knowledge = game.Knowledge{}
+		// perspective.PossibleWorlds = worlds
+		perspective.BPossibleWorlds = pw
+		perspective.AvailableActions = game.BuildAvailableActions(possibleWorlds)
 		perspective.Agreement = hangman.HangmanAgreement
 		perspective.ActionFilter = hangman.ActionFilter
+		perspective.Motivation = game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25}
 
 		truth := possibleWorlds.Worlds[j]
 		memory := game.InitMemory(&game.NoMemory{})

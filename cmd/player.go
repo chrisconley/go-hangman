@@ -18,7 +18,6 @@ import (
 	"github.com/chrisconley/go-hangman/internal/hangman"
 	"github.com/chrisconley/go-hangman/internal/play"
 	"github.com/chrisconley/go-hangman/internal/utils"
-	"github.com/pkg/profile"
 	// "github.com/chrisconley/go-hangman/internal/mastermind"
 )
 
@@ -32,17 +31,29 @@ func main() {
 		os.Exit(2)
 	}
 
-	defer profile.Start().Stop()
-	possibleWorlds := game.BuildPossibleWorlds(lines)
+	universeLength := uint64(len(lines))
+	game.BUniverse = make([]game.BWorld, universeLength)
+	pw := game.NewPossibleWorlds(universeLength)
+	for index, name := range lines {
+		game.BUniverse[index] = game.BWorld{Index: uint64(index), Name: name}
+		pw.Bits.SetBit(uint64(index))
+	}
+
+	// defer profile.Start().Stop()
+	worlds := game.BuildPossibleWorlds(lines)
 
 	turns := []int{}
 	for j := 0; j < *limit; j++ {
-		motivation := game.Motivation{Reward: 0.0, Entropy: 1.0, Time: 0.0}
-		perspective := game.NewPerspective(possibleWorlds, motivation)
+		perspective := &game.Perspective{}
+		perspective.Knowledge = game.Knowledge{}
+		// perspective.PossibleWorlds = worlds
+		perspective.BPossibleWorlds = pw
+		perspective.AvailableActions = game.BuildAvailableActions(worlds)
 		perspective.Agreement = hangman.HangmanAgreement
 		perspective.ActionFilter = hangman.ActionFilter
+		perspective.Motivation = game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25}
 
-		truth := possibleWorlds.Worlds[j]
+		truth := worlds.Worlds[j]
 		// memory := game.InitMemory(&game.NaiveMemory{})
 		memory := game.InitMemory(&game.NoMemory{})
 		_ = play.PlayGame(truth, perspective, memory)

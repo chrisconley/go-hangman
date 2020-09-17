@@ -67,5 +67,5 @@ func main() {
 		sum = sum + turns[i]
 	}
 	avg := float64(sum) / float64(len(turns))
-	fmt.Printf("AVG TURNS: %.4f\n", avg)
+	fmt.Printf("AVG TURNS: %.4f | (sum: %d, games: %d)\n", avg, sum, len(turns))
 }

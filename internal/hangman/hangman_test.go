@@ -1,6 +1,7 @@
 package hangman
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/chrisconley/go-hangman/internal/game"
@@ -35,4 +36,28 @@ func TestHangmanAgreement(t *testing.T) {
 	reaction = HangmanAgreement(game.World("abc"), game.Action("aaa"))
 	test.AssertDeepEqual(reaction.Response, game.Response("!"), t)
 	test.AssertDeepEqual(reaction.Reward, 0.0, t)
+}
+
+func BenchmarkHangmanAgreementSmall(b *testing.B) {
+	world := ""
+	numElements := 10
+	for i := 0; i < numElements; i++ {
+		world = world + fmt.Sprintf("hi%d", i)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		HangmanAgreement(game.World(world), game.Action("x"))
+	}
+}
+
+func BenchmarkHangmanAgreementLarge(b *testing.B) {
+	world := ""
+	numElements := 1000
+	for i := 0; i < numElements; i++ {
+		world = world + fmt.Sprintf("hi%d", i)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		HangmanAgreement(game.World(world), game.Action("x"))
+	}
 }

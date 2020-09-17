@@ -1,6 +1,8 @@
 package hangman
 
 import (
+	"strings"
+
 	"github.com/chrisconley/go-hangman/internal/game"
 )
 
@@ -32,22 +34,21 @@ func HangmanAgreement(world game.World, action game.Action) (r game.Reaction) {
 
 	if actionLength > 1 && actionString == worldString {
 		return game.Reaction{Action: action, Response: game.Response(world), Reward: 1.0}
-
 	} else if actionLength > 1 && actionString != worldString {
 		return game.Reaction{Action: action, Response: game.Response("!"), Reward: 0.0}
 	} else {
-		response := ""
 		hasMatch := false
+		var buffer strings.Builder
 		for _, character := range worldString {
 			if string(character) == actionString {
-				response = response + actionString
+				buffer.WriteString(actionString)
 				hasMatch = true
 			} else {
-				response = response + "-"
+				buffer.WriteString("-")
 			}
 		}
 		if hasMatch {
-			return game.Reaction{Action: action, Response: game.Response(response), Reward: 1.0}
+			return game.Reaction{Action: action, Response: game.Response(buffer.String()), Reward: 1.0}
 		} else {
 			return game.Reaction{Action: action, Response: game.Response("!"), Reward: 0.0}
 		}

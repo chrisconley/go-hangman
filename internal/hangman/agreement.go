@@ -37,21 +37,41 @@ func HangmanAgreement(world game.World, action game.Action) (r game.Reaction) {
 	} else if actionLength > 1 && actionString != worldString {
 		return game.Reaction{Action: action, Response: game.Response("!"), Reward: 0.0}
 	} else {
-		hasMatch := false
-		var buffer strings.Builder
-		for _, character := range worldString {
-			if string(character) == actionString {
-				buffer.WriteString(actionString)
-				hasMatch = true
-			} else {
-				buffer.WriteString("-")
-			}
-		}
-		if hasMatch {
-			return game.Reaction{Action: action, Response: game.Response(buffer.String()), Reward: 1.0}
-		} else {
-			return game.Reaction{Action: action, Response: game.Response("!"), Reward: 0.0}
-		}
-
+		return buildLetterReaction(actionString, worldString)
 	}
+}
+
+var letterReactionCache = make(map[string]game.Reaction)
+
+func buildLetterReaction(actionString string, worldString string) game.Reaction {
+	cacheKey := actionString + worldString
+	if _, ok := letterReactionCache[cacheKey]; ok {
+		return letterReactionCache[cacheKey]
+	}
+	hasMatch := false
+	var buffer strings.Builder
+	for _, character := range worldString {
+		if string(character) == actionString {
+			buffer.WriteString(actionString)
+			hasMatch = true
+		} else {
+			buffer.WriteString("-")
+		}
+	}
+	var reaction game.Reaction
+	if hasMatch {
+		reaction = game.Reaction{
+			Action:   game.Action(actionString),
+			Response: game.Response(buffer.String()),
+			Reward:   1.0,
+		}
+	} else {
+		reaction = game.Reaction{
+			Action:   game.Action(actionString),
+			Response: game.Response("!"),
+			Reward:   0.0,
+		}
+	}
+	letterReactionCache[cacheKey] = reaction
+	return reaction
 }

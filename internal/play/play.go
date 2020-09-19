@@ -17,18 +17,16 @@ func Explore(perspective *game.Perspective, agreement game.Agreement) (predictio
 	reactions := game.ExploreReactions(perspective.BPossibleWorlds, actions, agreement)
 	predictions = game.BBuildPredictions(actions, perspective.BPossibleWorlds)
 	perspective.UpdateReactionExplorer(reactions)
-	// fmt.Printf("\nEXPLORE: REACTION EXPLORER: %+v\n", perspective.ReactionExplorer)
 	return predictions
 }
 
-func Decide(predictions game.Predictions, motivation game.Motivation) (action game.Action) {
+func Decide(predictions game.Predictions, motivation game.Motivation) game.Action {
 	maxWeight := 0.0
 	maxAction := game.Action("")
 	if len(predictions) == 1 {
 		panic("There is only one prediction for the decision.")
 	}
 	for _, prediction := range predictions {
-		// fmt.Printf("\nPREDICTION: %+v", prediction)
 		weight := math.Pow(prediction.Entropy, motivation.Entropy) * math.Pow(prediction.Reward, motivation.Reward)
 
 		// Decide whether or not to swap out maxAction with the new action
@@ -36,13 +34,12 @@ func Decide(predictions game.Predictions, motivation game.Motivation) (action ga
 			// If there is a clear winner, use it
 			maxWeight = weight
 			maxAction = prediction.Action
-		} else if weight == maxWeight && action < prediction.Action {
+		} else if weight == maxWeight && prediction.Action < maxAction {
 			// If the new weight is equal to current max
 			// AND the new action is lexicographically before maxAction, use it
 			maxAction = prediction.Action
 		}
 	}
-	// fmt.Printf("DECISION: %v\n", maxAction)
 	return maxAction
 }
 
@@ -96,7 +93,6 @@ func PlayGame(truth game.World, perspective *game.Perspective, memory game.Decis
 func playTurn(truth game.World, perspective *game.Perspective) (game.Reaction, game.PossibleWorlds) {
 	predictions := Explore(perspective, perspective.Agreement)
 	action := Decide(predictions, perspective.Motivation)
-	// fmt.Printf("\nACTION: %+v\n", action)
 	reaction := Act(action, perspective.Agreement, truth)
 	// fmt.Printf("\nREACTION: %+v", reaction)
 	Observe(action, reaction, perspective)

@@ -55,17 +55,16 @@ func ExploreReactions(possibleWorlds BPossibleWorlds, actions []Action, agreemen
 		counts := utils.NewGroupedIncrementer()
 		rewards := utils.NewGroupedIncrementer()
 		responseWorlds := make(map[string]BPossibleWorlds)
-		for index, world := range BUniverse {
-			if possibleWorlds.GetBit(uint64(index)) {
-				reaction := agreement(World(world.Name), action)
-				response := string(reaction.Response)
-				if _, ok := responseWorlds[response]; !ok {
-					responseWorlds[response] = NewPossibleWorlds(uint64(len(BUniverse)))
-				}
-				counts.Increment(response, 1.0)
-				rewards.Increment(response, reaction.Reward)
-				responseWorlds[response].Bits.SetBit(world.Index)
+		for _, worldIndex := range possibleWorlds.Bits.ToNums() {
+			world := BUniverse[worldIndex]
+			reaction := agreement(World(world.Name), action)
+			response := string(reaction.Response)
+			if _, ok := responseWorlds[response]; !ok {
+				responseWorlds[response] = NewPossibleWorlds(uint64(len(BUniverse)))
 			}
+			counts.Increment(response, 1.0)
+			rewards.Increment(response, reaction.Reward)
+			responseWorlds[response].Bits.SetBit(world.Index)
 
 			// reactionExplorer.Add(
 			// 	reaction.Action,
@@ -74,6 +73,7 @@ func ExploreReactions(possibleWorlds BPossibleWorlds, actions []Action, agreemen
 			// 	World(world.Name),
 			// )
 		}
+
 		actionHash, err := hashstructure.Hash(action, nil)
 		if err != nil {
 			panic(err)

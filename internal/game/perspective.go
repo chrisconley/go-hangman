@@ -2,7 +2,6 @@ package game
 
 import (
 	"github.com/chrisconley/go-hangman/internal/utils"
-	"github.com/mitchellh/hashstructure"
 )
 
 // ###########################
@@ -50,53 +49,50 @@ type Motivation struct {
 }
 
 func ExploreReactions(possibleWorlds BPossibleWorlds, actions []Action, agreement Agreement) reactionExplorer {
-	reactionExplorer := NewReactionExplorer()
+	// fmt.Printf("EXPLORING WITH WORLDS: %+v\n", possibleWorlds.Bits.ToNums())
 	for _, action := range actions {
-		counts := utils.NewGroupedIncrementer()
-		rewards := utils.NewGroupedIncrementer()
-		responseWorlds := make(map[string]BPossibleWorlds)
-		for _, worldIndex := range possibleWorlds.Bits.ToNums() {
-			world := BUniverse[worldIndex]
-			reaction := agreement(World(world.Name), action)
-			response := string(reaction.Response)
-			if _, ok := responseWorlds[response]; !ok {
-				responseWorlds[response] = NewPossibleWorlds(uint64(len(BUniverse)))
+		hash := BuildActionWorldHash(action, possibleWorlds)
+		if _, ok := BBPossibleWorldsStore[hash]; !ok {
+			counts := utils.NewGroupedIncrementer()
+			rewards := utils.NewGroupedIncrementer()
+			responseWorlds := make(map[string]BPossibleWorlds)
+			worldIndices := possibleWorlds.Bits.ToNums()
+			for _, worldIndex := range worldIndices {
+				world := BUniverse[worldIndex]
+				reaction := agreement(World(world.Name), action)
+				response := string(reaction.Response)
+				if _, ok := responseWorlds[response]; !ok {
+					responseWorlds[response] = NewPossibleWorlds(uint64(len(BUniverse)))
+				}
+				counts.Increment(response, 1.0)
+				rewards.Increment(response, reaction.Reward)
+				responseWorlds[response].Bits.SetBit(world.Index)
+
 			}
-			counts.Increment(response, 1.0)
-			rewards.Increment(response, reaction.Reward)
-			responseWorlds[response].Bits.SetBit(world.Index)
 
-			// reactionExplorer.Add(
-			// 	reaction.Action,
-			// 	reaction.Response,
-			// 	reaction.Reward,
-			// 	World(world.Name),
-			// )
+			BCountsStore[hash] = counts
+			BRewardsStore[hash] = rewards
+			BBPossibleWorldsStore[hash] = responseWorlds
+			// for response, pw := range responseWorlds {
+			// 	LogCacheWorlds(
+			// 		"SETTING CACHE",
+			// 		hash, action, response,
+			// 		pw,
+			// 	)
+			// }
+		} else {
+			// do nothing because we already have what we need
+			// responseWorlds := BBPossibleWorldsStore[hash]
+			// for response, pw := range responseWorlds {
+			// 	LogCacheWorlds(
+			// 		"USING CACHE",
+			// 		hash, action, response,
+			// 		pw,
+			// 	)
+			// }
 		}
-
-		actionHash, err := hashstructure.Hash(action, nil)
-		if err != nil {
-			panic(err)
-		}
-		hash, err := hashstructure.Hash([]uint64{actionHash, possibleWorlds.GetHash()}, nil)
-		if err != nil {
-			panic(err)
-		}
-		BCountsStore[hash] = counts
-		BRewardsStore[hash] = rewards
-		BBPossibleWorldsStore[hash] = responseWorlds
-		// for response, pw := range responseWorlds {
-		// 	remainingWorldIndices := pw.Bits.ToNums()
-		// 	fmt.Printf(
-		// 		"remaining world indices: %d, %s, %s, %v\n",
-		// 		hash,
-		// 		action,
-		// 		response,
-		// 		remainingWorldIndices,
-		// 	)
-
-		// }
 	}
 	// fmt.Printf("\nREACTIONCOUNTS: %+v", reactionCounts)
+	reactionExplorer := NewReactionExplorer()
 	return reactionExplorer
 }

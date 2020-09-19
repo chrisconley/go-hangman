@@ -1,6 +1,8 @@
 package game
 
 import (
+	"fmt"
+
 	"github.com/Workiva/go-datastructures/bitarray"
 	"github.com/chrisconley/go-hangman/internal/utils"
 	"github.com/mitchellh/hashstructure"
@@ -11,10 +13,17 @@ type BPossibleWorlds struct {
 }
 
 func (pw *BPossibleWorlds) GetHash() uint64 {
-	hash, err := hashstructure.Hash(pw, nil)
+	nums := []uint64{}
+	iter := pw.Bits.Blocks()
+	for iter.Next() {
+		_, block := iter.Value()
+		nums = append(nums, uint64(block))
+	}
+	hash, err := hashstructure.Hash(nums, nil)
 	if err != nil {
 		panic(err)
 	}
+
 	return hash
 }
 
@@ -35,6 +44,43 @@ func NewPossibleWorlds(length uint64) BPossibleWorlds {
 	pw.Bits = bitarray.NewBitArray(length)
 	pw.Bits.Reset()
 	return pw
+}
+
+func BuildActionWorldHash(action Action, worlds BPossibleWorlds) uint64 {
+	actionHash, err := hashstructure.Hash(action, nil)
+	if err != nil {
+		panic(err)
+	}
+	hash, err := hashstructure.Hash([]uint64{actionHash, worlds.GetHash()}, nil)
+	if err != nil {
+		panic(err)
+	}
+	return hash
+
+}
+
+func LogCacheWorlds(prefix string, hash uint64, action Action, response string, bpw BPossibleWorlds) {
+	fmt.Printf(
+		// "UPDATING PERSP| hash:%d, action:%s, response:%s, world:%v\n",
+		"%s | hash:%d, action:%s, response:%s, worlds:%+v ",
+		prefix,
+		hash,
+		action,
+		response,
+		bpw,
+	)
+	nums := bpw.Bits.ToNums()
+	if len(nums) < 100 {
+		fmt.Printf(
+			// "UPDATING PERSP| hash:%d, action:%s, response:%s, world:%v\n",
+			"%+v\n",
+			bpw.Bits.ToNums(),
+		)
+	} else {
+		fmt.Printf("\n")
+
+	}
+
 }
 
 type BWorld struct {

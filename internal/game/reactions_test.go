@@ -158,14 +158,13 @@ func BenchmarkActionsLarge(b *testing.B) {
 	}
 }
 
-// func BenchmarkAllLarge(b *testing.B) {
-// 	gi := NewGroupedIncrementer()
-// 	numElements := 1000000
-// 	for i := 0; i < numElements; i++ {
-// 		gi.Increment(fmt.Sprintf("%d", i), 2.4)
-// 	}
-// 	b.ResetTimer()
-// 	for i := 0; i < b.N; i++ {
-// 		gi.All()
-// 	}
-// }
+func TestPossibleWorldsGetHash(t *testing.T) {
+	pw1 := NewPossibleWorlds(100)
+	pw1.Bits.SetBit(1)
+	pw1.Bits.SetBit(99)
+
+	pw2 := NewPossibleWorlds(100)
+	pw2.Bits.SetBit(2)
+	pw2.Bits.SetBit(98)
+	test.AssertDeepNotEqual(pw1.GetHash(), pw2.GetHash(), t)
+}

@@ -7,7 +7,6 @@ import (
 	// "regexp"
 
 	"github.com/chrisconley/go-hangman/internal/game"
-	"github.com/mitchellh/hashstructure"
 )
 
 // ###########################
@@ -59,21 +58,12 @@ func Observe(action game.Action, reaction game.Reaction, perspective *game.Persp
 	// perspective.PossibleWorlds = game.BuildPossibleWorldsDeprecated(
 	// 	perspective.ReactionExplorer.Get(reaction.Action, reaction.Response),
 	// )
-	actionHash, err := hashstructure.Hash(action, nil)
-	if err != nil {
-		panic(err)
-	}
-	hash, err := hashstructure.Hash([]uint64{actionHash, perspective.BPossibleWorlds.GetHash()}, nil)
-	if err != nil {
-		panic(err)
-	}
+	hash := game.BuildActionWorldHash(action, perspective.BPossibleWorlds)
 	response := string(reaction.Response)
-	// fmt.Printf(
-	// 	"New possible worlds: %d, %s, %s, %v\n",
-	// 	hash,
-	// 	action,
-	// 	response,
-	// 	game.BBPossibleWorldsStore[hash][response].Bits.ToNums(),
+	// game.LogCacheWorlds(
+	// 	"UPDATING PERSPECTIVE",
+	// 	hash, action, response,
+	// 	game.BBPossibleWorldsStore[hash][response],
 	// )
 	perspective.BPossibleWorlds = game.BBPossibleWorldsStore[hash][response]
 	// fmt.Printf("\nOBSERVE: POSSIBLE WORLDS: %+v\n", perspective.PossibleWorlds)

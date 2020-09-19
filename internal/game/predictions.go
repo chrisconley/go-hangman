@@ -2,7 +2,6 @@ package game
 
 import (
 	"github.com/chrisconley/go-hangman/internal/mth"
-	"github.com/mitchellh/hashstructure"
 )
 
 // "fmt"
@@ -46,14 +45,7 @@ func BuildPredictions(reactionExplorer reactionExplorer) Predictions {
 func BBuildPredictions(actions []Action, bpw BPossibleWorlds) Predictions {
 	predictions := Predictions{}
 	for _, action := range actions {
-		actionHash, err := hashstructure.Hash(action, nil)
-		if err != nil {
-			panic(err)
-		}
-		hash, err := hashstructure.Hash([]uint64{actionHash, bpw.GetHash()}, nil)
-		if err != nil {
-			panic(err)
-		}
+		hash := BuildActionWorldHash(action, bpw)
 		prediction := Prediction{Action: action}
 		counts := BCountsStore[hash]
 		rewards := BRewardsStore[hash]

@@ -19,12 +19,7 @@ func TestPerspectivePlausibleActions(t *testing.T) {
 func TestExploreReactionsForAction(t *testing.T) {
 	lines := []string{"abc", "aab", "cab"}
 	universeLength := uint64(len(lines))
-	BUniverse = make([]BWorld, universeLength)
-	pw := NewPossibleWorlds(universeLength)
-	for index, name := range lines {
-		BUniverse[index] = BWorld{Index: uint64(index), Name: name}
-		pw.Bits.SetBit(uint64(index))
-	}
+	pw := InitUniverse(lines)
 
 	counts, rewards, responseWorlds := ExploreReactionsForAction(
 		pw,

@@ -110,6 +110,17 @@ var BBPossibleWorldsStore = make(map[string]map[string]BPossibleWorlds)
 var BCountsStore = make(map[string]utils.GroupedIncrementer)
 var BRewardsStore = make(map[string]utils.GroupedIncrementer)
 
+func InitUniverse(lines []string) BPossibleWorlds {
+	universeLength := uint64(len(lines))
+	BUniverse = make([]BWorld, universeLength)
+	pw := NewPossibleWorlds(universeLength)
+	for index, name := range lines {
+		BUniverse[index] = BWorld{Index: uint64(index), Name: name}
+		pw.SetBit(uint64(index))
+	}
+	return pw
+}
+
 type reactionExplorer struct {
 	tracker map[Action]actionData
 	actions []Action

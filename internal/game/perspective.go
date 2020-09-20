@@ -81,7 +81,8 @@ func ExploreReactionsForAction(
 		}
 		counts.Increment(response, 1.0)
 		rewards.Increment(response, reaction.Reward)
-		responseWorlds[response].Bits.SetBit(world.Index)
+		worlds := responseWorlds[response]
+		worlds.SetBit(world.Index)
 
 	}
 	return counts, rewards, responseWorlds

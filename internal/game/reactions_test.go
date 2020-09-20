@@ -44,24 +44,6 @@ import (
 // 	test.AssertDeepEqual(z1.Bits(), 12, t)
 // }
 
-// func TestBitArrays(t *testing.T) {
-// 	lines := []string{"abc", "baa", "cab"}
-// 	universeLength := uint64(len(lines))
-// 	BUniverse = BUniverse[:universeLength]
-// 	pw := NewPossibleWorlds(universeLength)
-// 	for index, name := range lines {
-// 		BUniverse[index] = BWorld{Index: uint64(index), Name: name}
-// 		pw.Bits.SetBit(uint64(index))
-// 	}
-// 	BPossibleWorldsStore[pw.GetHash()] = pw
-// 	test.AssertDeepEqual(pw.GetBit(0), true, t)
-// 	test.AssertDeepEqual(pw.GetBit(1), true, t)
-// 	test.AssertDeepEqual(pw.GetBit(2), true, t)
-// 	fmt.Printf("pw: %v with hash: %v\n", pw.ToNums(), pw.GetHash())
-// 	fmt.Printf("pw: %v\n", BPossibleWorldsStore)
-// 	fmt.Printf("pw: %v\n", BPossibleWorldsStore[pw.GetHash()].ToNums())
-// }
-
 func TestReactionExplorerGet(t *testing.T) {
 	re := NewReactionExplorer()
 	action := Action("a")
@@ -160,23 +142,23 @@ func BenchmarkActionsLarge(b *testing.B) {
 
 func TestPossibleWorldsGetHash(t *testing.T) {
 	pw1 := NewPossibleWorlds(100)
-	pw1.Bits.SetBit(1)
-	pw1.Bits.SetBit(99)
+	pw1.SetBit(1)
+	pw1.SetBit(99)
 
 	pw2 := NewPossibleWorlds(100)
-	pw2.Bits.SetBit(2)
-	pw2.Bits.SetBit(98)
+	pw2.SetBit(2)
+	pw2.SetBit(98)
 	test.AssertDeepNotEqual(pw1.GetHash(), pw2.GetHash(), t)
 }
 
 func TestHashingConflicts(t *testing.T) {
 	pw1 := NewPossibleWorlds(25011)
-	pw1.Bits.SetBit(uint64(617))
-	pw1.Bits.SetBit(uint64(618))
+	pw1.SetBit(uint64(617))
+	pw1.SetBit(uint64(618))
 
 	pw2 := NewPossibleWorlds(25011)
-	pw2.Bits.SetBit(uint64(809))
-	pw2.Bits.SetBit(uint64(810))
+	pw2.SetBit(uint64(809))
+	pw2.SetBit(uint64(810))
 
 	action := Action("t")
 

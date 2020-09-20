@@ -15,13 +15,7 @@ func TestAverageGuesses(t *testing.T) {
 	lines = lines[:1000]
 
 	possibleWorlds := game.BuildPossibleWorlds(lines)
-	universeLength := uint64(len(possibleWorlds.Worlds))
-	game.BUniverse = make([]game.BWorld, universeLength)
-	pw := game.NewPossibleWorlds(universeLength)
-	for index, name := range lines {
-		game.BUniverse[index] = game.BWorld{Index: uint64(index), Name: name}
-		pw.Bits.SetBit(uint64(index))
-	}
+	pw := game.InitUniverse(lines)
 	turns := []int{}
 	for j := 0; j < 5; j++ {
 		perspective := &game.Perspective{}

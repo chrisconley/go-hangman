@@ -31,14 +31,7 @@ func main() {
 		os.Exit(2)
 	}
 
-	universeLength := uint64(len(lines))
-	game.BUniverse = make([]game.BWorld, universeLength)
-	fmt.Printf("UNVERSE LEN: %d", universeLength)
-	pw := game.NewPossibleWorlds(universeLength)
-	for index, name := range lines {
-		game.BUniverse[index] = game.BWorld{Index: uint64(index), Name: name}
-		pw.Bits.SetBit(uint64(index))
-	}
+	pw := game.InitUniverse(lines)
 
 	// defer profile.Start().Stop()
 	worlds := game.BuildPossibleWorlds(lines)

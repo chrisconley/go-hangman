@@ -114,13 +114,7 @@ func TestPlayBHangman(t *testing.T) {
 		"abattises",
 		"abattoirs",
 	}
-	universeLength := uint64(len(lines))
-	game.BUniverse = make([]game.BWorld, universeLength)
-	pw := game.NewPossibleWorlds(universeLength)
-	for index, name := range lines {
-		game.BUniverse[index] = game.BWorld{Index: uint64(index), Name: name}
-		pw.Bits.SetBit(uint64(index))
-	}
+	pw := game.InitUniverse(lines)
 
 	for _, line := range lines {
 		worlds := game.BuildPossibleWorlds(lines)

@@ -18,12 +18,21 @@ type Perspective struct {
 	BPossibleWorlds  BPossibleWorlds
 }
 
-func NewPerspective(possibleWorlds PossibleWorlds, motivation Motivation) *Perspective {
+func NewPerspective(
+	possibleWorlds PossibleWorlds,
+	motivation Motivation,
+	bpw BPossibleWorlds,
+	agreement Agreement,
+	actionFilter ActionFilter,
+) *Perspective {
 	perspective := &Perspective{}
 	perspective.Motivation = motivation
 	perspective.Knowledge = Knowledge{}
 	perspective.PossibleWorlds = possibleWorlds
+	perspective.BPossibleWorlds = bpw
 	perspective.AvailableActions = BuildAvailableActions(possibleWorlds)
+	perspective.Agreement = agreement
+	perspective.ActionFilter = actionFilter
 	return perspective
 }
 

@@ -113,13 +113,13 @@ func TestPlayBHangman(t *testing.T) {
 
 	worlds := game.BuildPossibleWorlds(lines)
 	for _, line := range lines {
-		perspective := &game.Perspective{}
-		perspective.Knowledge = game.Knowledge{}
-		perspective.BPossibleWorlds = pw
-		perspective.AvailableActions = game.BuildAvailableActions(worlds)
-		perspective.Agreement = hangman.HangmanAgreement
-		perspective.ActionFilter = hangman.ActionFilter
-		perspective.Motivation = game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25}
+		perspective := game.NewPerspective(
+			worlds,
+			game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25},
+			pw,
+			hangman.HangmanAgreement,
+			hangman.ActionFilter,
+		)
 		truth := game.World(line)
 		actual := PlayGame(truth, perspective)
 		test.AssertDeepEqual(actual, truth, t)
@@ -137,13 +137,14 @@ func TestPlayMastermind(t *testing.T) {
 
 	worlds := game.BuildPossibleWorlds(lines)
 	for _, line := range lines {
-		perspective := &game.Perspective{}
-		perspective.Knowledge = game.Knowledge{}
-		perspective.BPossibleWorlds = pw
-		perspective.AvailableActions = game.BuildAvailableActions(worlds)
-		perspective.Agreement = mastermind.Agreement
-		perspective.ActionFilter = mastermind.ActionFilter
-		perspective.Motivation = game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25}
+		perspective := game.NewPerspective(
+			worlds,
+			game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25},
+			pw,
+			mastermind.Agreement,
+			mastermind.ActionFilter,
+		)
+
 		truth := game.World(line)
 		actual := PlayGame(truth, perspective)
 		test.AssertDeepEqual(actual, truth, t)

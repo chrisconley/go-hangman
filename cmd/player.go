@@ -37,13 +37,13 @@ func main() {
 
 	turns := []int{}
 	for j := 0; j < *limit; j++ {
-		perspective := &game.Perspective{}
-		perspective.Knowledge = game.Knowledge{}
-		perspective.BPossibleWorlds = pw
-		perspective.AvailableActions = game.BuildAvailableActions(worlds)
-		perspective.Agreement = hangman.HangmanAgreement
-		perspective.ActionFilter = hangman.ActionFilter
-		perspective.Motivation = game.Motivation{Reward: 0.1, Entropy: 0.9, Time: 0.0}
+		perspective := game.NewPerspective(
+			worlds,
+			game.Motivation{Reward: 0.1, Entropy: 0.9, Time: 0.0},
+			pw,
+			hangman.HangmanAgreement,
+			hangman.ActionFilter,
+		)
 
 		truth := worlds.Worlds[j]
 		_ = play.PlayGame(truth, perspective)

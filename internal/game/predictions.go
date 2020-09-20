@@ -41,6 +41,5 @@ func BBuildPredictions(actions []Action, bpw BPossibleWorlds) Predictions {
 		prediction.Reward = rewards.Total() / counts.Total()
 		predictions.AddPrediction(action, prediction)
 	}
-	// fmt.Printf("PREDICTIONS %v\n", predictions)
 	return predictions
 }

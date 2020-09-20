@@ -78,7 +78,7 @@ func TestDecideLexicallySortsOnTie(t *testing.T) {
 
 func TestAct(t *testing.T) {
 	truth := game.World("abc")
-	actual := Act(game.Action("a"), game.TestAgreement, truth)
+	actual := Act(game.Action("a"), game.BuildTestAgreement(0.222), truth)
 	test.AssertDeepEqual(
 		actual,
 		game.Reaction{Action: "a", Response: "a", Reward: 0.222},

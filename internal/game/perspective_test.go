@@ -24,7 +24,7 @@ func TestExploreReactionsForAction(t *testing.T) {
 	counts, rewards, responseWorlds := ExploreReactionsForAction(
 		pw,
 		Action("c"),
-		TestAgreement,
+		BuildTestAgreement(0.222),
 	)
 
 	test.AssertAlmostEqual(counts.Get("!"), 1.0, 3, t)

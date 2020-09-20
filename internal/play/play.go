@@ -54,12 +54,9 @@ func Observe(action game.Action, reaction game.Reaction, perspective *game.Persp
 // ### THE GAME ###
 // ###########################
 
-func PlayGame(truth game.World, perspective *game.Perspective, memory game.DecisionMemory) game.World {
-	gameState := game.GameState{}
+func PlayGame(truth game.World, perspective *game.Perspective) game.World {
 	for true {
-		reaction, possibleWorlds := playTurn(truth, perspective)
-		gameState.Add(reaction)
-		memory.Add(gameState, possibleWorlds)
+		playTurn(truth, perspective)
 		remainingWorldIndices := perspective.BPossibleWorlds.ToNums()
 		if len(remainingWorldIndices) == 1 {
 			break

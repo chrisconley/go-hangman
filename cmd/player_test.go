@@ -27,8 +27,7 @@ func TestAverageGuesses(t *testing.T) {
 		perspective.Motivation = game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25}
 
 		truth := possibleWorlds.Worlds[j]
-		memory := game.InitMemory(&game.NoMemory{})
-		_ = play.PlayGame(truth, perspective, memory)
+		_ = play.PlayGame(truth, perspective)
 		turns = append(turns, len(perspective.Knowledge))
 	}
 	sum := 0

@@ -20,6 +20,7 @@ import (
 )
 
 func main() {
+	// ballast := make([]byte, 10<<30)
 	limit := flag.Int("limit", 10, " Help text.")
 	flag.Parse()
 
@@ -45,8 +46,7 @@ func main() {
 		perspective.Motivation = game.Motivation{Reward: 0.1, Entropy: 0.9, Time: 0.0}
 
 		truth := worlds.Worlds[j]
-		memory := game.InitMemory(&game.NoMemory{})
-		_ = play.PlayGame(truth, perspective, memory)
+		_ = play.PlayGame(truth, perspective)
 		fmt.Printf("TRUTH: %s | ", truth)
 		fmt.Printf("TURNS: %d\n", len(perspective.Knowledge))
 		turns = append(turns, len(perspective.Knowledge))
@@ -57,4 +57,5 @@ func main() {
 	}
 	avg := float64(sum) / float64(len(turns))
 	fmt.Printf("AVG TURNS: %.4f | (sum: %d, games: %d)\n", avg, sum, len(turns))
+	// fmt.Printf("Ballast %v", ballast[0])
 }

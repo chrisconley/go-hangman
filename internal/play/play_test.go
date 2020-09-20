@@ -121,7 +121,7 @@ func TestPlayBHangman(t *testing.T) {
 		perspective.ActionFilter = hangman.ActionFilter
 		perspective.Motivation = game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25}
 		truth := game.World(line)
-		actual := PlayGame(truth, perspective, &game.NoMemory{})
+		actual := PlayGame(truth, perspective)
 		test.AssertDeepEqual(actual, truth, t)
 	}
 }
@@ -145,7 +145,7 @@ func TestPlayMastermind(t *testing.T) {
 		perspective.ActionFilter = mastermind.ActionFilter
 		perspective.Motivation = game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25}
 		truth := game.World(line)
-		actual := PlayGame(truth, perspective, &game.NoMemory{})
+		actual := PlayGame(truth, perspective)
 		test.AssertDeepEqual(actual, truth, t)
 	}
 }

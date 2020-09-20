@@ -18,7 +18,7 @@ func TestPerspectivePlausibleActions(t *testing.T) {
 
 func TestExploreReactionsForAction(t *testing.T) {
 	lines := []string{"abc", "aab", "cab"}
-	universeLength := uint64(len(lines))
+	universeLength := len(lines)
 	pw := InitUniverse(lines)
 
 	counts, rewards, responseWorlds := ExploreReactionsForAction(

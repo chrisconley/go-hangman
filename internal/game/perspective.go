@@ -77,7 +77,7 @@ func ExploreReactionsForAction(
 		reaction := agreement(World(world.Name), action)
 		response := string(reaction.Response)
 		if _, ok := responseWorlds[response]; !ok {
-			responseWorlds[response] = NewPossibleWorlds(uint64(len(BUniverse)))
+			responseWorlds[response] = NewPossibleWorlds(len(BUniverse))
 		}
 		counts.Increment(response, 1.0)
 		rewards.Increment(response, reaction.Reward)

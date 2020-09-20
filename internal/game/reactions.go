@@ -50,11 +50,12 @@ func (pw *BPossibleWorlds) ToNums() []uint64 {
 	return nums[:len(nums)-1]
 }
 
-func NewPossibleWorlds(length uint64) BPossibleWorlds {
+func NewPossibleWorlds(length int) BPossibleWorlds {
+	length64 := uint64(length)
 	pw := BPossibleWorlds{}
-	pw.Bits = bitarray.NewBitArray(length + 1)
+	pw.Bits = bitarray.NewBitArray(length64 + 1)
 	pw.Bits.Reset()
-	pw.Bits.SetBit(length)
+	pw.Bits.SetBit(length64)
 	return pw
 }
 
@@ -111,7 +112,7 @@ var BCountsStore = make(map[string]utils.GroupedIncrementer)
 var BRewardsStore = make(map[string]utils.GroupedIncrementer)
 
 func InitUniverse(lines []string) BPossibleWorlds {
-	universeLength := uint64(len(lines))
+	universeLength := len(lines)
 	BUniverse = make([]BWorld, universeLength)
 	pw := NewPossibleWorlds(universeLength)
 	for index, name := range lines {

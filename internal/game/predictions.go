@@ -27,21 +27,6 @@ func (p Predictions) AddPrediction(action Action, prediction Prediction) {
 	p[action] = prediction
 }
 
-func BuildPredictions(reactionExplorer reactionExplorer) Predictions {
-	predictions := Predictions{}
-	for _, action := range reactionExplorer.Actions() {
-		// TODO: Refactor this so there is no direct dict/map access on predictions
-		prediction := Prediction{Action: action}
-		prediction.Entropy = mth.CalcEntropy(
-			reactionExplorer.ActionTotal(action),
-			reactionExplorer.ActionCounts(action),
-		)
-		prediction.Reward = reactionExplorer.ActionRewardTotal(action) / float64(reactionExplorer.ActionTotal(action))
-		predictions.AddPrediction(action, prediction)
-	}
-	return predictions
-}
-
 func BBuildPredictions(actions []Action, bpw BPossibleWorlds) Predictions {
 	predictions := Predictions{}
 	for _, action := range actions {
@@ -53,7 +38,7 @@ func BBuildPredictions(actions []Action, bpw BPossibleWorlds) Predictions {
 			counts.Total(),
 			counts.All(),
 		)
-		prediction.Reward = rewards.Total() / float64(counts.Total())
+		prediction.Reward = rewards.Total() / counts.Total()
 		predictions.AddPrediction(action, prediction)
 	}
 	// fmt.Printf("PREDICTIONS %v\n", predictions)

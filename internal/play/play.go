@@ -43,17 +43,11 @@ func Decide(predictions game.Predictions, motivation game.Motivation) game.Actio
 }
 
 func Act(action game.Action, agreement game.Agreement, truth game.World) (reaction game.Reaction) {
-	// fmt.Printf("ACT: %s, %s\n", truth, action)
 	return agreement(truth, action)
 }
 
 func Observe(action game.Action, reaction game.Reaction, perspective *game.Perspective) {
-	// fmt.Printf("\nOBSERVE: REACTION EXPLORER: %+v\n", perspective.ReactionExplorer)
-	// fmt.Printf("\nOBSERVE: REACTION: %+v\n", reaction)
 	perspective.UpdateKnowledge(reaction)
-	// perspective.PossibleWorlds = game.BuildPossibleWorldsDeprecated(
-	// 	perspective.ReactionExplorer.Get(reaction.Action, reaction.Response),
-	// )
 	hash := game.BuildActionWorldHash(action, perspective.BPossibleWorlds)
 	response := string(reaction.Response)
 	// game.LogCacheWorlds(

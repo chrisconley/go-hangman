@@ -45,7 +45,7 @@ func main() {
 		perspective.AvailableActions = game.BuildAvailableActions(worlds)
 		perspective.Agreement = hangman.HangmanAgreement
 		perspective.ActionFilter = hangman.ActionFilter
-		perspective.Motivation = game.Motivation{Reward: 0.0, Entropy: 1.0, Time: 0.0}
+		perspective.Motivation = game.Motivation{Reward: 0.1, Entropy: 0.9, Time: 0.0}
 
 		truth := worlds.Worlds[j]
 		fmt.Printf("TRUTH: %s | ", truth)

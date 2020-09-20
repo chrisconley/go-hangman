@@ -14,9 +14,8 @@ import (
 // ###########################
 func Explore(perspective *game.Perspective, agreement game.Agreement) (predictions game.Predictions) {
 	actions := perspective.PlausibleActions(perspective.PossibleWorlds)
-	reactions := game.ExploreReactions(perspective.BPossibleWorlds, actions, agreement)
+	game.ExploreReactions(perspective.BPossibleWorlds, actions, agreement)
 	predictions = game.BBuildPredictions(actions, perspective.BPossibleWorlds)
-	perspective.UpdateReactionExplorer(reactions)
 	return predictions
 }
 
@@ -62,6 +61,17 @@ func Observe(action game.Action, reaction game.Reaction, perspective *game.Persp
 	// 	hash, action, response,
 	// 	game.BBPossibleWorldsStore[hash][response],
 	// )
+	if _, ok := game.BBPossibleWorldsStore[hash][response]; !ok {
+		game.LogCacheWorlds(
+			"PREV WORLDS",
+			hash, action, response,
+			perspective.BPossibleWorlds,
+		)
+		fmt.Printf(
+			"NEXT WORLDS | %+v\n",
+			game.BBPossibleWorldsStore[hash],
+		)
+	}
 	perspective.BPossibleWorlds = game.BBPossibleWorldsStore[hash][response]
 	// fmt.Printf("\nOBSERVE: POSSIBLE WORLDS: %+v\n", perspective.PossibleWorlds)
 	// fmt.Printf("\nPOSSIBLE WORLDS: %+v\n", perspective.PossibleWorlds)
@@ -79,13 +89,13 @@ func PlayGame(truth game.World, perspective *game.Perspective, memory game.Decis
 		reaction, possibleWorlds := playTurn(truth, perspective)
 		gameState.Add(reaction)
 		memory.Add(gameState, possibleWorlds)
-		remainingWorldIndices := perspective.BPossibleWorlds.Bits.ToNums()
+		remainingWorldIndices := perspective.BPossibleWorlds.ToNums()
 		if len(remainingWorldIndices) == 1 {
 			break
 		}
 	}
 	// fmt.Printf("\nGAME OVER: %+v\n", perspective.PossibleWorlds[0])
-	remainingWorldIndices := perspective.BPossibleWorlds.Bits.ToNums()
+	remainingWorldIndices := perspective.BPossibleWorlds.ToNums()
 	lastWorldIndex := remainingWorldIndices[0]
 	return game.World(game.BUniverse[lastWorldIndex].Name)
 }

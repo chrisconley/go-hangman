@@ -1,6 +1,7 @@
 package game
 
 import (
+	"encoding/binary"
 	"fmt"
 
 	"github.com/Workiva/go-datastructures/bitarray"
@@ -12,19 +13,17 @@ type BPossibleWorlds struct {
 	Bits bitarray.BitArray
 }
 
-func (pw *BPossibleWorlds) GetHash() uint64 {
-	nums := []uint64{}
+func (pw *BPossibleWorlds) GetHash() []byte {
+	nums := []byte{}
 	iter := pw.Bits.Blocks()
 	for iter.Next() {
 		_, block := iter.Value()
-		nums = append(nums, uint64(block))
+		b := make([]byte, 8)
+		binary.LittleEndian.PutUint64(b, uint64(block))
+		nums = append(nums, b...)
 	}
-	hash, err := hashstructure.Hash(nums, nil)
-	if err != nil {
-		panic(err)
-	}
-
-	return hash
+	// fmt.Printf("nums length: %d\n", len(nums))
+	return nums
 }
 
 func (pw *BPossibleWorlds) GetBit(index uint64) bool {
@@ -39,42 +38,52 @@ func (pw *BPossibleWorlds) GetName(index uint64) string {
 	return BUniverse[index].Name
 }
 
+func (pw *BPossibleWorlds) ToNums() []uint64 {
+	nums := pw.Bits.ToNums()
+	return nums[:len(nums)-1]
+}
+
 func NewPossibleWorlds(length uint64) BPossibleWorlds {
 	pw := BPossibleWorlds{}
-	pw.Bits = bitarray.NewBitArray(length)
+	pw.Bits = bitarray.NewBitArray(length + 1)
 	pw.Bits.Reset()
+	pw.Bits.SetBit(length)
 	return pw
 }
 
-func BuildActionWorldHash(action Action, worlds BPossibleWorlds) uint64 {
+func BuildActionWorldHash(action Action, worlds BPossibleWorlds) string {
 	actionHash, err := hashstructure.Hash(action, nil)
 	if err != nil {
 		panic(err)
 	}
-	hash, err := hashstructure.Hash([]uint64{actionHash, worlds.GetHash()}, nil)
-	if err != nil {
-		panic(err)
-	}
-	return hash
+	b := make([]byte, 8)
+	binary.LittleEndian.PutUint64(b, actionHash)
+	h := worlds.GetHash()
+	h = append(h, b...)
+	// hash, err := hashstructure.Hash(sha256.Sum256(h), nil)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	return string(h)
 
 }
 
-func LogCacheWorlds(prefix string, hash uint64, action Action, response string, bpw BPossibleWorlds) {
+func LogCacheWorlds(prefix string, hash string, action Action, response string, bpw BPossibleWorlds) {
 	fmt.Printf(
 		// "UPDATING PERSP| hash:%d, action:%s, response:%s, world:%v\n",
-		"%s | hash:%d, action:%s, response:%s, worlds:%+v ",
+		"%s | hash:%s, action:%s, response:%s, worlds:%+v ",
 		prefix,
 		hash,
 		action,
 		response,
 		bpw,
 	)
-	nums := bpw.Bits.ToNums()
+	nums := bpw.ToNums()
 	if len(nums) < 100 {
 		fmt.Printf(
 			// "UPDATING PERSP| hash:%d, action:%s, response:%s, world:%v\n",
 			"%+v\n",
-			bpw.Bits.ToNums(),
+			bpw.ToNums(),
 		)
 	} else {
 		fmt.Printf("\n")
@@ -89,10 +98,10 @@ type BWorld struct {
 }
 
 var BUniverse = []BWorld{}
-var BPossibleWorldsStore = make(map[uint64]BPossibleWorlds)
-var BBPossibleWorldsStore = make(map[uint64]map[string]BPossibleWorlds)
-var BCountsStore = make(map[uint64]utils.GroupedIncrementer)
-var BRewardsStore = make(map[uint64]utils.GroupedIncrementer)
+var BPossibleWorldsStore = make(map[string]BPossibleWorlds)
+var BBPossibleWorldsStore = make(map[string]map[string]BPossibleWorlds)
+var BCountsStore = make(map[string]utils.GroupedIncrementer)
+var BRewardsStore = make(map[string]utils.GroupedIncrementer)
 
 type reactionExplorer struct {
 	tracker map[Action]actionData

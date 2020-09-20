@@ -33,6 +33,7 @@ func main() {
 
 	universeLength := uint64(len(lines))
 	game.BUniverse = make([]game.BWorld, universeLength)
+	fmt.Printf("UNVERSE LEN: %d", universeLength)
 	pw := game.NewPossibleWorlds(universeLength)
 	for index, name := range lines {
 		game.BUniverse[index] = game.BWorld{Index: uint64(index), Name: name}
@@ -51,14 +52,14 @@ func main() {
 		perspective.AvailableActions = game.BuildAvailableActions(worlds)
 		perspective.Agreement = hangman.HangmanAgreement
 		perspective.ActionFilter = hangman.ActionFilter
-		perspective.Motivation = game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25}
+		perspective.Motivation = game.Motivation{Reward: 0.0, Entropy: 1.0, Time: 0.0}
 
 		truth := worlds.Worlds[j]
+		fmt.Printf("TRUTH: %s | ", truth)
 		// memory := game.InitMemory(&game.NaiveMemory{})
 		memory := game.InitMemory(&game.NoMemory{})
 		_ = play.PlayGame(truth, perspective, memory)
 		// fmt.Printf("RESULT: %s | ", result)
-		fmt.Printf("TRUTH: %s | ", truth)
 		fmt.Printf("TURNS: %d\n", len(perspective.Knowledge))
 		turns = append(turns, len(perspective.Knowledge))
 	}

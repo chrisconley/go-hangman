@@ -15,7 +15,6 @@ type Perspective struct {
 	Agreement        Agreement
 	ActionFilter     ActionFilter
 	Motivation       Motivation
-	ReactionExplorer reactionExplorer
 	BPossibleWorlds  BPossibleWorlds
 }
 
@@ -32,10 +31,6 @@ func (p *Perspective) UpdateKnowledge(reaction Reaction) {
 	p.Knowledge = append(p.Knowledge, reaction)
 }
 
-func (p *Perspective) UpdateReactionExplorer(reactionExplorer reactionExplorer) {
-	p.ReactionExplorer = reactionExplorer
-}
-
 func (p *Perspective) PlausibleActions(remainingWorlds PossibleWorlds) []Action {
 	return p.ActionFilter(remainingWorlds, p.AvailableActions)
 }
@@ -48,15 +43,15 @@ type Motivation struct {
 	Time    float64
 }
 
-func ExploreReactions(possibleWorlds BPossibleWorlds, actions []Action, agreement Agreement) reactionExplorer {
-	// fmt.Printf("EXPLORING WITH WORLDS: %+v\n", possibleWorlds.Bits.ToNums())
+func ExploreReactions(possibleWorlds BPossibleWorlds, actions []Action, agreement Agreement) {
+	// fmt.Printf("EXPLORING WITH WORLDS: %+v\n", possibleWorlds.ToNums())
 	for _, action := range actions {
 		hash := BuildActionWorldHash(action, possibleWorlds)
 		if _, ok := BBPossibleWorldsStore[hash]; !ok {
 			counts := utils.NewGroupedIncrementer()
 			rewards := utils.NewGroupedIncrementer()
 			responseWorlds := make(map[string]BPossibleWorlds)
-			worldIndices := possibleWorlds.Bits.ToNums()
+			worldIndices := possibleWorlds.ToNums()
 			for _, worldIndex := range worldIndices {
 				world := BUniverse[worldIndex]
 				reaction := agreement(World(world.Name), action)
@@ -73,12 +68,21 @@ func ExploreReactions(possibleWorlds BPossibleWorlds, actions []Action, agreemen
 			BCountsStore[hash] = counts
 			BRewardsStore[hash] = rewards
 			BBPossibleWorldsStore[hash] = responseWorlds
-			// for response, pw := range responseWorlds {
-			// 	LogCacheWorlds(
-			// 		"SETTING CACHE",
-			// 		hash, action, response,
-			// 		pw,
-			// 	)
+			// // if hash == uint64(16657282531674121003) {
+			// // 	LogCacheWorlds(
+			// // 		"CURENT WORLDS",
+			// // 		hash, action, "n/a",
+			// // 		possibleWorlds,
+			// // 	)
+
+			// // 	for response, pw := range responseWorlds {
+			// // 		LogCacheWorlds(
+			// // 			"SETTING CACHE",
+			// // 			hash, action, response,
+			// // 			pw,
+			// // 		)
+			// // 	}
+
 			// }
 		} else {
 			// do nothing because we already have what we need
@@ -93,6 +97,4 @@ func ExploreReactions(possibleWorlds BPossibleWorlds, actions []Action, agreemen
 		}
 	}
 	// fmt.Printf("\nREACTIONCOUNTS: %+v", reactionCounts)
-	reactionExplorer := NewReactionExplorer()
-	return reactionExplorer
 }

@@ -34,6 +34,13 @@ func (pw *BPossibleWorlds) GetBit(index uint64) bool {
 	return bool
 }
 
+func (pw *BPossibleWorlds) SetBit(index uint64) {
+	err := pw.Bits.SetBit(index)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func (pw *BPossibleWorlds) GetName(index uint64) string {
 	return BUniverse[index].Name
 }

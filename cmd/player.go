@@ -13,13 +13,10 @@ import (
 	"fmt"
 	"os"
 
-	// "io"
 	"github.com/chrisconley/go-hangman/internal/game"
 	"github.com/chrisconley/go-hangman/internal/hangman"
 	"github.com/chrisconley/go-hangman/internal/play"
 	"github.com/chrisconley/go-hangman/internal/utils"
-	"github.com/pkg/profile"
-	// "github.com/chrisconley/go-hangman/internal/mastermind"
 )
 
 func main() {
@@ -32,21 +29,24 @@ func main() {
 		os.Exit(2)
 	}
 
-	defer profile.Start().Stop()
-	possibleWorlds := game.BuildPossibleWorlds(lines)
+	pw := game.InitUniverse(lines)
+
+	// defer profile.Start().Stop()
+	worlds := game.BuildPossibleWorlds(lines)
 
 	turns := []int{}
 	for j := 0; j < *limit; j++ {
-		motivation := game.Motivation{Reward: 0.0, Entropy: 1.0, Time: 0.0}
-		perspective := game.NewPerspective(possibleWorlds, motivation)
+		perspective := &game.Perspective{}
+		perspective.Knowledge = game.Knowledge{}
+		perspective.BPossibleWorlds = pw
+		perspective.AvailableActions = game.BuildAvailableActions(worlds)
 		perspective.Agreement = hangman.HangmanAgreement
 		perspective.ActionFilter = hangman.ActionFilter
+		perspective.Motivation = game.Motivation{Reward: 0.1, Entropy: 0.9, Time: 0.0}
 
-		truth := possibleWorlds.Worlds[j]
-		// memory := game.InitMemory(&game.NaiveMemory{})
+		truth := worlds.Worlds[j]
 		memory := game.InitMemory(&game.NoMemory{})
 		_ = play.PlayGame(truth, perspective, memory)
-		// fmt.Printf("RESULT: %s | ", result)
 		fmt.Printf("TRUTH: %s | ", truth)
 		fmt.Printf("TURNS: %d\n", len(perspective.Knowledge))
 		turns = append(turns, len(perspective.Knowledge))
@@ -56,5 +56,5 @@ func main() {
 		sum = sum + turns[i]
 	}
 	avg := float64(sum) / float64(len(turns))
-	fmt.Printf("AVG TURNS: %.4f\n", avg)
+	fmt.Printf("AVG TURNS: %.4f | (sum: %d, games: %d)\n", avg, sum, len(turns))
 }

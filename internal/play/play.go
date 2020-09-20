@@ -1,10 +1,8 @@
 package play
 
 import (
-	"fmt"
 	"math"
 
-	// "regexp"
 	"github.com/chrisconley/go-hangman/internal/game"
 )
 
@@ -12,21 +10,19 @@ import (
 // ### THE DECISION PROCESS ###
 // ###########################
 func Explore(perspective *game.Perspective, agreement game.Agreement) (predictions game.Predictions) {
-	reactions := game.ExploreReactions(perspective.PossibleWorlds, perspective.PlausibleActions(perspective.PossibleWorlds), agreement)
-	predictions = game.BuildPredictions(reactions)
-	perspective.UpdateReactionExplorer(reactions)
-	// fmt.Printf("\nEXPLORE: REACTION EXPLORER: %+v\n", perspective.ReactionExplorer)
+	actions := perspective.PlausibleActions(perspective.PossibleWorlds)
+	game.ExploreReactions(perspective.BPossibleWorlds, actions, agreement)
+	predictions = game.BBuildPredictions(actions, perspective.BPossibleWorlds)
 	return predictions
 }
 
-func Decide(predictions game.Predictions, motivation game.Motivation) (action game.Action) {
+func Decide(predictions game.Predictions, motivation game.Motivation) game.Action {
 	maxWeight := 0.0
 	maxAction := game.Action("")
 	if len(predictions) == 1 {
 		panic("There is only one prediction for the decision.")
 	}
 	for _, prediction := range predictions {
-		// fmt.Printf("\nPREDICTION: %+v", prediction)
 		weight := math.Pow(prediction.Entropy, motivation.Entropy) * math.Pow(prediction.Reward, motivation.Reward)
 
 		// Decide whether or not to swap out maxAction with the new action
@@ -34,7 +30,7 @@ func Decide(predictions game.Predictions, motivation game.Motivation) (action ga
 			// If there is a clear winner, use it
 			maxWeight = weight
 			maxAction = prediction.Action
-		} else if weight == maxWeight && action < prediction.Action {
+		} else if weight == maxWeight && prediction.Action < maxAction {
 			// If the new weight is equal to current max
 			// AND the new action is lexicographically before maxAction, use it
 			maxAction = prediction.Action
@@ -48,15 +44,10 @@ func Act(action game.Action, agreement game.Agreement, truth game.World) (reacti
 }
 
 func Observe(action game.Action, reaction game.Reaction, perspective *game.Perspective) {
-	// fmt.Printf("\nOBSERVE: REACTION EXPLORER: %+v\n", perspective.ReactionExplorer)
-	// fmt.Printf("\nOBSERVE: REACTION: %+v\n", reaction)
 	perspective.UpdateKnowledge(reaction)
-	perspective.PossibleWorlds = game.BuildPossibleWorldsDeprecated(
-		perspective.ReactionExplorer.Get(reaction.Action, reaction.Response),
-	)
-	// fmt.Printf("\nOBSERVE: POSSIBLE WORLDS: %+v\n", perspective.PossibleWorlds)
-	// fmt.Printf("\nPOSSIBLE WORLDS: %+v\n", perspective.PossibleWorlds)
-
+	hash := game.BuildActionWorldHash(action, perspective.BPossibleWorlds)
+	response := string(reaction.Response)
+	perspective.BPossibleWorlds = game.BBPossibleWorldsStore[hash][response]
 }
 
 // ###########################
@@ -64,30 +55,25 @@ func Observe(action game.Action, reaction game.Reaction, perspective *game.Persp
 // ###########################
 
 func PlayGame(truth game.World, perspective *game.Perspective, memory game.DecisionMemory) game.World {
-	// TODO: Validate that truth is within perspective.PossibleWorlds
 	gameState := game.GameState{}
 	for true {
 		reaction, possibleWorlds := playTurn(truth, perspective)
 		gameState.Add(reaction)
 		memory.Add(gameState, possibleWorlds)
-		if perspective.PossibleWorlds.Len() == 1 {
+		remainingWorldIndices := perspective.BPossibleWorlds.ToNums()
+		if len(remainingWorldIndices) == 1 {
 			break
 		}
 	}
-	// fmt.Printf("\nGAME OVER: %+v\n", perspective.PossibleWorlds[0])
-	return perspective.PossibleWorlds.Worlds[0]
+	remainingWorldIndices := perspective.BPossibleWorlds.ToNums()
+	lastWorldIndex := remainingWorldIndices[0]
+	return game.World(game.BUniverse[lastWorldIndex].Name)
 }
 
 func playTurn(truth game.World, perspective *game.Perspective) (game.Reaction, game.PossibleWorlds) {
 	predictions := Explore(perspective, perspective.Agreement)
 	action := Decide(predictions, perspective.Motivation)
-	// fmt.Printf("\nACTION: %+v\n", action)
 	reaction := Act(action, perspective.Agreement, truth)
-	// fmt.Printf("\nREACTION: %+v", reaction)
 	Observe(action, reaction, perspective)
 	return reaction, perspective.PossibleWorlds
-}
-
-func main() {
-	fmt.Printf("\n%+v", game.World("hi"))
 }

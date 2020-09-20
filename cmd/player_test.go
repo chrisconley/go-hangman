@@ -20,7 +20,6 @@ func TestAverageGuesses(t *testing.T) {
 	for j := 0; j < 5; j++ {
 		perspective := &game.Perspective{}
 		perspective.Knowledge = game.Knowledge{}
-		// perspective.PossibleWorlds = worlds
 		perspective.BPossibleWorlds = pw
 		perspective.AvailableActions = game.BuildAvailableActions(possibleWorlds)
 		perspective.Agreement = hangman.HangmanAgreement

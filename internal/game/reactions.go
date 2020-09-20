@@ -22,7 +22,6 @@ func (pw *BPossibleWorlds) GetHash() []byte {
 		binary.LittleEndian.PutUint64(b, uint64(block))
 		nums = append(nums, b...)
 	}
-	// fmt.Printf("nums length: %d\n", len(nums))
 	return nums
 }
 
@@ -68,17 +67,12 @@ func BuildActionWorldHash(action Action, worlds BPossibleWorlds) string {
 	binary.LittleEndian.PutUint64(b, actionHash)
 	h := worlds.GetHash()
 	h = append(h, b...)
-	// hash, err := hashstructure.Hash(sha256.Sum256(h), nil)
-	// if err != nil {
-	// 	panic(err)
-	// }
 	return string(h)
 
 }
 
 func LogCacheWorlds(prefix string, hash string, action Action, response string, bpw BPossibleWorlds) {
 	fmt.Printf(
-		// "UPDATING PERSP| hash:%d, action:%s, response:%s, world:%v\n",
 		"%s | hash:%s, action:%s, response:%s, worlds:%+v ",
 		prefix,
 		hash,
@@ -86,18 +80,6 @@ func LogCacheWorlds(prefix string, hash string, action Action, response string, 
 		response,
 		bpw,
 	)
-	nums := bpw.ToNums()
-	if len(nums) < 100 {
-		fmt.Printf(
-			// "UPDATING PERSP| hash:%d, action:%s, response:%s, world:%v\n",
-			"%+v\n",
-			bpw.ToNums(),
-		)
-	} else {
-		fmt.Printf("\n")
-
-	}
-
 }
 
 type BWorld struct {

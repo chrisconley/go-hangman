@@ -4,15 +4,12 @@ import (
 	"github.com/chrisconley/go-hangman/internal/mth"
 )
 
-// "fmt"
-
 type Predictions map[Action]Prediction
 
 type Prediction struct {
 	Action  Action
 	Reward  float64
 	Entropy float64
-	//time   float32
 }
 
 func (p Predictions) GetEntropy(action string) float64 {

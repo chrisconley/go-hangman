@@ -13,12 +13,10 @@ import (
 	"fmt"
 	"os"
 
-	// "io"
 	"github.com/chrisconley/go-hangman/internal/game"
 	"github.com/chrisconley/go-hangman/internal/hangman"
 	"github.com/chrisconley/go-hangman/internal/play"
 	"github.com/chrisconley/go-hangman/internal/utils"
-	// "github.com/chrisconley/go-hangman/internal/mastermind"
 )
 
 func main() {
@@ -40,7 +38,6 @@ func main() {
 	for j := 0; j < *limit; j++ {
 		perspective := &game.Perspective{}
 		perspective.Knowledge = game.Knowledge{}
-		// perspective.PossibleWorlds = worlds
 		perspective.BPossibleWorlds = pw
 		perspective.AvailableActions = game.BuildAvailableActions(worlds)
 		perspective.Agreement = hangman.HangmanAgreement
@@ -48,11 +45,9 @@ func main() {
 		perspective.Motivation = game.Motivation{Reward: 0.1, Entropy: 0.9, Time: 0.0}
 
 		truth := worlds.Worlds[j]
-		fmt.Printf("TRUTH: %s | ", truth)
-		// memory := game.InitMemory(&game.NaiveMemory{})
 		memory := game.InitMemory(&game.NoMemory{})
 		_ = play.PlayGame(truth, perspective, memory)
-		// fmt.Printf("RESULT: %s | ", result)
+		fmt.Printf("TRUTH: %s | ", truth)
 		fmt.Printf("TURNS: %d\n", len(perspective.Knowledge))
 		turns = append(turns, len(perspective.Knowledge))
 	}

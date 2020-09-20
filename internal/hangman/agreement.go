@@ -18,16 +18,9 @@ func ActionFilter(remainingWorlds game.PossibleWorlds, aa game.AvailableActions)
 	} else {
 		return aa.Actions()
 	}
-
-	// Use all actions
-	// return aa.AllActions()
-
-	// Use just letter action
-	// return aa.Actions()
 }
 
 func HangmanAgreement(world game.World, action game.Action) (r game.Reaction) {
-	// fmt.Printf("\nACTION IN HANGMENTAGREEMENT: %+v", action)
 	actionLength := len(action)
 	worldString := string(world)
 	actionString := string(action)

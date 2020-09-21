@@ -17,6 +17,7 @@ import (
 	"github.com/chrisconley/go-hangman/internal/hangman"
 	"github.com/chrisconley/go-hangman/internal/play"
 	"github.com/chrisconley/go-hangman/internal/utils"
+	"github.com/pkg/profile"
 )
 
 func main() {
@@ -32,8 +33,8 @@ func main() {
 
 	pw := game.InitUniverse(lines)
 
-	// defer profile.Start().Stop()
 	worlds := game.BuildPossibleWorlds(lines)
+	defer profile.Start().Stop()
 
 	turns := []int{}
 	for j := 0; j < *limit; j++ {

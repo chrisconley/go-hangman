@@ -24,8 +24,8 @@ func NewPerspective(
 	bpw BPossibleWorlds,
 	agreement Agreement,
 	actionFilter ActionFilter,
-) *Perspective {
-	perspective := &Perspective{}
+) Perspective {
+	perspective := Perspective{}
 	perspective.Motivation = motivation
 	perspective.Knowledge = Knowledge{}
 	perspective.PossibleWorlds = possibleWorlds

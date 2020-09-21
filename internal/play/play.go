@@ -9,7 +9,7 @@ import (
 // ###########################
 // ### THE DECISION PROCESS ###
 // ###########################
-func Explore(perspective *game.Perspective, agreement game.Agreement, possibleWorlds game.BPossibleWorlds) (predictions game.Predictions) {
+func Explore(perspective game.Perspective, agreement game.Agreement, possibleWorlds game.BPossibleWorlds) (predictions game.Predictions) {
 	actions := perspective.PlausibleActions(perspective.PossibleWorlds)
 	game.ExploreReactions(possibleWorlds, actions, agreement)
 	predictions = game.BBuildPredictions(actions, possibleWorlds)
@@ -43,8 +43,7 @@ func Act(action game.Action, agreement game.Agreement, truth game.World) (reacti
 	return agreement(truth, action)
 }
 
-func Observe(action game.Action, reaction game.Reaction, perspective *game.Perspective, possibleWorlds game.BPossibleWorlds) game.BPossibleWorlds {
-	// perspective.UpdateKnowledge(reaction)
+func Observe(action game.Action, reaction game.Reaction, possibleWorlds game.BPossibleWorlds) game.BPossibleWorlds {
 	hash := game.BuildActionWorldHash(action, possibleWorlds)
 	response := string(reaction.Response)
 	return game.BBPossibleWorldsStore[hash][response]
@@ -54,7 +53,7 @@ func Observe(action game.Action, reaction game.Reaction, perspective *game.Persp
 // ### THE GAME ###
 // ###########################
 
-func PlayGame(truth game.World, perspective *game.Perspective) (int, game.World) {
+func PlayGame(truth game.World, perspective game.Perspective) (int, game.World) {
 	possibleWorlds := perspective.BPossibleWorlds
 	turns := 0
 	for true {
@@ -70,10 +69,10 @@ func PlayGame(truth game.World, perspective *game.Perspective) (int, game.World)
 	return turns, game.World(game.BUniverse[lastWorldIndex].Name)
 }
 
-func playTurn(truth game.World, perspective *game.Perspective, possibleWorlds game.BPossibleWorlds) (game.Reaction, game.BPossibleWorlds) {
+func playTurn(truth game.World, perspective game.Perspective, possibleWorlds game.BPossibleWorlds) (game.Reaction, game.BPossibleWorlds) {
 	predictions := Explore(perspective, perspective.Agreement, possibleWorlds)
 	action := Decide(predictions, perspective.Motivation)
 	reaction := Act(action, perspective.Agreement, truth)
-	possibleWorlds = Observe(action, reaction, perspective, possibleWorlds)
+	possibleWorlds = Observe(action, reaction, possibleWorlds)
 	return reaction, possibleWorlds
 }

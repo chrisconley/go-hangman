@@ -27,8 +27,8 @@ func TestAverageGuesses(t *testing.T) {
 		)
 
 		truth := possibleWorlds.Worlds[j]
-		_ = play.PlayGame(truth, perspective)
-		turns = append(turns, len(perspective.Knowledge))
+		turnCount, _ := play.PlayGame(truth, perspective)
+		turns = append(turns, turnCount)
 	}
 	sum := 0
 	for i := 0; i < len(turns); i++ {

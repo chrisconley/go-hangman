@@ -44,7 +44,7 @@ func Act(action game.Action, agreement game.Agreement, truth game.World) (reacti
 }
 
 func Observe(action game.Action, reaction game.Reaction, perspective *game.Perspective, possibleWorlds game.BPossibleWorlds) game.BPossibleWorlds {
-	perspective.UpdateKnowledge(reaction)
+	// perspective.UpdateKnowledge(reaction)
 	hash := game.BuildActionWorldHash(action, possibleWorlds)
 	response := string(reaction.Response)
 	return game.BBPossibleWorldsStore[hash][response]
@@ -54,9 +54,11 @@ func Observe(action game.Action, reaction game.Reaction, perspective *game.Persp
 // ### THE GAME ###
 // ###########################
 
-func PlayGame(truth game.World, perspective *game.Perspective) game.World {
+func PlayGame(truth game.World, perspective *game.Perspective) (int, game.World) {
 	possibleWorlds := perspective.BPossibleWorlds
+	turns := 0
 	for true {
+		turns += 1
 		_, possibleWorlds = playTurn(truth, perspective, possibleWorlds)
 		remainingWorldIndices := possibleWorlds.ToNums()
 		if len(remainingWorldIndices) == 1 {
@@ -65,7 +67,7 @@ func PlayGame(truth game.World, perspective *game.Perspective) game.World {
 	}
 	remainingWorldIndices := possibleWorlds.ToNums()
 	lastWorldIndex := remainingWorldIndices[0]
-	return game.World(game.BUniverse[lastWorldIndex].Name)
+	return turns, game.World(game.BUniverse[lastWorldIndex].Name)
 }
 
 func playTurn(truth game.World, perspective *game.Perspective, possibleWorlds game.BPossibleWorlds) (game.Reaction, game.BPossibleWorlds) {

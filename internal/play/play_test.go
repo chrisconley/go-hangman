@@ -121,7 +121,7 @@ func TestPlayBHangman(t *testing.T) {
 			hangman.ActionFilter,
 		)
 		truth := game.World(line)
-		actual := PlayGame(truth, perspective)
+		_, actual := PlayGame(truth, perspective)
 		test.AssertDeepEqual(actual, truth, t)
 	}
 }
@@ -146,7 +146,7 @@ func TestPlayMastermind(t *testing.T) {
 		)
 
 		truth := game.World(line)
-		actual := PlayGame(truth, perspective)
+		_, actual := PlayGame(truth, perspective)
 		test.AssertDeepEqual(actual, truth, t)
 	}
 }

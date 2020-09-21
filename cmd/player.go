@@ -46,10 +46,10 @@ func main() {
 		)
 
 		truth := worlds.Worlds[j]
-		_ = play.PlayGame(truth, perspective)
+		turnCount, _ := play.PlayGame(truth, perspective)
 		fmt.Printf("TRUTH: %s | ", truth)
-		fmt.Printf("TURNS: %d\n", len(perspective.Knowledge))
-		turns = append(turns, len(perspective.Knowledge))
+		fmt.Printf("TURNS: %d\n", turnCount)
+		turns = append(turns, turnCount)
 	}
 	sum := 0
 	for i := 0; i < len(turns); i++ {

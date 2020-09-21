@@ -92,7 +92,7 @@ func TestObserve(t *testing.T) {
 	perspective.Knowledge = game.Knowledge{}
 
 	reaction := game.Reaction{Response: "a", Reward: 1.0}
-	Observe(game.Action("a"), reaction, perspective)
+	Observe(game.Action("a"), reaction, perspective, perspective.BPossibleWorlds)
 	test.AssertDeepEqual(perspective.Knowledge, game.Knowledge{reaction}, t)
 }
 

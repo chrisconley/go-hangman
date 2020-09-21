@@ -9,10 +9,10 @@ import (
 // ###########################
 // ### THE DECISION PROCESS ###
 // ###########################
-func Explore(perspective *game.Perspective, agreement game.Agreement) (predictions game.Predictions) {
+func Explore(perspective *game.Perspective, agreement game.Agreement, possibleWorlds game.BPossibleWorlds) (predictions game.Predictions) {
 	actions := perspective.PlausibleActions(perspective.PossibleWorlds)
-	game.ExploreReactions(perspective.BPossibleWorlds, actions, agreement)
-	predictions = game.BBuildPredictions(actions, perspective.BPossibleWorlds)
+	game.ExploreReactions(possibleWorlds, actions, agreement)
+	predictions = game.BBuildPredictions(actions, possibleWorlds)
 	return predictions
 }
 
@@ -43,11 +43,11 @@ func Act(action game.Action, agreement game.Agreement, truth game.World) (reacti
 	return agreement(truth, action)
 }
 
-func Observe(action game.Action, reaction game.Reaction, perspective *game.Perspective) {
+func Observe(action game.Action, reaction game.Reaction, perspective *game.Perspective, possibleWorlds game.BPossibleWorlds) game.BPossibleWorlds {
 	perspective.UpdateKnowledge(reaction)
-	hash := game.BuildActionWorldHash(action, perspective.BPossibleWorlds)
+	hash := game.BuildActionWorldHash(action, possibleWorlds)
 	response := string(reaction.Response)
-	perspective.BPossibleWorlds = game.BBPossibleWorldsStore[hash][response]
+	return game.BBPossibleWorldsStore[hash][response]
 }
 
 // ###########################
@@ -55,22 +55,23 @@ func Observe(action game.Action, reaction game.Reaction, perspective *game.Persp
 // ###########################
 
 func PlayGame(truth game.World, perspective *game.Perspective) game.World {
+	possibleWorlds := perspective.BPossibleWorlds
 	for true {
-		playTurn(truth, perspective)
-		remainingWorldIndices := perspective.BPossibleWorlds.ToNums()
+		_, possibleWorlds = playTurn(truth, perspective, possibleWorlds)
+		remainingWorldIndices := possibleWorlds.ToNums()
 		if len(remainingWorldIndices) == 1 {
 			break
 		}
 	}
-	remainingWorldIndices := perspective.BPossibleWorlds.ToNums()
+	remainingWorldIndices := possibleWorlds.ToNums()
 	lastWorldIndex := remainingWorldIndices[0]
 	return game.World(game.BUniverse[lastWorldIndex].Name)
 }
 
-func playTurn(truth game.World, perspective *game.Perspective) (game.Reaction, game.PossibleWorlds) {
-	predictions := Explore(perspective, perspective.Agreement)
+func playTurn(truth game.World, perspective *game.Perspective, possibleWorlds game.BPossibleWorlds) (game.Reaction, game.BPossibleWorlds) {
+	predictions := Explore(perspective, perspective.Agreement, possibleWorlds)
 	action := Decide(predictions, perspective.Motivation)
 	reaction := Act(action, perspective.Agreement, truth)
-	Observe(action, reaction, perspective)
-	return reaction, perspective.PossibleWorlds
+	possibleWorlds = Observe(action, reaction, perspective, possibleWorlds)
+	return reaction, possibleWorlds
 }

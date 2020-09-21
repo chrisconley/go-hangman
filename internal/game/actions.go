@@ -48,25 +48,3 @@ func (aa *AvailableActions) WorldActionsLength() int {
 func (aa *AvailableActions) ActionsLength() int {
 	return len(aa.actions)
 }
-
-func (aa *AvailableActions) Update(usedAction Action) []Action {
-	isWorldAction := len(usedAction) > 1
-	collection := &[]Action{}
-	if isWorldAction {
-		collection = &aa.worldActions
-	} else {
-		collection = &aa.actions
-	}
-	actions := []Action{}
-	for _, action := range *collection {
-		if action != usedAction {
-			actions = append(actions, action)
-		}
-	}
-	if isWorldAction {
-		aa.worldActions = actions
-	} else {
-		aa.actions = actions
-	}
-	return aa.actions
-}

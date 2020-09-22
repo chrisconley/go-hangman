@@ -15,13 +15,11 @@ func TestAverageGuesses(t *testing.T) {
 	lines = lines[:1000]
 
 	possibleWorlds := game.BuildPossibleWorlds(lines)
-	pw := game.InitUniverse(lines)
+	game.InitUniverse(lines)
 	turns := []int{}
 	for j := 0; j < 5; j++ {
 		perspective := game.NewPerspective(
-			possibleWorlds,
 			game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25},
-			pw,
 			hangman.HangmanAgreement,
 			hangman.ActionFilter,
 		)

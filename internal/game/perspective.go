@@ -17,16 +17,12 @@ type Perspective struct {
 }
 
 func NewPerspective(
-	possibleWorlds PossibleWorlds,
 	motivation Motivation,
-	bpw BPossibleWorlds,
 	agreement Agreement,
 	actionFilter ActionFilter,
 ) Perspective {
 	perspective := Perspective{}
 	perspective.Motivation = motivation
-	perspective.PossibleWorlds = possibleWorlds
-	perspective.BPossibleWorlds = bpw
 	perspective.Agreement = agreement
 	perspective.ActionFilter = actionFilter
 	return perspective

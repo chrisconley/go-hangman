@@ -10,7 +10,7 @@ import (
 // ### THE DECISION PROCESS ###
 // ###########################
 func Explore(perspective game.Perspective, agreement game.Agreement, possibleWorlds game.BPossibleWorlds) (predictions game.Predictions) {
-	actions := perspective.ActionFilter(perspective.PossibleWorlds, game.BUniverse.Actions)
+	actions := perspective.ActionFilter(game.BUniverse.PossibleWorlds, game.BUniverse.Actions)
 	game.ExploreReactions(possibleWorlds, actions, agreement)
 	predictions = game.BBuildPredictions(actions, possibleWorlds)
 	return predictions
@@ -54,7 +54,7 @@ func Observe(action game.Action, reaction game.Reaction, possibleWorlds game.BPo
 // ###########################
 
 func PlayGame(truth game.World, perspective game.Perspective) (int, game.World) {
-	possibleWorlds := perspective.BPossibleWorlds
+	possibleWorlds := game.BUniverse.BPossibleWorlds
 	turns := 0
 	for true {
 		turns += 1

@@ -88,8 +88,10 @@ type BWorld struct {
 }
 
 type Universe struct {
-	Worlds  []BWorld
-	Actions AvailableActions
+	Worlds          []BWorld
+	Actions         AvailableActions
+	PossibleWorlds  PossibleWorlds
+	BPossibleWorlds BPossibleWorlds
 }
 
 var BUniverse = Universe{}
@@ -106,7 +108,8 @@ func InitUniverse(lines []string) BPossibleWorlds {
 		BUniverse.Worlds[index] = BWorld{Index: uint64(index), Name: name}
 		pw.SetBit(uint64(index))
 	}
-	worlds := BuildPossibleWorlds(lines)
-	BUniverse.Actions = BuildAvailableActions(worlds)
+	BUniverse.PossibleWorlds = BuildPossibleWorlds(lines)
+	BUniverse.Actions = BuildAvailableActions(BUniverse.PossibleWorlds)
+	BUniverse.BPossibleWorlds = pw
 	return pw
 }

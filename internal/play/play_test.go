@@ -103,14 +103,11 @@ func TestPlayBHangman(t *testing.T) {
 		"abattises",
 		"abattoirs",
 	}
-	pw := game.InitUniverse(lines)
+	game.InitUniverse(lines)
 
-	worlds := game.BuildPossibleWorlds(lines)
 	for _, line := range lines {
 		perspective := game.NewPerspective(
-			worlds,
 			game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25},
-			pw,
 			hangman.HangmanAgreement,
 			hangman.ActionFilter,
 		)
@@ -127,14 +124,11 @@ func TestPlayMastermind(t *testing.T) {
 		"121",
 		"211",
 	}
-	pw := game.InitUniverse(lines)
+	game.InitUniverse(lines)
 
-	worlds := game.BuildPossibleWorlds(lines)
 	for _, line := range lines {
 		perspective := game.NewPerspective(
-			worlds,
 			game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25},
-			pw,
 			mastermind.Agreement,
 			mastermind.ActionFilter,
 		)

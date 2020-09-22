@@ -31,7 +31,7 @@ func main() {
 		os.Exit(2)
 	}
 
-	pw := game.InitUniverse(lines)
+	game.InitUniverse(lines)
 
 	worlds := game.BuildPossibleWorlds(lines)
 	defer profile.Start().Stop()
@@ -39,9 +39,7 @@ func main() {
 	turns := []int{}
 	for j := 0; j < *limit; j++ {
 		perspective := game.NewPerspective(
-			worlds,
 			game.Motivation{Reward: 0.1, Entropy: 0.9, Time: 0.0},
-			pw,
 			hangman.HangmanAgreement,
 			hangman.ActionFilter,
 		)

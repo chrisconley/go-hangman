@@ -88,12 +88,6 @@ func TestAct(t *testing.T) {
 
 func TestObserve(t *testing.T) {
 	t.Skip("TODO: Fix test setup")
-	perspective := game.Perspective{}
-	perspective.Knowledge = game.Knowledge{}
-
-	reaction := game.Reaction{Response: "a", Reward: 1.0}
-	Observe(game.Action("a"), reaction, perspective.BPossibleWorlds)
-	test.AssertDeepEqual(perspective.Knowledge, game.Knowledge{reaction}, t)
 }
 
 func TestPlayBHangman(t *testing.T) {

@@ -9,7 +9,6 @@ import (
 // ###########################
 
 type Perspective struct {
-	Knowledge       Knowledge
 	PossibleWorlds  PossibleWorlds
 	Agreement       Agreement
 	ActionFilter    ActionFilter
@@ -26,19 +25,12 @@ func NewPerspective(
 ) Perspective {
 	perspective := Perspective{}
 	perspective.Motivation = motivation
-	perspective.Knowledge = Knowledge{}
 	perspective.PossibleWorlds = possibleWorlds
 	perspective.BPossibleWorlds = bpw
 	perspective.Agreement = agreement
 	perspective.ActionFilter = actionFilter
 	return perspective
 }
-
-func (p *Perspective) UpdateKnowledge(reaction Reaction) {
-	p.Knowledge = append(p.Knowledge, reaction)
-}
-
-type Knowledge []Reaction
 
 type Motivation struct {
 	Reward  float64

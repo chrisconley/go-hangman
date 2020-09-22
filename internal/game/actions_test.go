@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/chrisconley/go-hangman/internal/utils"
 	"github.com/chrisconley/go-hangman/test"
 )
 
@@ -52,5 +53,25 @@ func BenchmarkAvailableActionsActionsLengthLarge(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		aa.ActionsLength()
+	}
+}
+
+func BenchmarkBuildAvailableActionsSmall(b *testing.B) {
+	lines := utils.LoadLinesFromFilePath("../../fixtures/nine-letter-words.txt")
+	lines = lines[:10]
+	possibleWorlds := BuildPossibleWorlds(lines)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		BuildAvailableActions(possibleWorlds)
+	}
+}
+
+func BenchmarkBuildAvailableActionsLarge(b *testing.B) {
+	lines := utils.LoadLinesFromFilePath("../../fixtures/nine-letter-words.txt")
+	lines = lines[:10000]
+	possibleWorlds := BuildPossibleWorlds(lines)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		BuildAvailableActions(possibleWorlds)
 	}
 }

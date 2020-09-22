@@ -7,54 +7,27 @@ type AvailableActions struct {
 	worldSize    int
 }
 
+// TODO: Just move this to universe creation then the performance shouldn't matter
+// because it'll get called once instead of every new game with NewPerspective
 func BuildAvailableActions(worlds PossibleWorlds) AvailableActions {
 	aa := AvailableActions{
 		actions:      []Action{},
 		worldActions: make([]Action, worlds.Len()),
 		worldSize:    len(worlds.Worlds[0]),
 	}
-	// keys := make(map[Action]bool)
+
+	keys := make(map[int32]bool)
 	for index, world := range worlds.Worlds {
 		worldAction := Action(world)
 		aa.worldActions[index] = worldAction
-		// for i := 0; i < len(worldAction); i++ {
-		// 	action := Action(worldAction[i])
-		// 	if _, ok := keys[action]; !ok {
-		// 		keys[action] = true
-		// 		aa.actions = append(aa.actions, action)
-		// 	}
-
-		// }
+		for _, runeValue := range string(world) {
+			if _, ok := keys[runeValue]; !ok {
+				keys[runeValue] = true
+				aa.actions = append(aa.actions, Action(runeValue))
+			}
+		}
 	}
 
-	aa.actions = []Action{
-		Action("a"),
-		Action("b"),
-		Action("c"),
-		Action("d"),
-		Action("e"),
-		Action("f"),
-		Action("g"),
-		Action("h"),
-		Action("i"),
-		Action("j"),
-		Action("k"),
-		Action("l"),
-		Action("m"),
-		Action("n"),
-		Action("o"),
-		Action("p"),
-		Action("q"),
-		Action("r"),
-		Action("s"),
-		Action("t"),
-		Action("u"),
-		Action("v"),
-		Action("w"),
-		Action("x"),
-		Action("y"),
-		Action("z"),
-	}
 	return aa
 }
 

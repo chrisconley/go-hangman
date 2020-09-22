@@ -6,7 +6,7 @@ import (
 	"github.com/chrisconley/go-hangman/internal/game"
 )
 
-// TODO: Make sure this results in optimal number of turns appropriately
+// TODO: Make this take game.BPossibleWorlds
 func ActionFilter(remainingWorlds game.PossibleWorlds, aa game.AvailableActions) []game.Action {
 	// Only use world actions when there are only a few choices left
 	if remainingWorlds.Len() < aa.ActionsLength() {

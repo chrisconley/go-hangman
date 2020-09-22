@@ -9,13 +9,12 @@ import (
 // ###########################
 
 type Perspective struct {
-	Knowledge        Knowledge
-	PossibleWorlds   PossibleWorlds
-	AvailableActions AvailableActions
-	Agreement        Agreement
-	ActionFilter     ActionFilter
-	Motivation       Motivation
-	BPossibleWorlds  BPossibleWorlds
+	Knowledge       Knowledge
+	PossibleWorlds  PossibleWorlds
+	Agreement       Agreement
+	ActionFilter    ActionFilter
+	Motivation      Motivation
+	BPossibleWorlds BPossibleWorlds
 }
 
 func NewPerspective(
@@ -30,7 +29,6 @@ func NewPerspective(
 	perspective.Knowledge = Knowledge{}
 	perspective.PossibleWorlds = possibleWorlds
 	perspective.BPossibleWorlds = bpw
-	perspective.AvailableActions = BuildAvailableActions(possibleWorlds)
 	perspective.Agreement = agreement
 	perspective.ActionFilter = actionFilter
 	return perspective
@@ -38,10 +36,6 @@ func NewPerspective(
 
 func (p *Perspective) UpdateKnowledge(reaction Reaction) {
 	p.Knowledge = append(p.Knowledge, reaction)
-}
-
-func (p *Perspective) PlausibleActions(remainingWorlds PossibleWorlds) []Action {
-	return p.ActionFilter(remainingWorlds, p.AvailableActions)
 }
 
 type Knowledge []Reaction
@@ -82,11 +76,11 @@ func ExploreReactionsForAction(
 	responseWorlds := make(map[string]BPossibleWorlds)
 	worldIndices := possibleWorlds.ToNums()
 	for _, worldIndex := range worldIndices {
-		world := BUniverse[worldIndex]
+		world := BUniverse.Worlds[worldIndex]
 		reaction := agreement(World(world.Name), action)
 		response := string(reaction.Response)
 		if _, ok := responseWorlds[response]; !ok {
-			responseWorlds[response] = NewPossibleWorlds(len(BUniverse))
+			responseWorlds[response] = NewPossibleWorlds(len(BUniverse.Worlds))
 		}
 		counts.Increment(response, 1.0)
 		rewards.Increment(response, reaction.Reward)

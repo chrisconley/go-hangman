@@ -41,7 +41,7 @@ func (pw *BPossibleWorlds) SetBit(index uint64) {
 }
 
 func (pw *BPossibleWorlds) GetName(index uint64) string {
-	return BUniverse[index].Name
+	return BUniverse.Worlds[index].Name
 }
 
 func (pw *BPossibleWorlds) ToNums() []uint64 {
@@ -87,7 +87,12 @@ type BWorld struct {
 	Name  string
 }
 
-var BUniverse = []BWorld{}
+type Universe struct {
+	Worlds  []BWorld
+	Actions AvailableActions
+}
+
+var BUniverse = Universe{}
 var BPossibleWorldsStore = make(map[string]BPossibleWorlds)
 var BBPossibleWorldsStore = make(map[string]map[string]BPossibleWorlds)
 var BCountsStore = make(map[string]utils.GroupedIncrementer)
@@ -95,11 +100,13 @@ var BRewardsStore = make(map[string]utils.GroupedIncrementer)
 
 func InitUniverse(lines []string) BPossibleWorlds {
 	universeLength := len(lines)
-	BUniverse = make([]BWorld, universeLength)
+	BUniverse.Worlds = make([]BWorld, universeLength)
 	pw := NewPossibleWorlds(universeLength)
 	for index, name := range lines {
-		BUniverse[index] = BWorld{Index: uint64(index), Name: name}
+		BUniverse.Worlds[index] = BWorld{Index: uint64(index), Name: name}
 		pw.SetBit(uint64(index))
 	}
+	worlds := BuildPossibleWorlds(lines)
+	BUniverse.Actions = BuildAvailableActions(worlds)
 	return pw
 }

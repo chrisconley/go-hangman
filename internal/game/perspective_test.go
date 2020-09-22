@@ -6,16 +6,6 @@ import (
 	"github.com/chrisconley/go-hangman/test"
 )
 
-func TestPerspectivePlausibleActions(t *testing.T) {
-	remainingWorlds := BuildPossibleWorlds([]string{"abc", "aab"})
-	perspective := &Perspective{}
-	perspective.AvailableActions = BuildAvailableActions(remainingWorlds)
-	perspective.ActionFilter = TestActionFilter
-
-	actual := perspective.PlausibleActions(remainingWorlds)
-	test.AssertDeepEqual(actual, []Action{"hi"}, t)
-}
-
 func TestExploreReactionsForAction(t *testing.T) {
 	lines := []string{"abc", "aab", "cab"}
 	universeLength := len(lines)

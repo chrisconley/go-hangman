@@ -6,11 +6,13 @@ import (
 )
 
 func ExploreReactions(possibleWorlds BPossibleWorlds, actions []Action, act Act) {
+	worldsHash := possibleWorlds.GetHash()
+	worldIndices := possibleWorlds.Indices()
 	for _, action := range actions {
-		hash := BuildActionWorldHash(action, possibleWorlds)
+		hash := BuildActionWorldHash(action, worldsHash)
 		if _, ok := BBPossibleWorldsStore[hash]; !ok {
 			counts, rewards, responseWorlds := ExploreReactionsForAction(
-				possibleWorlds,
+				worldIndices,
 				action,
 				act,
 			)
@@ -22,7 +24,7 @@ func ExploreReactions(possibleWorlds BPossibleWorlds, actions []Action, act Act)
 }
 
 func ExploreReactionsForAction(
-	possibleWorlds BPossibleWorlds,
+	possibleWorldIndices []uint64,
 	action Action,
 	act Act,
 ) (
@@ -33,8 +35,7 @@ func ExploreReactionsForAction(
 	counts := utils.NewGroupedIncrementer()
 	rewards := utils.NewGroupedIncrementer()
 	responseWorlds := make(map[string]BPossibleWorlds)
-	worldIndices := possibleWorlds.ToNums()
-	for _, worldIndex := range worldIndices {
+	for _, worldIndex := range possibleWorldIndices {
 		world := BUniverse.Worlds[worldIndex]
 		reaction := act(World(world.Name), action)
 		response := string(reaction.Response)
@@ -72,8 +73,9 @@ func (p Predictions) AddPrediction(action Action, prediction Prediction) {
 
 func BBuildPredictions(actions []Action, bpw BPossibleWorlds) Predictions {
 	predictions := Predictions{}
+	worldsHash := bpw.GetHash()
 	for _, action := range actions {
-		hash := BuildActionWorldHash(action, bpw)
+		hash := BuildActionWorldHash(action, worldsHash)
 		prediction := Prediction{Action: action}
 		counts := BCountsStore[hash]
 		rewards := BRewardsStore[hash]

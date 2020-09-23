@@ -31,8 +31,8 @@ func TestHashingConflicts(t *testing.T) {
 	action := Action("t")
 
 	test.AssertDeepNotEqual(
-		BuildActionWorldHash(action, pw1),
-		BuildActionWorldHash(action, pw2),
+		BuildActionWorldHash(action, pw1.GetHash()),
+		BuildActionWorldHash(action, pw2.GetHash()),
 		t,
 	)
 }

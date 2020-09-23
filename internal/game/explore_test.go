@@ -29,7 +29,7 @@ func TestExploreReactionsForAction(t *testing.T) {
 	pw := InitUniverse(lines)
 
 	counts, rewards, responseWorlds := ExploreReactionsForAction(
-		pw,
+		pw.Indices(),
 		Action("c"),
 		BuildTestAct(0.222),
 	)

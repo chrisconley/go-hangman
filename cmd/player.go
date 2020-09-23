@@ -17,7 +17,6 @@ import (
 	"github.com/chrisconley/go-hangman/internal/hangman"
 	"github.com/chrisconley/go-hangman/internal/play"
 	"github.com/chrisconley/go-hangman/internal/utils"
-	"github.com/pkg/profile"
 )
 
 func main() {
@@ -34,7 +33,7 @@ func main() {
 	game.InitUniverse(lines)
 
 	worlds := game.BuildPossibleWorlds(lines)
-	defer profile.Start().Stop()
+	// defer profile.Start().Stop()
 
 	turns := []int{}
 	for j := 0; j < *limit; j++ {
@@ -45,8 +44,8 @@ func main() {
 
 		truth := worlds.Worlds[j]
 		turnCount, _ := play.PlayGame(truth, perspective)
-		fmt.Printf("TRUTH: %s | ", truth)
-		fmt.Printf("TURNS: %d\n", turnCount)
+		// fmt.Printf("TRUTH: %s | ", truth)
+		// fmt.Printf("TURNS: %d\n", turnCount)
 		turns = append(turns, turnCount)
 	}
 	sum := 0

@@ -62,7 +62,7 @@ func (pw *BPossibleWorlds) GetName(index uint64) string {
 	return BUniverse.Worlds[index].Name
 }
 
-func (pw *BPossibleWorlds) ToNums() []uint64 {
+func (pw *BPossibleWorlds) Indices() []uint64 {
 	nums := pw.Bits.ToNums()
 	return nums[:len(nums)-1]
 }
@@ -76,16 +76,15 @@ func NewPossibleWorlds(length int) BPossibleWorlds {
 	return pw
 }
 
-func BuildActionWorldHash(action Action, worlds BPossibleWorlds) string {
+func BuildActionWorldHash(action Action, worldsHash []byte) string {
 	actionHash, err := hashstructure.Hash(action, nil)
 	if err != nil {
 		panic(err)
 	}
 	b := make([]byte, 8)
 	binary.LittleEndian.PutUint64(b, actionHash)
-	h := worlds.GetHash()
-	h = append(h, b...)
-	return string(h)
+	worldsHash = append(worldsHash, b...)
+	return string(worldsHash)
 
 }
 

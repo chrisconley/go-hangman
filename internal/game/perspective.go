@@ -5,11 +5,15 @@ package game
 // ###########################
 
 type Perspective struct {
-	PossibleWorlds  PossibleWorlds
-	Agreement       Agreement
-	ActionFilter    ActionFilter
-	Motivation      Motivation
-	BPossibleWorlds BPossibleWorlds
+	Agreement    Agreement
+	ActionFilter ActionFilter
+	Motivation   Motivation
+}
+
+type Motivation struct {
+	Reward  float64
+	Entropy float64
+	Time    float64
 }
 
 func NewPerspective(
@@ -22,10 +26,4 @@ func NewPerspective(
 	perspective.Agreement = agreement
 	perspective.ActionFilter = actionFilter
 	return perspective
-}
-
-type Motivation struct {
-	Reward  float64
-	Entropy float64
-	Time    float64
 }

@@ -8,6 +8,35 @@ import (
 	"github.com/chrisconley/go-hangman/test"
 )
 
+func TestPossibleWorldsGetHash(t *testing.T) {
+	pw1 := NewPossibleWorlds(100)
+	pw1.SetBit(1)
+	pw1.SetBit(99)
+
+	pw2 := NewPossibleWorlds(100)
+	pw2.SetBit(2)
+	pw2.SetBit(98)
+	test.AssertDeepNotEqual(pw1.GetHash(), pw2.GetHash(), t)
+}
+
+func TestHashingConflicts(t *testing.T) {
+	pw1 := NewPossibleWorlds(25011)
+	pw1.SetBit(uint64(617))
+	pw1.SetBit(uint64(618))
+
+	pw2 := NewPossibleWorlds(25011)
+	pw2.SetBit(uint64(809))
+	pw2.SetBit(uint64(810))
+
+	action := Action("t")
+
+	test.AssertDeepNotEqual(
+		BuildActionWorldHash(action, pw1),
+		BuildActionWorldHash(action, pw2),
+		t,
+	)
+}
+
 func TestBuildAvailableActions(t *testing.T) {
 	worlds := BuildPossibleWorlds([]string{"aa", "bb"})
 	aa := BuildAvailableActions(worlds)
@@ -74,4 +103,26 @@ func BenchmarkBuildAvailableActionsLarge(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		BuildAvailableActions(possibleWorlds)
 	}
+}
+
+func TestWorldsDeprecatedSortedKey(t *testing.T) {
+	worlds := BuildPossibleWorldsDeprecated([]World{
+		World("ab"),
+		World("co"),
+		World("bi"),
+	})
+	expected := "abbico"
+	actual := worlds.Key()
+	test.AssertDeepEqual(actual, expected, t)
+}
+
+func TestWorldsSortedKey(t *testing.T) {
+	worlds := BuildPossibleWorlds([]string{
+		"ab",
+		"co",
+		"bi",
+	})
+	expected := "abbico"
+	actual := worlds.Key()
+	test.AssertDeepEqual(actual, expected, t)
 }

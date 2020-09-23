@@ -1,9 +1,5 @@
 package game
 
-import (
-	"github.com/chrisconley/go-hangman/internal/utils"
-)
-
 // ###########################
 // ### THE PLAYER ###
 // ###########################
@@ -32,49 +28,4 @@ type Motivation struct {
 	Reward  float64
 	Entropy float64
 	Time    float64
-}
-
-func ExploreReactions(possibleWorlds BPossibleWorlds, actions []Action, agreement Agreement) {
-	for _, action := range actions {
-		hash := BuildActionWorldHash(action, possibleWorlds)
-		if _, ok := BBPossibleWorldsStore[hash]; !ok {
-			counts, rewards, responseWorlds := ExploreReactionsForAction(
-				possibleWorlds,
-				action,
-				agreement,
-			)
-			BCountsStore[hash] = counts
-			BRewardsStore[hash] = rewards
-			BBPossibleWorldsStore[hash] = responseWorlds
-		}
-	}
-}
-
-func ExploreReactionsForAction(
-	possibleWorlds BPossibleWorlds,
-	action Action,
-	agreement Agreement,
-) (
-	utils.GroupedIncrementer,
-	utils.GroupedIncrementer,
-	map[string]BPossibleWorlds,
-) {
-	counts := utils.NewGroupedIncrementer()
-	rewards := utils.NewGroupedIncrementer()
-	responseWorlds := make(map[string]BPossibleWorlds)
-	worldIndices := possibleWorlds.ToNums()
-	for _, worldIndex := range worldIndices {
-		world := BUniverse.Worlds[worldIndex]
-		reaction := agreement(World(world.Name), action)
-		response := string(reaction.Response)
-		if _, ok := responseWorlds[response]; !ok {
-			responseWorlds[response] = NewPossibleWorlds(len(BUniverse.Worlds))
-		}
-		counts.Increment(response, 1.0)
-		rewards.Increment(response, reaction.Reward)
-		worlds := responseWorlds[response]
-		worlds.SetBit(world.Index)
-
-	}
-	return counts, rewards, responseWorlds
 }

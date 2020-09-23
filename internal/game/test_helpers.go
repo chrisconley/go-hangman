@@ -10,7 +10,6 @@ func BuildTestAgreement(reward float64) func(World, Action) Reaction {
 			return Reaction{Action: a, Response: "!", Reward: 0.0}
 		}
 	}
-
 }
 
 func TestActionFilter(remainingWorlds PossibleWorlds, aa AvailableActions) []Action {

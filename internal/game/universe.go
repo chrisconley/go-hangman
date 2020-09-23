@@ -13,12 +13,12 @@ import (
 type World string
 type Action string
 type Response string
-type Agreement func(w World, action Action) (reaction Reaction)
-type ActionFilter func(w PossibleWorlds, aa AvailableActions) []Action
+type Act func(w World, action Action) (reaction Reaction)
+type GetActions func(w PossibleWorlds, aa AvailableActions) []Action
 
-type BAgreement struct {
-	GetActions ActionFilter
-	Act        Agreement
+type Agreement struct {
+	GetActions GetActions
+	Act        Act
 }
 
 type Reaction struct {

@@ -40,7 +40,7 @@ func main() {
 	for j := 0; j < *limit; j++ {
 		perspective := game.NewPerspective(
 			game.Motivation{Reward: 0.1, Entropy: 0.9, Time: 0.0},
-			hangman.HangmanBAgreement,
+			hangman.Agreement,
 		)
 
 		truth := worlds.Worlds[j]

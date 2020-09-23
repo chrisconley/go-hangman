@@ -5,14 +5,14 @@ import (
 	"github.com/chrisconley/go-hangman/internal/utils"
 )
 
-func ExploreReactions(possibleWorlds BPossibleWorlds, actions []Action, agreement Agreement) {
+func ExploreReactions(possibleWorlds BPossibleWorlds, actions []Action, act Act) {
 	for _, action := range actions {
 		hash := BuildActionWorldHash(action, possibleWorlds)
 		if _, ok := BBPossibleWorldsStore[hash]; !ok {
 			counts, rewards, responseWorlds := ExploreReactionsForAction(
 				possibleWorlds,
 				action,
-				agreement,
+				act,
 			)
 			BCountsStore[hash] = counts
 			BRewardsStore[hash] = rewards
@@ -24,7 +24,7 @@ func ExploreReactions(possibleWorlds BPossibleWorlds, actions []Action, agreemen
 func ExploreReactionsForAction(
 	possibleWorlds BPossibleWorlds,
 	action Action,
-	agreement Agreement,
+	act Act,
 ) (
 	utils.GroupedIncrementer,
 	utils.GroupedIncrementer,
@@ -36,7 +36,7 @@ func ExploreReactionsForAction(
 	worldIndices := possibleWorlds.ToNums()
 	for _, worldIndex := range worldIndices {
 		world := BUniverse.Worlds[worldIndex]
-		reaction := agreement(World(world.Name), action)
+		reaction := act(World(world.Name), action)
 		response := string(reaction.Response)
 		if _, ok := responseWorlds[response]; !ok {
 			responseWorlds[response] = NewPossibleWorlds(len(BUniverse.Worlds))

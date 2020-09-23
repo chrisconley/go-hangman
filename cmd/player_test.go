@@ -20,7 +20,7 @@ func TestAverageGuesses(t *testing.T) {
 	for j := 0; j < 5; j++ {
 		perspective := game.NewPerspective(
 			game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25},
-			hangman.HangmanBAgreement,
+			hangman.Agreement,
 		)
 
 		truth := possibleWorlds.Worlds[j]

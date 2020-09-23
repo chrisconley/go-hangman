@@ -9,7 +9,7 @@ import (
 // ###########################
 // ### THE DECISION PROCESS ###
 // ###########################
-func Explore(agreement game.BAgreement, possibleWorlds game.BPossibleWorlds) (predictions game.Predictions) {
+func Explore(agreement game.Agreement, possibleWorlds game.BPossibleWorlds) (predictions game.Predictions) {
 	actions := agreement.GetActions(
 		game.BUniverse.PossibleWorlds,
 		game.BUniverse.Actions,
@@ -42,8 +42,8 @@ func Decide(predictions game.Predictions, motivation game.Motivation) game.Actio
 	return maxAction
 }
 
-func Act(action game.Action, agreement game.Agreement, truth game.World) (reaction game.Reaction) {
-	return agreement(truth, action)
+func Act(action game.Action, act game.Act, truth game.World) (reaction game.Reaction) {
+	return act(truth, action)
 }
 
 func Observe(action game.Action, reaction game.Reaction, possibleWorlds game.BPossibleWorlds) game.BPossibleWorlds {
@@ -73,9 +73,9 @@ func PlayGame(truth game.World, perspective game.Perspective) (int, game.World) 
 }
 
 func playTurn(truth game.World, perspective game.Perspective, possibleWorlds game.BPossibleWorlds) (game.Reaction, game.BPossibleWorlds) {
-	predictions := Explore(perspective.BAgreement, possibleWorlds)
+	predictions := Explore(perspective.Agreement, possibleWorlds)
 	action := Decide(predictions, perspective.Motivation)
-	reaction := Act(action, perspective.BAgreement.Act, truth)
+	reaction := Act(action, perspective.Agreement.Act, truth)
 	possibleWorlds = Observe(action, reaction, possibleWorlds)
 	return reaction, possibleWorlds
 }

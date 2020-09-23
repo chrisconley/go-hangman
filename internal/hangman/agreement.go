@@ -7,7 +7,7 @@ import (
 )
 
 // TODO: Make this take game.BPossibleWorlds
-func ActionFilter(remainingWorlds game.PossibleWorlds, aa game.AvailableActions) []game.Action {
+func GetActions(remainingWorlds game.PossibleWorlds, aa game.AvailableActions) []game.Action {
 	// Only use world actions when there are only a few choices left
 	if remainingWorlds.Len() < aa.ActionsLength() {
 		worldActions := []game.Action{}
@@ -20,7 +20,7 @@ func ActionFilter(remainingWorlds game.PossibleWorlds, aa game.AvailableActions)
 	}
 }
 
-func HangmanAgreement(world game.World, action game.Action) (r game.Reaction) {
+func Act(world game.World, action game.Action) (r game.Reaction) {
 	actionLength := len(action)
 	worldString := string(world)
 	actionString := string(action)
@@ -49,7 +49,7 @@ func HangmanAgreement(world game.World, action game.Action) (r game.Reaction) {
 	}
 }
 
-var HangmanBAgreement = game.BAgreement{
-	GetActions: ActionFilter,
-	Act:        HangmanAgreement,
+var Agreement = game.Agreement{
+	GetActions: GetActions,
+	Act:        Act,
 }

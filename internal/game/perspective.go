@@ -6,7 +6,7 @@ package game
 
 type Perspective struct {
 	Motivation Motivation
-	BAgreement BAgreement
+	Agreement  Agreement
 }
 
 type Motivation struct {
@@ -17,10 +17,10 @@ type Motivation struct {
 
 func NewPerspective(
 	motivation Motivation,
-	bagreement BAgreement,
+	agreement Agreement,
 ) Perspective {
 	perspective := Perspective{}
 	perspective.Motivation = motivation
-	perspective.BAgreement = bagreement
+	perspective.Agreement = agreement
 	return perspective
 }

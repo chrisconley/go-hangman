@@ -8,11 +8,11 @@ import (
 	"github.com/chrisconley/go-hangman/internal/game"
 )
 
-func ActionFilter(remainingWorlds game.PossibleWorlds, aa game.AvailableActions) []game.Action {
+func GetActions(remainingWorlds game.PossibleWorlds, aa game.AvailableActions) []game.Action {
 	return aa.WorldActions()
 }
 
-func Agreement(world game.World, action game.Action) (r game.Reaction) {
+func Act(world game.World, action game.Action) (r game.Reaction) {
 	// In An Optimal Mastermind (4,7) Strategy and More Results in the Expected Case
 	// https://arxiv.org/pdf/1305.1010.pdf, the author "double" counts duplicate guesses
 	// that garner a "white" response.
@@ -65,7 +65,7 @@ func Agreement(world game.World, action game.Action) (r game.Reaction) {
 	return game.Reaction{Action: action, Response: game.Response(response), Reward: reward}
 }
 
-var MastermindBAgreement = game.BAgreement{
-	GetActions: ActionFilter,
-	Act:        Agreement,
+var Agreement = game.Agreement{
+	GetActions: GetActions,
+	Act:        Act,
 }

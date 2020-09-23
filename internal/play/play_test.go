@@ -78,7 +78,7 @@ func TestDecideLexicallySortsOnTie(t *testing.T) {
 
 func TestAct(t *testing.T) {
 	truth := game.World("abc")
-	actual := Act(game.Action("a"), game.BuildTestAgreement(0.222), truth)
+	actual := Act(game.Action("a"), game.BuildTestAct(0.222), truth)
 	test.AssertDeepEqual(
 		actual,
 		game.Reaction{Action: "a", Response: "a", Reward: 0.222},
@@ -108,7 +108,7 @@ func TestPlayBHangman(t *testing.T) {
 	for _, line := range lines {
 		perspective := game.NewPerspective(
 			game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25},
-			hangman.HangmanBAgreement,
+			hangman.Agreement,
 		)
 		truth := game.World(line)
 		_, actual := PlayGame(truth, perspective)
@@ -128,7 +128,7 @@ func TestPlayMastermind(t *testing.T) {
 	for _, line := range lines {
 		perspective := game.NewPerspective(
 			game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25},
-			mastermind.MastermindBAgreement,
+			mastermind.Agreement,
 		)
 
 		truth := game.World(line)

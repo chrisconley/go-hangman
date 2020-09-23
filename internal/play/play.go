@@ -9,9 +9,12 @@ import (
 // ###########################
 // ### THE DECISION PROCESS ###
 // ###########################
-func Explore(perspective game.Perspective, agreement game.Agreement, possibleWorlds game.BPossibleWorlds) (predictions game.Predictions) {
-	actions := perspective.ActionFilter(game.BUniverse.PossibleWorlds, game.BUniverse.Actions)
-	game.ExploreReactions(possibleWorlds, actions, agreement)
+func Explore(agreement game.BAgreement, possibleWorlds game.BPossibleWorlds) (predictions game.Predictions) {
+	actions := agreement.GetActions(
+		game.BUniverse.PossibleWorlds,
+		game.BUniverse.Actions,
+	)
+	game.ExploreReactions(possibleWorlds, actions, agreement.Act)
 	predictions = game.BBuildPredictions(actions, possibleWorlds)
 	return predictions
 }
@@ -70,9 +73,9 @@ func PlayGame(truth game.World, perspective game.Perspective) (int, game.World) 
 }
 
 func playTurn(truth game.World, perspective game.Perspective, possibleWorlds game.BPossibleWorlds) (game.Reaction, game.BPossibleWorlds) {
-	predictions := Explore(perspective, perspective.Agreement, possibleWorlds)
+	predictions := Explore(perspective.BAgreement, possibleWorlds)
 	action := Decide(predictions, perspective.Motivation)
-	reaction := Act(action, perspective.Agreement, truth)
+	reaction := Act(action, perspective.BAgreement.Act, truth)
 	possibleWorlds = Observe(action, reaction, possibleWorlds)
 	return reaction, possibleWorlds
 }

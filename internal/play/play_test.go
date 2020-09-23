@@ -110,6 +110,7 @@ func TestPlayBHangman(t *testing.T) {
 			game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25},
 			hangman.HangmanAgreement,
 			hangman.ActionFilter,
+			hangman.HangmanBAgreement,
 		)
 		truth := game.World(line)
 		_, actual := PlayGame(truth, perspective)
@@ -131,6 +132,7 @@ func TestPlayMastermind(t *testing.T) {
 			game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25},
 			mastermind.Agreement,
 			mastermind.ActionFilter,
+			mastermind.MastermindBAgreement,
 		)
 
 		truth := game.World(line)

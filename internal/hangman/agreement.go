@@ -48,3 +48,8 @@ func HangmanAgreement(world game.World, action game.Action) (r game.Reaction) {
 
 	}
 }
+
+var HangmanBAgreement = game.BAgreement{
+	GetActions: ActionFilter,
+	Act:        HangmanAgreement,
+}

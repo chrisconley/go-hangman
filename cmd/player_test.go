@@ -22,6 +22,7 @@ func TestAverageGuesses(t *testing.T) {
 			game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25},
 			hangman.HangmanAgreement,
 			hangman.ActionFilter,
+			hangman.HangmanBAgreement,
 		)
 
 		truth := possibleWorlds.Worlds[j]

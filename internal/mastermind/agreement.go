@@ -64,3 +64,8 @@ func Agreement(world game.World, action game.Action) (r game.Reaction) {
 
 	return game.Reaction{Action: action, Response: game.Response(response), Reward: reward}
 }
+
+var MastermindBAgreement = game.BAgreement{
+	GetActions: ActionFilter,
+	Act:        Agreement,
+}

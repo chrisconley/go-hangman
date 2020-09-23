@@ -42,6 +42,7 @@ func main() {
 			game.Motivation{Reward: 0.1, Entropy: 0.9, Time: 0.0},
 			hangman.HangmanAgreement,
 			hangman.ActionFilter,
+			hangman.HangmanBAgreement,
 		)
 
 		truth := worlds.Worlds[j]

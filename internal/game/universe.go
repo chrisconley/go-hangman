@@ -16,6 +16,11 @@ type Response string
 type Agreement func(w World, action Action) (reaction Reaction)
 type ActionFilter func(w PossibleWorlds, aa AvailableActions) []Action
 
+type BAgreement struct {
+	GetActions ActionFilter
+	Act        Agreement
+}
+
 type Reaction struct {
 	Action   Action
 	Response Response

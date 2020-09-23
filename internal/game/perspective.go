@@ -8,6 +8,7 @@ type Perspective struct {
 	Agreement    Agreement
 	ActionFilter ActionFilter
 	Motivation   Motivation
+	BAgreement   BAgreement
 }
 
 type Motivation struct {
@@ -20,10 +21,12 @@ func NewPerspective(
 	motivation Motivation,
 	agreement Agreement,
 	actionFilter ActionFilter,
+	bagreement BAgreement,
 ) Perspective {
 	perspective := Perspective{}
 	perspective.Motivation = motivation
 	perspective.Agreement = agreement
 	perspective.ActionFilter = actionFilter
+	perspective.BAgreement = bagreement
 	return perspective
 }

@@ -78,7 +78,7 @@ func TestDecideLexicallySortsOnTie(t *testing.T) {
 
 func TestAct(t *testing.T) {
 	truth := game.World("abc")
-	actual := Act(game.Action("a"), game.BuildTestAgreement(0.222), truth)
+	actual := Act(game.Action("a"), game.BuildTestAct(0.222), truth)
 	test.AssertDeepEqual(
 		actual,
 		game.Reaction{Action: "a", Response: "a", Reward: 0.222},
@@ -88,12 +88,6 @@ func TestAct(t *testing.T) {
 
 func TestObserve(t *testing.T) {
 	t.Skip("TODO: Fix test setup")
-	perspective := &game.Perspective{}
-	perspective.Knowledge = game.Knowledge{}
-
-	reaction := game.Reaction{Response: "a", Reward: 1.0}
-	Observe(game.Action("a"), reaction, perspective)
-	test.AssertDeepEqual(perspective.Knowledge, game.Knowledge{reaction}, t)
 }
 
 func TestPlayBHangman(t *testing.T) {
@@ -109,19 +103,15 @@ func TestPlayBHangman(t *testing.T) {
 		"abattises",
 		"abattoirs",
 	}
-	pw := game.InitUniverse(lines)
+	game.InitUniverse(lines)
 
-	worlds := game.BuildPossibleWorlds(lines)
 	for _, line := range lines {
 		perspective := game.NewPerspective(
-			worlds,
 			game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25},
-			pw,
-			hangman.HangmanAgreement,
-			hangman.ActionFilter,
+			hangman.Agreement,
 		)
 		truth := game.World(line)
-		actual := PlayGame(truth, perspective)
+		_, actual := PlayGame(truth, perspective)
 		test.AssertDeepEqual(actual, truth, t)
 	}
 }
@@ -133,20 +123,16 @@ func TestPlayMastermind(t *testing.T) {
 		"121",
 		"211",
 	}
-	pw := game.InitUniverse(lines)
+	game.InitUniverse(lines)
 
-	worlds := game.BuildPossibleWorlds(lines)
 	for _, line := range lines {
 		perspective := game.NewPerspective(
-			worlds,
 			game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25},
-			pw,
 			mastermind.Agreement,
-			mastermind.ActionFilter,
 		)
 
 		truth := game.World(line)
-		actual := PlayGame(truth, perspective)
+		_, actual := PlayGame(truth, perspective)
 		test.AssertDeepEqual(actual, truth, t)
 	}
 }

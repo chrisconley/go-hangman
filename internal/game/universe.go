@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/Workiva/go-datastructures/bitarray"
+	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/chrisconley/go-hangman/internal/utils"
 	"github.com/mitchellh/hashstructure"
 )
@@ -28,34 +28,16 @@ type Reaction struct {
 }
 
 type BPossibleWorlds struct {
-	Bits bitarray.BitArray
+	Bits *roaring64.Bitmap
 }
 
 func (pw *BPossibleWorlds) GetHash() []byte {
-	nums := []byte{}
-	iter := pw.Bits.Blocks()
-	for iter.Next() {
-		_, block := iter.Value()
-		b := make([]byte, 8)
-		binary.LittleEndian.PutUint64(b, uint64(block))
-		nums = append(nums, b...)
-	}
-	return nums
-}
-
-func (pw *BPossibleWorlds) GetBit(index uint64) bool {
-	bool, err := pw.Bits.GetBit(index)
-	if err != nil {
-		panic(err)
-	}
-	return bool
+	bytes, _ := pw.Bits.ToBytes()
+	return bytes
 }
 
 func (pw *BPossibleWorlds) SetBit(index uint64) {
-	err := pw.Bits.SetBit(index)
-	if err != nil {
-		panic(err)
-	}
+	pw.Bits.Add(index)
 }
 
 func (pw *BPossibleWorlds) GetName(index uint64) string {
@@ -63,16 +45,14 @@ func (pw *BPossibleWorlds) GetName(index uint64) string {
 }
 
 func (pw *BPossibleWorlds) Indices() []uint64 {
-	nums := pw.Bits.ToNums()
+	nums := pw.Bits.ToArray()
 	return nums[:len(nums)-1]
 }
 
 func NewPossibleWorlds(length int) BPossibleWorlds {
 	length64 := uint64(length)
 	pw := BPossibleWorlds{}
-	pw.Bits = bitarray.NewBitArray(length64 + 1)
-	pw.Bits.Reset()
-	pw.Bits.SetBit(length64)
+	pw.Bits = roaring64.BitmapOf(length64 + 1)
 	return pw
 }
 

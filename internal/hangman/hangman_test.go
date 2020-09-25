@@ -8,6 +8,19 @@ import (
 	"github.com/chrisconley/go-hangman/test"
 )
 
+func TestGetActions(t *testing.T) {
+	allWorlds := game.BuildPossibleWorlds([]string{"aa", "bb"})
+	aa := game.BuildAvailableActions(allWorlds)
+
+	remainingWorlds := game.BuildPossibleWorlds([]string{"aa", "bb"})
+	actions := GetActions(remainingWorlds, aa)
+	test.AssertDeepEqual(actions, []game.Action{"a", "b"}, t)
+
+	remainingWorlds = game.BuildPossibleWorlds([]string{"aa"})
+	actions = GetActions(remainingWorlds, aa)
+	test.AssertDeepEqual(actions, []game.Action{"a", "b", "aa"}, t)
+}
+
 func TestAct(t *testing.T) {
 	reaction := Act(game.World("abc"), game.Action("a"))
 	test.AssertDeepEqual(reaction.Response, game.Response("a--"), t)

@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-func LoadLinesFromFilePath(path string) (lines []string) {
+func ReadLinesFromFilePath(path string) (lines []string) {
 	file, err := os.Open(path)
 	if err != nil {
 		log.Fatal(err)

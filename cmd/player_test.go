@@ -11,7 +11,7 @@ import (
 )
 
 func TestAverageGuesses(t *testing.T) {
-	lines := utils.LoadLinesFromFilePath("../fixtures/nine-letter-words.txt")
+	lines := utils.ReadLinesFromFilePath("../fixtures/nine-letter-words.txt")
 	lines = lines[:1000]
 
 	possibleWorlds := game.BuildPossibleWorlds(lines)

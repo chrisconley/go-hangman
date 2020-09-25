@@ -86,7 +86,7 @@ func BenchmarkAvailableActionsActionsLengthLarge(b *testing.B) {
 }
 
 func BenchmarkBuildAvailableActionsSmall(b *testing.B) {
-	lines := utils.LoadLinesFromFilePath("../../fixtures/nine-letter-words.txt")
+	lines := utils.ReadLinesFromFilePath("../../fixtures/nine-letter-words.txt")
 	lines = lines[:10]
 	possibleWorlds := BuildPossibleWorlds(lines)
 	b.ResetTimer()
@@ -96,7 +96,7 @@ func BenchmarkBuildAvailableActionsSmall(b *testing.B) {
 }
 
 func BenchmarkBuildAvailableActionsLarge(b *testing.B) {
-	lines := utils.LoadLinesFromFilePath("../../fixtures/nine-letter-words.txt")
+	lines := utils.ReadLinesFromFilePath("../../fixtures/nine-letter-words.txt")
 	lines = lines[:10000]
 	possibleWorlds := BuildPossibleWorlds(lines)
 	b.ResetTimer()

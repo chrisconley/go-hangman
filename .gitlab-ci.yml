@@ -24,12 +24,13 @@ format:
   script:
     - go fmt $(go list ./... | grep -v /vendor/)
     - go vet $(go list ./... | grep -v /vendor/)
-    - go test -race $(go list ./... | grep -v /vendor/) -v -coverprofile .testCoverage.txt
+    - go test -race $(go list ./... | grep -v /vendor/) -v -coverprofile coverage.out
+    - go tool cover -func=coverage.out
 
 compile:
   stage: build
   script:
-    - go build ./cmd/player.go -race -ldflags "-extldflags '-static'" -o $CI_PROJECT_DIR/player
+    - go build -race -ldflags "-extldflags '-static'" -o $CI_PROJECT_DIR/player ./cmd/player.go
   artifacts:
     paths:
       - player

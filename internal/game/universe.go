@@ -2,7 +2,6 @@ package game
 
 import (
 	"encoding/binary"
-	"fmt"
 	"sort"
 
 	"github.com/RoaringBitmap/roaring/roaring64"
@@ -40,10 +39,6 @@ func (pw *BPossibleWorlds) SetBit(index uint64) {
 	pw.Bits.Add(index)
 }
 
-func (pw *BPossibleWorlds) GetName(index uint64) string {
-	return BUniverse.Worlds[index].Name
-}
-
 func (pw *BPossibleWorlds) Indices() []uint64 {
 	nums := pw.Bits.ToArray()
 	return nums[:len(nums)-1]
@@ -66,17 +61,6 @@ func BuildActionWorldHash(action Action, worldsHash []byte) string {
 	worldsHash = append(worldsHash, b...)
 	return string(worldsHash)
 
-}
-
-func LogCacheWorlds(prefix string, hash string, action Action, response string, bpw BPossibleWorlds) {
-	fmt.Printf(
-		"%s | hash:%s, action:%s, response:%s, worlds:%+v ",
-		prefix,
-		hash,
-		action,
-		response,
-		bpw,
-	)
 }
 
 type BWorld struct {

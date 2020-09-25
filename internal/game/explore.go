@@ -11,15 +11,14 @@ func ExploreReactions(possibleWorlds BPossibleWorlds, actions []Action, act Act)
 	for _, action := range actions {
 		hash := BuildActionWorldHash(action, worldsHash)
 		if _, ok := BBPossibleWorldsStore[hash]; !ok {
-			counts, rewards := ExploreReactionsForAction(
+			counts, rewards, responseWorlds := ExploreReactionsForAction(
 				worldIndices,
 				action,
 				act,
-				hash,
 			)
 			BCountsStore[hash] = counts
 			BRewardsStore[hash] = rewards
-			// BBPossibleWorldsStore[hash] = responseWorlds
+			BBPossibleWorldsStore[hash] = responseWorlds
 		}
 	}
 }
@@ -28,28 +27,28 @@ func ExploreReactionsForAction(
 	possibleWorldIndices []uint64,
 	action Action,
 	act Act,
-	hash string,
 ) (
 	utils.GroupedIncrementer,
 	utils.GroupedIncrementer,
+	map[string]BPossibleWorlds,
 ) {
 	counts := utils.NewGroupedIncrementer()
 	rewards := utils.NewGroupedIncrementer()
-	BBPossibleWorldsStore[hash] = make(map[string]BPossibleWorlds)
+	responseWorlds := make(map[string]BPossibleWorlds)
 	for _, worldIndex := range possibleWorldIndices {
 		world := BUniverse.Worlds[worldIndex]
 		reaction := act(World(world.Name), action)
 		response := string(reaction.Response)
-		if _, ok := BBPossibleWorldsStore[hash][response]; !ok {
-			BBPossibleWorldsStore[hash][response] = NewPossibleWorlds(len(BUniverse.Worlds))
+		if _, ok := responseWorlds[response]; !ok {
+			responseWorlds[response] = NewPossibleWorlds(len(BUniverse.Worlds))
 		}
 		counts.Increment(response, 1.0)
 		rewards.Increment(response, reaction.Reward)
-		worlds := BBPossibleWorldsStore[hash][response]
+		worlds := responseWorlds[response]
 		worlds.SetBit(world.Index)
 
 	}
-	return counts, rewards
+	return counts, rewards, responseWorlds
 }
 
 type Predictions map[Action]Prediction

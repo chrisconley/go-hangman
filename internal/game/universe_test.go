@@ -59,6 +59,20 @@ func TestAvailableActionsActionsLength(t *testing.T) {
 	test.AssertDeepEqual(actual, 2, t)
 }
 
+func TestAvailableActionsActions(t *testing.T) {
+	worlds := BuildPossibleWorlds([]string{"aa", "bb"})
+	aa := BuildAvailableActions(worlds)
+	actual := aa.Actions()
+	test.AssertDeepEqual(actual, []Action{"a", "b"}, t)
+}
+
+func TestAvailableActionsWorldActions(t *testing.T) {
+	worlds := BuildPossibleWorlds([]string{"aa", "bb"})
+	aa := BuildAvailableActions(worlds)
+	actual := aa.WorldActions()
+	test.AssertDeepEqual(actual, []Action{"aa", "bb"}, t)
+}
+
 func BenchmarkAvailableActionsActionsLengthSmall(b *testing.B) {
 	worlds := []string{}
 	numElements := 10

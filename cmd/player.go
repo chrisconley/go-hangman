@@ -20,7 +20,7 @@ import (
 )
 
 func main() {
-	// ballast := make([]byte, 10<<30)
+	// ballast := make([]byte, 10<<28)
 	limit := flag.Int("limit", 10, " Help text.")
 	flag.Parse()
 
@@ -54,5 +54,19 @@ func main() {
 	}
 	avg := float64(sum) / float64(len(turns))
 	fmt.Printf("AVG TURNS: %.4f | (sum: %d, games: %d)\n", avg, sum, len(turns))
-	// fmt.Printf("Ballast %v", ballast[0])
+	// count := 0
+	// hashes := make(map[string]bool)
+	// for _, worlds := range game.BBPossibleWorldsStore {
+	// 	for _, world := range worlds {
+	// 		count++
+	// 		hashes[string(world.GetHash())] = true
+	// 		if count <= 3 {
+	// 			fmt.Printf("hash: %+v\n", string(world.GetHash()))
+	// 		}
+	// 	}
+	// }
+	// fmt.Printf("Universe store key size: %d\n", len(game.BBPossibleWorldsStore))
+	// fmt.Printf("Universe store value size: %d\n", count)
+	// fmt.Printf("Unique worlds size: %d\n", len(hashes))
+	// fmt.Printf("Ballast %v\n", ballast[0])
 }

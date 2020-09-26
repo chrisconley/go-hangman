@@ -16,6 +16,7 @@ import (
 
 	"github.com/chrisconley/go-hangman/internal/game"
 	"github.com/chrisconley/go-hangman/internal/hangman"
+	"github.com/chrisconley/go-hangman/internal/mastermind"
 
 	"github.com/chrisconley/go-hangman/internal/play"
 	"github.com/chrisconley/go-hangman/internal/utils"
@@ -29,9 +30,19 @@ func main() {
 	}
 
 	limit := flag.Int("limit", len(lines), "How many games to play. Defaults to all games piped in from stdin.")
-	agreement := hangman.Agreement
+	gameString := flag.String("game", "none", "What game to play. Valid games: hangman, mastermind. Required")
 	motivation := game.Motivation{Reward: 0.0, Entropy: 1.0, Time: 0.0}
 	flag.Parse()
+
+	agreement := hangman.Agreement
+	fmt.Printf("game: %+v\n", *gameString)
+	if *gameString == "hangman" {
+		agreement = hangman.Agreement
+	} else if *gameString == "mastermind" {
+		agreement = mastermind.Agreement
+	} else {
+		panic("A game must be specified.")
+	}
 
 	turns := play.PlayGames(agreement, motivation, lines, *limit)
 	stats := play.CalculateStats(turns)

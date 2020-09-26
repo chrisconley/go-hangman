@@ -1,12 +1,10 @@
 package play
 
-import "fmt"
-
 type Stats struct {
+	GameCount    int
 	TotalTurns   int
 	AverageTurns float64
 	MaxTurns     int
-	GameCount    int
 }
 
 func CalculateStats(turnCounts []int) Stats {
@@ -22,11 +20,5 @@ func CalculateStats(turnCounts []int) Stats {
 	}
 
 	stats.AverageTurns = float64(stats.TotalTurns) / float64(stats.GameCount)
-	fmt.Printf(
-		"AVG TURNS: %.4f | (sum: %d, games: %d)\n",
-		stats.AverageTurns,
-		stats.TotalTurns,
-		stats.GameCount,
-	)
 	return stats
 }

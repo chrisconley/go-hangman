@@ -9,12 +9,13 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
 
 	"github.com/chrisconley/go-hangman/internal/game"
-	"github.com/chrisconley/go-hangman/internal/mastermind"
+	"github.com/chrisconley/go-hangman/internal/hangman"
 
 	"github.com/chrisconley/go-hangman/internal/play"
 	"github.com/chrisconley/go-hangman/internal/utils"
@@ -28,10 +29,13 @@ func main() {
 	}
 
 	limit := flag.Int("limit", len(lines), "How many games to play. Defaults to all games piped in from stdin.")
-	agreement := mastermind.Agreement
+	agreement := hangman.Agreement
 	motivation := game.Motivation{Reward: 0.0, Entropy: 1.0, Time: 0.0}
 	flag.Parse()
 
 	turns := play.PlayGames(agreement, motivation, lines, *limit)
-	_ = play.CalculateStats(turns)
+	stats := play.CalculateStats(turns)
+
+	b, err := json.Marshal(stats)
+	fmt.Printf("GameStats: %s", string(b))
 }

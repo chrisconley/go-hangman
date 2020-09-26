@@ -35,7 +35,6 @@ func main() {
 	flag.Parse()
 
 	agreement := hangman.Agreement
-	fmt.Printf("game: %+v\n", *gameString)
 	if *gameString == "hangman" {
 		agreement = hangman.Agreement
 	} else if *gameString == "mastermind" {

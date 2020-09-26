@@ -20,14 +20,22 @@ func TestGetActions(t *testing.T) {
 	test.AssertDeepEqual(actions, []game.Action{"aa", "bb"}, t)
 }
 
-func TestAct(t *testing.T) {
+func TestActRewards(t *testing.T) {
 	reaction := Act(game.World("1122"), game.Action("1313"))
 	test.AssertDeepEqual(reaction.Response, game.Response("BW"), t)
-	test.AssertDeepEqual(reaction.Reward, 0.375, t)
+	test.AssertAlmostEqual(reaction.Reward, 0.375, 4, t)
 
 	reaction = Act(game.World("1122"), game.Action("2211"))
 	test.AssertDeepEqual(reaction.Response, game.Response("WWWW"), t)
-	test.AssertDeepEqual(reaction.Reward, 0.5, t)
+	test.AssertAlmostEqual(reaction.Reward, 0.5, 4, t)
+
+	reaction = Act(game.World("11224"), game.Action("13135"))
+	test.AssertDeepEqual(reaction.Response, game.Response("BW"), t)
+	test.AssertAlmostEqual(reaction.Reward, 0.3, 4, t)
+
+	reaction = Act(game.World("112244"), game.Action("131355"))
+	test.AssertDeepEqual(reaction.Response, game.Response("BW"), t)
+	test.AssertAlmostEqual(reaction.Reward, 0.25, 4, t)
 }
 
 func TestActWikipediaExample(t *testing.T) {

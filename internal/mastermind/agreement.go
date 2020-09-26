@@ -1,7 +1,6 @@
 package mastermind
 
 import (
-	// "fmt"
 	"regexp"
 	"strings"
 
@@ -10,6 +9,7 @@ import (
 
 func GetActions(remainingWorlds game.PossibleWorlds, aa game.AvailableActions) []game.Action {
 	return aa.WorldActions()
+
 }
 
 func Act(world game.World, action game.Action) (r game.Reaction) {
@@ -35,20 +35,26 @@ func Act(world game.World, action game.Action) (r game.Reaction) {
 
 	worldString := string(world)
 	actionString := string(action)
+	worldLength := len(worldString)
 
 	response := ""
 	reward := 0.0
 
+	// First, we're going to look for "B" responses (guesses in the correction position)
 	for i := 0; i < len(actionString); i++ {
 		if worldString[i] == actionString[i] {
 			response = response + "B"
-			reward += 0.25
+			reward += 1 / float64(worldLength)
+			// When we find an exact match,
+			// we replace current character with a "-" sentinel
+			// so we don't assign a "W" below for a guess that has already received a "B"
 			worldString = worldString[:i] + "-" + worldString[i+1:]
 			actionString = actionString[:i] + "-" + actionString[i+1:]
 		}
 	}
 
 	for i := 0; i < len(actionString); i++ {
+		// If this guess has already received a "B" response, skip it
 		if actionString[i] == '-' {
 			continue
 		}
@@ -57,7 +63,10 @@ func Act(world game.World, action game.Action) (r game.Reaction) {
 		match := re.FindString(worldString)
 		if match != "" {
 			response = response + "W"
-			reward += 0.125
+			reward += 0.5 / float64(worldLength)
+			// When we find a match,
+			// we replace all occurences of the guess in the worldString
+			// so we don't double count it
 			worldString = strings.Replace(worldString, match, "-", 1)
 		}
 	}

@@ -41,7 +41,7 @@ hangman:
   script:
     - cat $CI_PROJECT_DIR/fixtures/nine-letter-words.txt | ./player -game hangman -limit 100
 
-mastermind:
-  stage: run
-  script:
-    - cat $CI_PROJECT_DIR/fixtures/commercial-mastermind.txt | ./player -game mastermind -limit 10
+# mastermind:
+#   stage: run
+#   script:
+#     - cat $CI_PROJECT_DIR/fixtures/commercial-mastermind.txt | ./player -game mastermind -limit 10

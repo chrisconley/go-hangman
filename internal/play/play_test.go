@@ -142,7 +142,7 @@ func TestPlayGames(t *testing.T) {
 	lines := utils.ReadLinesFromFilePath("../../fixtures/nine-letter-words.txt")
 	lines = lines[:100]
 
-	game.InitUniverse(lines)
-	turns := PlayGames(lines, 3)
+	motivation := game.Motivation{Reward: 0.0, Entropy: 1.0, Time: 0.0}
+	turns := PlayGames(mastermind.Agreement, motivation, lines, 3)
 	test.AssertDeepEqual(turns, []int{1, 2, 2}, t)
 }

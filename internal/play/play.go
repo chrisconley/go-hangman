@@ -4,7 +4,6 @@ import (
 	"math"
 
 	"github.com/chrisconley/go-hangman/internal/game"
-	"github.com/chrisconley/go-hangman/internal/mastermind"
 )
 
 // ###########################
@@ -56,14 +55,14 @@ func Observe(action game.Action, reaction game.Reaction, possibleWorlds game.BPo
 // ###########################
 // ### THE GAME ###
 // ###########################
-func PlayGames(lines []string, limit int) []int {
+func PlayGames(agreement game.Agreement, motivation game.Motivation, lines []string, limit int) []int {
 	game.InitUniverse(lines)
 	// defer profile.Start().Stop()
 	turns := []int{}
 	for j := 0; j < limit; j++ {
 		perspective := game.NewPerspective(
-			game.Motivation{Reward: 0.0, Entropy: 1.0, Time: 0.0},
-			mastermind.Agreement,
+			motivation,
+			agreement,
 		)
 
 		btruth := game.BUniverse.Worlds[j]

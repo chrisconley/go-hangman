@@ -6,6 +6,7 @@ import (
 	"github.com/chrisconley/go-hangman/internal/game"
 	"github.com/chrisconley/go-hangman/internal/hangman"
 	"github.com/chrisconley/go-hangman/internal/mastermind"
+	"github.com/chrisconley/go-hangman/internal/utils"
 
 	"github.com/chrisconley/go-hangman/test"
 )
@@ -135,4 +136,13 @@ func TestPlayMastermind(t *testing.T) {
 		_, actual := PlayGame(truth, perspective)
 		test.AssertDeepEqual(actual, truth, t)
 	}
+}
+
+func TestPlayGames(t *testing.T) {
+	lines := utils.ReadLinesFromFilePath("../../fixtures/nine-letter-words.txt")
+	lines = lines[:100]
+
+	game.InitUniverse(lines)
+	turns := PlayGames(lines, 3)
+	test.AssertDeepEqual(turns, []int{1, 2, 2}, t)
 }

@@ -26,7 +26,9 @@ func Decide(predictions game.Predictions, motivation game.Motivation) game.Actio
 		panic("There is only one prediction for the decision.")
 	}
 	for _, prediction := range predictions {
-		weight := math.Pow(prediction.Entropy, motivation.Entropy) * math.Pow(prediction.Reward, motivation.Reward)
+		weight := math.Pow(prediction.Reward, motivation.Reward) *
+			math.Pow(prediction.Entropy, motivation.Entropy) *
+			math.Pow(prediction.InversedMax, motivation.MiniMax)
 
 		// Decide whether or not to swap out maxAction with the new action
 		if weight > maxWeight {

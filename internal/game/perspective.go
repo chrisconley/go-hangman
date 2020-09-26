@@ -12,6 +12,7 @@ type Perspective struct {
 type Motivation struct {
 	Reward  float64
 	Entropy float64
+	MiniMax float64
 	Time    float64
 }
 

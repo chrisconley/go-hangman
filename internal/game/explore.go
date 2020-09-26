@@ -54,9 +54,10 @@ func ExploreReactionsForAction(
 type Predictions map[Action]Prediction
 
 type Prediction struct {
-	Action  Action
-	Reward  float64
-	Entropy float64
+	Action      Action
+	Reward      float64
+	Entropy     float64
+	InversedMax float64
 }
 
 func (p Predictions) GetEntropy(action string) float64 {
@@ -65,6 +66,10 @@ func (p Predictions) GetEntropy(action string) float64 {
 
 func (p Predictions) GetReward(action string) float64 {
 	return p[Action(action)].Reward
+}
+
+func (p Predictions) GetInversedMax(action string) float64 {
+	return p[Action(action)].InversedMax
 }
 
 func (p Predictions) AddPrediction(action Action, prediction Prediction) {
@@ -79,11 +84,9 @@ func BBuildPredictions(actions []Action, bpw BPossibleWorlds) Predictions {
 		prediction := Prediction{Action: action}
 		counts := BCountsStore[hash]
 		rewards := BRewardsStore[hash]
-		prediction.Entropy = mth.CalcEntropy(
-			counts.Total(),
-			counts.All(),
-		)
 		prediction.Reward = rewards.Total() / counts.Total()
+		prediction.Entropy = mth.CalcEntropy(counts.Total(), counts.All())
+		prediction.InversedMax = mth.FindInversedMax(counts.Total(), counts.All())
 		predictions.AddPrediction(action, prediction)
 	}
 	return predictions

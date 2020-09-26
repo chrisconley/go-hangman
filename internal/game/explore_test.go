@@ -21,6 +21,10 @@ func TestBuildPredictions(t *testing.T) {
 	test.AssertAlmostEqual(actual.GetReward("a"), 0.6667, 4, t)
 	test.AssertAlmostEqual(actual.GetReward("b"), 1.0000, 4, t)
 	test.AssertAlmostEqual(actual.GetReward("c"), 0.3333, 4, t)
+
+	test.AssertAlmostEqual(actual.GetInversedMax("a"), 1.0000, 4, t)
+	test.AssertAlmostEqual(actual.GetInversedMax("b"), 0.0000, 4, t)
+	test.AssertAlmostEqual(actual.GetInversedMax("c"), 1.0000, 4, t)
 }
 
 func TestExploreReactionsForAction(t *testing.T) {

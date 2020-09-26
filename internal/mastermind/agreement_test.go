@@ -38,32 +38,60 @@ func TestActWikipediaExample(t *testing.T) {
 }
 
 func TestActWhiteCounting(t *testing.T) {
-	// Counting whites
-	reaction := Act(game.World("1112"), game.Action("3331"))
+	// Duplicates in world
+	reaction := Act(game.World("1112"), game.Action("7891"))
 	test.AssertDeepEqual(reaction.Response, game.Response("W"), t)
 
-	reaction = Act(game.World("2111"), game.Action("1333"))
+	reaction = Act(game.World("2111"), game.Action("1789"))
 	test.AssertDeepEqual(reaction.Response, game.Response("W"), t)
 
-	reaction = Act(game.World("1222"), game.Action("3111"))
+	reaction = Act(game.World("1211"), game.Action("7189"))
 	test.AssertDeepEqual(reaction.Response, game.Response("W"), t)
 
-	reaction = Act(game.World("2221"), game.Action("1113"))
+	// Duplicates in action
+	reaction = Act(game.World("1234"), game.Action("7111"))
 	test.AssertDeepEqual(reaction.Response, game.Response("W"), t)
+
+	reaction = Act(game.World("2341"), game.Action("1117"))
+	test.AssertDeepEqual(reaction.Response, game.Response("W"), t)
+
+	reaction = Act(game.World("2134"), game.Action("1711"))
+	test.AssertDeepEqual(reaction.Response, game.Response("W"), t)
+
+	// Duplicates in both
+	reaction = Act(game.World("2311"), game.Action("1178"))
+	test.AssertDeepEqual(reaction.Response, game.Response("WW"), t)
+
+	reaction = Act(game.World("1123"), game.Action("7811"))
+	test.AssertDeepEqual(reaction.Response, game.Response("WW"), t)
+
+	reaction = Act(game.World("2113"), game.Action("1781"))
+	test.AssertDeepEqual(reaction.Response, game.Response("WW"), t)
+
+	reaction = Act(game.World("1231"), game.Action("7118"))
+	test.AssertDeepEqual(reaction.Response, game.Response("WW"), t)
 }
 
 func TestActInstructionsExamples(t *testing.T) {
-	// Instructions examples fromj
+	// Instructions examples from docs/mastermindrules.pdf
 	// https://magisterrex.files.wordpress.com/2014/07/mastermindrules.pdf
+
+	// Basic example responding with "BW"
+	// "B" is for the third position "U" guess
+	// "W" is for the first position "W" guess
 	reaction := Act(game.World("RWUG"), game.Action("WYUK"))
 	test.AssertDeepEqual(reaction.Response, game.Response("BW"), t)
 
+	// Prefer "B" response over "W".
+	// Do not respond with "BW" because the code word only has one G
 	reaction = Act(game.World("RUGK"), game.Action("WYGG"))
 	test.AssertDeepEqual(reaction.Response, game.Response("B"), t)
 
+	// Only one "W" because the guess only has one "Y"
 	reaction = Act(game.World("YUYK"), game.Action("RYGW"))
 	test.AssertDeepEqual(reaction.Response, game.Response("W"), t)
 
+	// Two "R" guesses; one is in right place, one is not
 	reaction = Act(game.World("RURY"), game.Action("GRRW"))
 	test.AssertDeepEqual(reaction.Response, game.Response("BW"), t)
 }

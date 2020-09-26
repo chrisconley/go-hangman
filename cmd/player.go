@@ -14,7 +14,7 @@ import (
 	"os"
 
 	"github.com/chrisconley/go-hangman/internal/game"
-	"github.com/chrisconley/go-hangman/internal/hangman"
+	"github.com/chrisconley/go-hangman/internal/mastermind"
 	"github.com/chrisconley/go-hangman/internal/play"
 	"github.com/chrisconley/go-hangman/internal/utils"
 )
@@ -38,8 +38,8 @@ func main() {
 	turns := []int{}
 	for j := 0; j < *limit; j++ {
 		perspective := game.NewPerspective(
-			game.Motivation{Reward: 0.1, Entropy: 0.9, Time: 0.0},
-			hangman.Agreement,
+			game.Motivation{Reward: 0.0, Entropy: 1.0, Time: 0.0},
+			mastermind.Agreement,
 		)
 
 		truth := worlds.Worlds[j]

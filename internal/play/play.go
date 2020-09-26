@@ -57,10 +57,10 @@ func Observe(action game.Action, reaction game.Reaction, possibleWorlds game.BPo
 // ###########################
 // ### THE GAME ###
 // ###########################
-func PlayGames(agreement game.Agreement, motivation game.Motivation, lines []string, limit int) []int {
+func PlayGames(agreement game.Agreement, motivation game.Motivation, lines []string, limit int) []game.Reactions {
 	game.InitUniverse(lines)
 	// defer profile.Start().Stop()
-	turns := []int{}
+	turns := []game.Reactions{}
 	for j := 0; j < limit; j++ {
 		perspective := game.NewPerspective(
 			motivation,
@@ -78,12 +78,14 @@ func PlayGames(agreement game.Agreement, motivation game.Motivation, lines []str
 	return turns
 }
 
-func PlayGame(truth game.World, perspective game.Perspective) (int, game.World) {
+func PlayGame(truth game.World, perspective game.Perspective) (game.Reactions, game.World) {
 	possibleWorlds := game.BUniverse.BPossibleWorlds
-	turns := 0
+	reactions := game.Reactions{}
+	reaction := game.Reaction{}
 	for true {
-		turns += 1
-		_, possibleWorlds = playTurn(truth, perspective, possibleWorlds)
+		reaction, possibleWorlds = playTurn(truth, perspective, possibleWorlds)
+		reactions.Turns = append(reactions.Turns, reaction)
+		reactions.TurnCount++
 		remainingWorldIndices := possibleWorlds.Indices()
 		if len(remainingWorldIndices) == 1 {
 			break
@@ -91,7 +93,7 @@ func PlayGame(truth game.World, perspective game.Perspective) (int, game.World) 
 	}
 	remainingWorldIndices := possibleWorlds.Indices()
 	lastWorldIndex := remainingWorldIndices[0]
-	return turns, game.World(game.BUniverse.Worlds[lastWorldIndex].Name)
+	return reactions, game.World(game.BUniverse.Worlds[lastWorldIndex].Name)
 }
 
 func playTurn(truth game.World, perspective game.Perspective, possibleWorlds game.BPossibleWorlds) (game.Reaction, game.BPossibleWorlds) {

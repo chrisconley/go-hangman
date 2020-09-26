@@ -26,6 +26,11 @@ type Reaction struct {
 	Reward   float64
 }
 
+type Reactions struct {
+	Turns     []Reaction
+	TurnCount int
+}
+
 type BPossibleWorlds struct {
 	Bits *roaring64.Bitmap
 }

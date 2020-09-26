@@ -1,6 +1,7 @@
 package play
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/chrisconley/go-hangman/internal/game"
@@ -137,6 +138,22 @@ func TestPlayMastermind(t *testing.T) {
 		test.AssertDeepEqual(actual, truth, t)
 	}
 }
+func TestPlayMastermindKnuth(t *testing.T) {
+	lines := utils.ReadLinesFromFilePath("../../fixtures/commercial-mastermind.txt")
+	game.InitUniverse(lines)
+
+	perspective := game.NewPerspective(
+		game.Motivation{MiniMax: 1.0},
+		mastermind.Agreement,
+	)
+
+	truth := game.World("CFCB")
+	reactions, _ := PlayGame(truth, perspective)
+	for _, reaction := range reactions.Turns {
+		fmt.Printf("reaction: %+v\n", reaction)
+	}
+	test.AssertDeepEqual(1, 2, t)
+}
 
 func TestPlayGames(t *testing.T) {
 	lines := utils.ReadLinesFromFilePath("../../fixtures/nine-letter-words.txt")
@@ -144,5 +161,7 @@ func TestPlayGames(t *testing.T) {
 
 	motivation := game.Motivation{Reward: 0.0, Entropy: 1.0, Time: 0.0}
 	turns := PlayGames(mastermind.Agreement, motivation, lines, 3)
-	test.AssertDeepEqual(turns, []int{1, 2, 2}, t)
+	test.AssertDeepEqual(turns[0].TurnCount, 1, t)
+	test.AssertDeepEqual(turns[1].TurnCount, 2, t)
+	test.AssertDeepEqual(turns[2].TurnCount, 2, t)
 }

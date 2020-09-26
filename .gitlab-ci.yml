@@ -44,4 +44,4 @@ hangman:
 mastermind:
   stage: run
   script:
-    - cat $CI_PROJECT_DIR/commercial-mastermind.txt | ./player -game mastermind -limit 100
+    - cat $CI_PROJECT_DIR/fixtures/commercial-mastermind.txt | ./player -game mastermind -limit 100

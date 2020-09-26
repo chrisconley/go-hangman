@@ -39,9 +39,9 @@ build:
 hangman:
   stage: run
   script:
-    - time cat ./fixtures/nine-letter-words.txt | ./player -game hangman -limit 100
+    - cat $CI_PROJECT_DIR/fixtures/nine-letter-words.txt | ./player -game hangman -limit 100
 
 mastermind:
   stage: run
   script:
-    - time cat ./commercial-mastermind.txt | ./player -game mastermind -limit 100
+    - cat $CI_PROJECT_DIR/commercial-mastermind.txt | ./player -game mastermind -limit 100

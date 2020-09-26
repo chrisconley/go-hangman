@@ -19,54 +19,66 @@ import (
 	"github.com/chrisconley/go-hangman/internal/utils"
 )
 
-func main() {
-	// ballast := make([]byte, 10<<28)
-	limit := flag.Int("limit", 10, " Help text.")
-	flag.Parse()
+func PlayGames(lines []string, limit int) []int {
+	game.InitUniverse(lines)
+	// defer profile.Start().Stop()
+	turns := []int{}
+	for j := 0; j < limit; j++ {
+		perspective := game.NewPerspective(
+			game.Motivation{Reward: 0.0, Entropy: 1.0, Time: 0.0},
+			mastermind.Agreement,
+		)
 
+		btruth := game.BUniverse.Worlds[j]
+		truth := game.World(btruth.Name)
+		turnCount, _ := play.PlayGame(truth, perspective)
+		// fmt.Printf("TRUTH: %s | ", truth)
+		// fmt.Printf("TURNS: %d\n", turnCount)
+		turns = append(turns, turnCount)
+	}
+
+	return turns
+}
+
+type Stats struct {
+	TotalTurns   int
+	AverageTurns float64
+	MaxTurns     int
+	GameCount    int
+}
+
+func CalculateStats(turnCounts []int) Stats {
+	stats := Stats{}
+	stats.TotalTurns = 0
+	stats.MaxTurns = 0
+	stats.GameCount = len(turnCounts)
+	for _, turnCount := range turnCounts {
+		stats.TotalTurns = stats.TotalTurns + turnCount
+		if turnCount > stats.MaxTurns {
+			stats.MaxTurns = turnCount
+		}
+	}
+
+	stats.AverageTurns = float64(stats.TotalTurns) / float64(stats.GameCount)
+	fmt.Printf(
+		"AVG TURNS: %.4f | (sum: %d, games: %d)\n",
+		stats.AverageTurns,
+		stats.TotalTurns,
+		stats.GameCount,
+	)
+	return stats
+}
+
+func main() {
 	lines, err := utils.ReadLinesFromStdin()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(2)
 	}
 
-	game.InitUniverse(lines)
+	limit := flag.Int("limit", len(lines), "How many games to play. Defaults to all games piped in from stdin.")
+	flag.Parse()
 
-	worlds := game.BuildPossibleWorlds(lines)
-	// defer profile.Start().Stop()
-
-	turns := []int{}
-	for j := 0; j < *limit; j++ {
-		perspective := game.NewPerspective(
-			game.Motivation{Reward: 0.0, Entropy: 1.0, Time: 0.0},
-			mastermind.Agreement,
-		)
-
-		truth := worlds.Worlds[j]
-		turnCount, _ := play.PlayGame(truth, perspective)
-		// fmt.Printf("TRUTH: %s | ", truth)
-		// fmt.Printf("TURNS: %d\n", turnCount)
-		turns = append(turns, turnCount)
-	}
-	sum := 0
-	for i := 0; i < len(turns); i++ {
-		sum = sum + turns[i]
-	}
-	avg := float64(sum) / float64(len(turns))
-	fmt.Printf("AVG TURNS: %.4f | (sum: %d, games: %d)\n", avg, sum, len(turns))
-	// count := 0
-	// hashes := make(map[string]bool)
-	// for _, worlds := range game.BBPossibleWorldsStore {
-	// 	for _, world := range worlds {
-	// 		count++
-	// 		hashes[string(world.GetHash())] = true
-	// 		if count <= 3 {
-	// 			fmt.Printf("hash: %+v\n", string(world.GetHash()))
-	// 		}
-	// 	}
-	// }
-	// fmt.Printf("Universe store key size: %d\n", len(game.BBPossibleWorldsStore))
-	// fmt.Printf("Universe store value size: %d\n", count)
-	// fmt.Printf("Unique worlds size: %d\n", len(hashes))
-	// fmt.Printf("Ballast %v\n", ballast[0])
+	turns := PlayGames(lines, *limit)
+	_ = CalculateStats(turns)
 }

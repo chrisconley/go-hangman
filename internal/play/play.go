@@ -1,6 +1,7 @@
 package play
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/chrisconley/go-hangman/internal/game"
@@ -22,6 +23,7 @@ func Explore(agreement game.Agreement, possibleWorlds game.BPossibleWorlds) (pre
 func Decide(predictions game.Predictions, motivation game.Motivation) game.Action {
 	maxWeight := 0.0
 	maxAction := game.Action("")
+	maxIsValid := false
 	if len(predictions) == 1 {
 		panic("There is only one prediction for the decision.")
 	}
@@ -30,22 +32,31 @@ func Decide(predictions game.Predictions, motivation game.Motivation) game.Actio
 			math.Pow(prediction.Entropy, motivation.Entropy) *
 			math.Pow(prediction.InversedMax, motivation.MiniMax)
 
+		isValid := prediction.ActionMatchesAPossibleWorld
+
 		// Decide whether or not to swap out maxAction with the new action
-		if weight > maxWeight {
+		if weight == maxWeight && isValid == maxIsValid && prediction.Action < maxAction {
+			// 	// If the new weight is equal to current max
+			// 	// AND the new action is lexicographically before maxAction, use it
+			maxAction = prediction.Action
+		} else if weight == maxWeight && isValid && maxIsValid == false {
+			maxAction = prediction.Action
+			maxIsValid = isValid
+		} else if weight > maxWeight {
 			// If there is a clear winner, use it
 			maxWeight = weight
 			maxAction = prediction.Action
-		} else if weight == maxWeight && prediction.Action < maxAction {
-			// If the new weight is equal to current max
-			// AND the new action is lexicographically before maxAction, use it
-			maxAction = prediction.Action
+			maxIsValid = isValid
 		}
 	}
+	fmt.Printf("MAXACTION: %+v\n", predictions[maxAction])
 	return maxAction
 }
 
-func Act(action game.Action, act game.Act, truth game.World) (reaction game.Reaction) {
-	return act(truth, action)
+func Act(action game.Action, act game.Act, truth game.World) game.Reaction {
+	reaction := act(truth, action)
+	fmt.Printf("REACTION: %+v\n", reaction)
+	return reaction
 }
 
 func Observe(action game.Action, reaction game.Reaction, possibleWorlds game.BPossibleWorlds) game.BPossibleWorlds {
@@ -83,6 +94,7 @@ func PlayGame(truth game.World, perspective game.Perspective) (game.Reactions, g
 	reactions := game.Reactions{}
 	reaction := game.Reaction{}
 	for true {
+		// fmt.Printf("POSSIBLE WORLDS: %+v\n", possibleWorlds)
 		reaction, possibleWorlds = playTurn(truth, perspective, possibleWorlds)
 		reactions.Turns = append(reactions.Turns, reaction)
 		reactions.TurnCount++

@@ -68,14 +68,47 @@ func TestDecideDeterminism(t *testing.T) {
 
 func TestDecideLexicallySortsOnTie(t *testing.T) {
 	predictions := game.Predictions{
-		"b": game.Prediction{Action: "b", Entropy: 1.0, Reward: 0.5},
-		"a": game.Prediction{Action: "a", Entropy: 1.0, Reward: 0.5},
+		"b": game.Prediction{Action: "b", Entropy: 1.0, ActionMatchesAPossibleWorld: true},
+		"a": game.Prediction{Action: "a", Entropy: 1.0, ActionMatchesAPossibleWorld: true},
 	}
 
 	// All Entropy
 	motivation := game.Motivation{Reward: 0.0, Entropy: 1.0, Time: 0.0}
 	actual := Decide(predictions, motivation)
 	test.AssertDeepEqual(actual, game.Action("a"), t)
+
+	predictions = game.Predictions{
+		"b": game.Prediction{Action: "b", Entropy: 1.0, ActionMatchesAPossibleWorld: false},
+		"a": game.Prediction{Action: "a", Entropy: 1.0, ActionMatchesAPossibleWorld: false},
+	}
+
+	// All Entropy
+	motivation = game.Motivation{Reward: 0.0, Entropy: 1.0, Time: 0.0}
+	actual = Decide(predictions, motivation)
+	test.AssertDeepEqual(actual, game.Action("a"), t)
+}
+func TestDecideValidSortsOnTie(t *testing.T) {
+	predictions := game.Predictions{
+		"b": game.Prediction{Action: "b", Entropy: 1.0, ActionMatchesAPossibleWorld: false},
+		"c": game.Prediction{Action: "c", Entropy: 1.0, ActionMatchesAPossibleWorld: true},
+		"a": game.Prediction{Action: "a", Entropy: 1.0, ActionMatchesAPossibleWorld: false},
+	}
+
+	// All Entropy
+	motivation := game.Motivation{Reward: 0.0, Entropy: 1.0, Time: 0.0}
+	actual := Decide(predictions, motivation)
+	test.AssertDeepEqual(actual, game.Action("c"), t)
+
+	predictions = game.Predictions{
+		"b": game.Prediction{Action: "b", Entropy: 1.0, ActionMatchesAPossibleWorld: true},
+		"c": game.Prediction{Action: "c", Entropy: 1.0, ActionMatchesAPossibleWorld: true},
+		"a": game.Prediction{Action: "a", Entropy: 1.0, ActionMatchesAPossibleWorld: false},
+	}
+
+	// All Entropy
+	motivation = game.Motivation{Reward: 0.0, Entropy: 1.0, Time: 0.0}
+	actual = Decide(predictions, motivation)
+	test.AssertDeepEqual(actual, game.Action("b"), t)
 }
 
 func TestAct(t *testing.T) {
@@ -127,23 +160,41 @@ func TestPlayMastermind(t *testing.T) {
 	}
 	game.InitUniverse(lines)
 
-	for _, line := range lines {
-		perspective := game.NewPerspective(
-			game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25},
-			mastermind.Agreement,
-		)
+	// for _, line := range lines {
+	// 	perspective := game.NewPerspective(
+	// 		game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25},
+	// 		mastermind.Agreement,
+	// 	)
 
-		truth := game.World(line)
-		_, actual := PlayGame(truth, perspective)
-		test.AssertDeepEqual(actual, truth, t)
+	// 	truth := game.World(line)
+	// 	fmt.Printf("TRUTH: %v\n", truth)
+	// 	reactions, actual := PlayGame(truth, perspective)
+	// 	for _, reaction := range reactions.Turns {
+	// 		fmt.Printf("reaction: %+v\n", reaction)
+	// 	}
+	// 	test.AssertDeepEqual(actual, truth, t)
+	// }
+	perspective := game.NewPerspective(
+		game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25},
+		mastermind.Agreement,
+	)
+
+	truth := game.World("211")
+	fmt.Printf("TRUTH: %v\n", truth)
+	reactions, actual := PlayGame(truth, perspective)
+	for _, reaction := range reactions.Turns {
+		fmt.Printf("LOGGED REACTION: %+v\n", reaction)
 	}
+	test.AssertDeepEqual(actual, truth, t)
+	test.AssertDeepEqual(1, 2, t)
 }
-func TestPlayMastermindKnuth(t *testing.T) {
+func TestPlayKnuthMastermind(t *testing.T) {
 	lines := utils.ReadLinesFromFilePath("../../fixtures/commercial-mastermind.txt")
 	game.InitUniverse(lines)
 
 	perspective := game.NewPerspective(
-		game.Motivation{MiniMax: 1.0},
+		// game.Motivation{Entropy: 0.01, MiniMax: 0.99},
+		game.Motivation{Entropy: 0.00, MiniMax: 1.0},
 		mastermind.Agreement,
 	)
 
@@ -153,6 +204,11 @@ func TestPlayMastermindKnuth(t *testing.T) {
 		fmt.Printf("reaction: %+v\n", reaction)
 	}
 	test.AssertDeepEqual(1, 2, t)
+	// {'guess': '1122', 'result': 'B'},
+	// {'guess': '1344', 'result': 'W'},
+	// {'guess': '3526', 'result': 'BWW'},
+	// {'guess': '1462', 'result': 'BW'},
+	// {'guess': '3632', 'result': 'BBBB'}
 }
 
 func TestPlayGames(t *testing.T) {

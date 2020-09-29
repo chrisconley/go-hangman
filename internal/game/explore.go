@@ -1,17 +1,26 @@
 package game
 
 import (
+	"fmt"
+
 	"github.com/chrisconley/go-hangman/internal/mth"
 	"github.com/chrisconley/go-hangman/internal/utils"
 )
 
+var ExploreCount = 0
+
 func ExploreReactions(possibleWorlds BPossibleWorlds, actions []Action, act Act) {
+	ExploreCount++
 	worldsHash := possibleWorlds.GetHash()
 	worldIndices := possibleWorlds.Indices()
+	fmt.Printf("worldIndices: %d\n", worldIndices)
+	if ExploreCount > 10 {
+		panic("i am done")
+	}
 	for _, action := range actions {
 		hash := BuildActionWorldHash(action, worldsHash)
 		if _, ok := BBPossibleWorldsStore[hash]; !ok {
-			counts, rewards, responseWorlds := ExploreReactionsForAction(
+			actionMatchesAPossibleWorld, counts, rewards, responseWorlds := ExploreReactionsForAction(
 				worldIndices,
 				action,
 				act,
@@ -19,6 +28,11 @@ func ExploreReactions(possibleWorlds BPossibleWorlds, actions []Action, act Act)
 			BCountsStore[hash] = counts
 			BRewardsStore[hash] = rewards
 			BBPossibleWorldsStore[hash] = responseWorlds
+			BActionMatchesStore[hash] = actionMatchesAPossibleWorld
+			fmt.Printf("SETTING RESPONSE WORLDS (action: %s, len:%d): ", action, len(responseWorlds))
+			// fmt.Printf("%+v\n", responseWorlds)
+		} else {
+			fmt.Printf("REACTIONS ARE CACHED\n")
 		}
 	}
 }
@@ -28,6 +42,7 @@ func ExploreReactionsForAction(
 	action Action,
 	act Act,
 ) (
+	bool,
 	utils.GroupedIncrementer,
 	utils.GroupedIncrementer,
 	map[string]BPossibleWorlds,
@@ -35,6 +50,7 @@ func ExploreReactionsForAction(
 	counts := utils.NewGroupedIncrementer()
 	rewards := utils.NewGroupedIncrementer()
 	responseWorlds := make(map[string]BPossibleWorlds)
+	actionMatchesPossibleWorld := false
 	for _, worldIndex := range possibleWorldIndices {
 		world := BUniverse.Worlds[worldIndex]
 		reaction := act(World(world.Name), action)
@@ -47,17 +63,22 @@ func ExploreReactionsForAction(
 		worlds := responseWorlds[response]
 		worlds.SetBit(world.Index)
 
+		if string(action) == world.Name {
+			actionMatchesPossibleWorld = true
+		}
+
 	}
-	return counts, rewards, responseWorlds
+	return actionMatchesPossibleWorld, counts, rewards, responseWorlds
 }
 
 type Predictions map[Action]Prediction
 
 type Prediction struct {
-	Action      Action
-	Reward      float64
-	Entropy     float64
-	InversedMax float64
+	Action                      Action
+	Reward                      float64
+	Entropy                     float64
+	InversedMax                 float64
+	ActionMatchesAPossibleWorld bool
 }
 
 func (p Predictions) GetEntropy(action string) float64 {
@@ -87,7 +108,13 @@ func BBuildPredictions(actions []Action, bpw BPossibleWorlds) Predictions {
 		prediction.Reward = rewards.Total() / counts.Total()
 		prediction.Entropy = mth.CalcEntropy(counts.Total(), counts.All())
 		prediction.InversedMax = mth.FindInversedMax(counts.Total(), counts.All())
+		prediction.ActionMatchesAPossibleWorld = BActionMatchesStore[hash]
 		predictions.AddPrediction(action, prediction)
+	}
+	fmt.Printf("PREDICTIONS LENGTH: %+v\n", len(predictions))
+	for _, prediction := range predictions {
+		fmt.Printf("PREDICTION: %+v\n", prediction)
+
 	}
 	return predictions
 }

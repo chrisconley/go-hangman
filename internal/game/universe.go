@@ -85,6 +85,7 @@ var BPossibleWorldsStore = make(map[string]BPossibleWorlds)
 var BBPossibleWorldsStore = make(map[string]map[string]BPossibleWorlds)
 var BCountsStore = make(map[string]utils.GroupedIncrementer)
 var BRewardsStore = make(map[string]utils.GroupedIncrementer)
+var BActionMatchesStore = make(map[string]bool)
 
 func InitUniverse(lines []string) BPossibleWorlds {
 	universeLength := len(lines)

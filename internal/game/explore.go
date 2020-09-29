@@ -13,10 +13,6 @@ func ExploreReactions(possibleWorlds BPossibleWorlds, actions []Action, act Act)
 	ExploreCount++
 	worldsHash := possibleWorlds.GetHash()
 	worldIndices := possibleWorlds.Indices()
-	fmt.Printf("worldIndices: %d\n", worldIndices)
-	if ExploreCount > 10 {
-		panic("i am done")
-	}
 	for _, action := range actions {
 		hash := BuildActionWorldHash(action, worldsHash)
 		if _, ok := BBPossibleWorldsStore[hash]; !ok {

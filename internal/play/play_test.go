@@ -160,33 +160,20 @@ func TestPlayMastermind(t *testing.T) {
 	}
 	game.InitUniverse(lines)
 
-	// for _, line := range lines {
-	// 	perspective := game.NewPerspective(
-	// 		game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25},
-	// 		mastermind.Agreement,
-	// 	)
+	for _, line := range lines {
+		perspective := game.NewPerspective(
+			game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25},
+			mastermind.Agreement,
+		)
 
-	// 	truth := game.World(line)
-	// 	fmt.Printf("TRUTH: %v\n", truth)
-	// 	reactions, actual := PlayGame(truth, perspective)
-	// 	for _, reaction := range reactions.Turns {
-	// 		fmt.Printf("reaction: %+v\n", reaction)
-	// 	}
-	// 	test.AssertDeepEqual(actual, truth, t)
-	// }
-	perspective := game.NewPerspective(
-		game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25},
-		mastermind.Agreement,
-	)
-
-	truth := game.World("211")
-	fmt.Printf("TRUTH: %v\n", truth)
-	reactions, actual := PlayGame(truth, perspective)
-	for _, reaction := range reactions.Turns {
-		fmt.Printf("LOGGED REACTION: %+v\n", reaction)
+		truth := game.World(line)
+		fmt.Printf("TRUTH: %v\n", truth)
+		reactions, actual := PlayGame(truth, perspective)
+		for _, reaction := range reactions.Turns {
+			fmt.Printf("reaction: %+v\n", reaction)
+		}
+		test.AssertDeepEqual(actual, truth, t)
 	}
-	test.AssertDeepEqual(actual, truth, t)
-	test.AssertDeepEqual(1, 2, t)
 }
 func TestPlayKnuthMastermind(t *testing.T) {
 	lines := utils.ReadLinesFromFilePath("../../fixtures/commercial-mastermind.txt")
@@ -203,7 +190,7 @@ func TestPlayKnuthMastermind(t *testing.T) {
 	for _, reaction := range reactions.Turns {
 		fmt.Printf("reaction: %+v\n", reaction)
 	}
-	test.AssertDeepEqual(1, 2, t)
+	test.AssertDeepEqual(reactions.Turns[0].Action, game.Action("AABB"), t)
 	// {'guess': '1122', 'result': 'B'},
 	// {'guess': '1344', 'result': 'W'},
 	// {'guess': '3526', 'result': 'BWW'},

@@ -176,6 +176,9 @@ func TestPlayMastermind(t *testing.T) {
 	}
 }
 func TestPlayKnuthMastermind(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping TestPlayKnuthMastermind in short mode.")
+	}
 	lines := utils.ReadLinesFromFilePath("../../fixtures/commercial-mastermind.txt")
 	game.InitUniverse(lines)
 

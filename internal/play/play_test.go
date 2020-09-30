@@ -1,7 +1,6 @@
 package play
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/chrisconley/go-hangman/internal/game"
@@ -167,38 +166,36 @@ func TestPlayMastermind(t *testing.T) {
 		)
 
 		truth := game.World(line)
-		fmt.Printf("TRUTH: %v\n", truth)
-		reactions, actual := PlayGame(truth, perspective)
-		for _, reaction := range reactions.Turns {
-			fmt.Printf("reaction: %+v\n", reaction)
-		}
+		_, actual := PlayGame(truth, perspective)
 		test.AssertDeepEqual(actual, truth, t)
 	}
 }
-func TestPlayKnuthMastermind(t *testing.T) {
+func TestIntegrationPlayKnuthMastermind(t *testing.T) {
 	if testing.Short() {
-		t.Skip("Skipping TestPlayKnuthMastermind in short mode.")
+		t.Skip("Skipping TestIntegrationPlayKnuthMastermind in short mode.")
 	}
 	lines := utils.ReadLinesFromFilePath("../../fixtures/commercial-mastermind.txt")
 	game.InitUniverse(lines)
 
 	perspective := game.NewPerspective(
-		// game.Motivation{Entropy: 0.01, MiniMax: 0.99},
 		game.Motivation{Entropy: 0.00, MiniMax: 1.0},
 		mastermind.Agreement,
 	)
 
 	truth := game.World("CFCB")
 	reactions, _ := PlayGame(truth, perspective)
-	for _, reaction := range reactions.Turns {
-		fmt.Printf("reaction: %+v\n", reaction)
-	}
+
 	test.AssertDeepEqual(reactions.Turns[0].Action, game.Action("AABB"), t)
-	// {'guess': '1122', 'result': 'B'},
-	// {'guess': '1344', 'result': 'W'},
-	// {'guess': '3526', 'result': 'BWW'},
-	// {'guess': '1462', 'result': 'BW'},
-	// {'guess': '3632', 'result': 'BBBB'}
+	test.AssertDeepEqual(reactions.Turns[0].Response, game.Response("B"), t)
+
+	test.AssertDeepEqual(reactions.Turns[1].Action, game.Action("ACDD"), t)
+	test.AssertDeepEqual(reactions.Turns[1].Response, game.Response("W"), t)
+
+	test.AssertDeepEqual(reactions.Turns[2].Action, game.Action("CEBF"), t)
+	test.AssertDeepEqual(reactions.Turns[2].Response, game.Response("BWW"), t)
+
+	test.AssertDeepEqual(reactions.Turns[3].Action, game.Action("ADFB"), t)
+	test.AssertDeepEqual(reactions.Turns[3].Response, game.Response("BW"), t)
 }
 
 func TestPlayGames(t *testing.T) {

@@ -1,8 +1,6 @@
 package game
 
 import (
-	"fmt"
-
 	"github.com/chrisconley/go-hangman/internal/mth"
 	"github.com/chrisconley/go-hangman/internal/utils"
 )
@@ -25,10 +23,6 @@ func ExploreReactions(possibleWorlds BPossibleWorlds, actions []Action, act Act)
 			BRewardsStore[hash] = rewards
 			BBPossibleWorldsStore[hash] = responseWorlds
 			BActionMatchesStore[hash] = actionMatchesAPossibleWorld
-			fmt.Printf("SETTING RESPONSE WORLDS (action: %s, len:%d): ", action, len(responseWorlds))
-			// fmt.Printf("%+v\n", responseWorlds)
-		} else {
-			fmt.Printf("REACTIONS ARE CACHED\n")
 		}
 	}
 }
@@ -106,11 +100,6 @@ func BBuildPredictions(actions []Action, bpw BPossibleWorlds) Predictions {
 		prediction.InversedMax = mth.FindInversedMax(counts.Total(), counts.All())
 		prediction.ActionMatchesAPossibleWorld = BActionMatchesStore[hash]
 		predictions.AddPrediction(action, prediction)
-	}
-	fmt.Printf("PREDICTIONS LENGTH: %+v\n", len(predictions))
-	for _, prediction := range predictions {
-		fmt.Printf("PREDICTION: %+v\n", prediction)
-
 	}
 	return predictions
 }

@@ -3,9 +3,30 @@ package play
 import (
 	"fmt"
 	"math"
+	"os"
 
 	"github.com/chrisconley/go-hangman/internal/game"
 )
+
+func logPredictions(predictions game.Predictions) {
+	if os.Getenv("DEBUGPREDICTIONS") != "" {
+		for _, prediction := range predictions {
+			fmt.Printf("PREDICTION: %+v\n", prediction)
+		}
+	}
+}
+
+func logDecision(decision game.Prediction) {
+	if os.Getenv("DEBUGPREDICTIONS") != "" {
+		fmt.Printf("DECISION: %+v\n", decision)
+	}
+}
+
+func logReaction(reaction game.Reaction) {
+	if os.Getenv("DEBUGPREDICTIONS") != "" {
+		fmt.Printf("REACTION: %+v\n", reaction)
+	}
+}
 
 // ###########################
 // ### THE DECISION PROCESS ###
@@ -17,6 +38,7 @@ func Explore(agreement game.Agreement, possibleWorlds game.BPossibleWorlds) (pre
 	)
 	game.ExploreReactions(possibleWorlds, actions, agreement.Act)
 	predictions = game.BBuildPredictions(actions, possibleWorlds)
+	logPredictions(predictions)
 	return predictions
 }
 
@@ -49,13 +71,13 @@ func Decide(predictions game.Predictions, motivation game.Motivation) game.Actio
 			maxIsValid = isValid
 		}
 	}
-	fmt.Printf("MAXACTION: %+v\n", predictions[maxAction])
+	logDecision(predictions[maxAction])
 	return maxAction
 }
 
 func Act(action game.Action, act game.Act, truth game.World) game.Reaction {
 	reaction := act(truth, action)
-	fmt.Printf("REACTION: %+v\n", reaction)
+	logReaction(reaction)
 	return reaction
 }
 
@@ -94,7 +116,6 @@ func PlayGame(truth game.World, perspective game.Perspective) (game.Reactions, g
 	reactions := game.Reactions{}
 	reaction := game.Reaction{}
 	for true {
-		// fmt.Printf("POSSIBLE WORLDS: %+v\n", possibleWorlds)
 		reaction, possibleWorlds = playTurn(truth, perspective, possibleWorlds)
 		reactions.Turns = append(reactions.Turns, reaction)
 		reactions.TurnCount++

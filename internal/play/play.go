@@ -1,10 +1,32 @@
 package play
 
 import (
+	"fmt"
 	"math"
+	"os"
 
 	"github.com/chrisconley/go-hangman/internal/game"
 )
+
+func logPredictions(predictions game.Predictions) {
+	if os.Getenv("DEBUGPREDICTIONS") != "" {
+		for _, prediction := range predictions {
+			fmt.Printf("PREDICTION: %+v\n", prediction)
+		}
+	}
+}
+
+func logDecision(decision game.Prediction) {
+	if os.Getenv("DEBUGPREDICTIONS") != "" {
+		fmt.Printf("DECISION: %+v\n", decision)
+	}
+}
+
+func logReaction(reaction game.Reaction) {
+	if os.Getenv("DEBUGPREDICTIONS") != "" {
+		fmt.Printf("REACTION: %+v\n", reaction)
+	}
+}
 
 // ###########################
 // ### THE DECISION PROCESS ###
@@ -16,12 +38,14 @@ func Explore(agreement game.Agreement, possibleWorlds game.BPossibleWorlds) (pre
 	)
 	game.ExploreReactions(possibleWorlds, actions, agreement.Act)
 	predictions = game.BBuildPredictions(actions, possibleWorlds)
+	logPredictions(predictions)
 	return predictions
 }
 
 func Decide(predictions game.Predictions, motivation game.Motivation) game.Action {
 	maxWeight := 0.0
 	maxAction := game.Action("")
+	maxIsValid := false
 	if len(predictions) == 1 {
 		panic("There is only one prediction for the decision.")
 	}
@@ -30,22 +54,31 @@ func Decide(predictions game.Predictions, motivation game.Motivation) game.Actio
 			math.Pow(prediction.Entropy, motivation.Entropy) *
 			math.Pow(prediction.InversedMax, motivation.MiniMax)
 
+		isValid := prediction.ActionMatchesAPossibleWorld
+
 		// Decide whether or not to swap out maxAction with the new action
-		if weight > maxWeight {
+		if weight == maxWeight && isValid == maxIsValid && prediction.Action < maxAction {
+			// 	// If the new weight is equal to current max
+			// 	// AND the new action is lexicographically before maxAction, use it
+			maxAction = prediction.Action
+		} else if weight == maxWeight && isValid && maxIsValid == false {
+			maxAction = prediction.Action
+			maxIsValid = isValid
+		} else if weight > maxWeight {
 			// If there is a clear winner, use it
 			maxWeight = weight
 			maxAction = prediction.Action
-		} else if weight == maxWeight && prediction.Action < maxAction {
-			// If the new weight is equal to current max
-			// AND the new action is lexicographically before maxAction, use it
-			maxAction = prediction.Action
+			maxIsValid = isValid
 		}
 	}
+	logDecision(predictions[maxAction])
 	return maxAction
 }
 
-func Act(action game.Action, act game.Act, truth game.World) (reaction game.Reaction) {
-	return act(truth, action)
+func Act(action game.Action, act game.Act, truth game.World) game.Reaction {
+	reaction := act(truth, action)
+	logReaction(reaction)
+	return reaction
 }
 
 func Observe(action game.Action, reaction game.Reaction, possibleWorlds game.BPossibleWorlds) game.BPossibleWorlds {
@@ -57,10 +90,10 @@ func Observe(action game.Action, reaction game.Reaction, possibleWorlds game.BPo
 // ###########################
 // ### THE GAME ###
 // ###########################
-func PlayGames(agreement game.Agreement, motivation game.Motivation, lines []string, limit int) []int {
+func PlayGames(agreement game.Agreement, motivation game.Motivation, lines []string, limit int) []game.Reactions {
 	game.InitUniverse(lines)
 	// defer profile.Start().Stop()
-	turns := []int{}
+	turns := []game.Reactions{}
 	for j := 0; j < limit; j++ {
 		perspective := game.NewPerspective(
 			motivation,
@@ -78,12 +111,14 @@ func PlayGames(agreement game.Agreement, motivation game.Motivation, lines []str
 	return turns
 }
 
-func PlayGame(truth game.World, perspective game.Perspective) (int, game.World) {
+func PlayGame(truth game.World, perspective game.Perspective) (game.Reactions, game.World) {
 	possibleWorlds := game.BUniverse.BPossibleWorlds
-	turns := 0
+	reactions := game.Reactions{}
+	reaction := game.Reaction{}
 	for true {
-		turns += 1
-		_, possibleWorlds = playTurn(truth, perspective, possibleWorlds)
+		reaction, possibleWorlds = playTurn(truth, perspective, possibleWorlds)
+		reactions.Turns = append(reactions.Turns, reaction)
+		reactions.TurnCount++
 		remainingWorldIndices := possibleWorlds.Indices()
 		if len(remainingWorldIndices) == 1 {
 			break
@@ -91,7 +126,7 @@ func PlayGame(truth game.World, perspective game.Perspective) (int, game.World) 
 	}
 	remainingWorldIndices := possibleWorlds.Indices()
 	lastWorldIndex := remainingWorldIndices[0]
-	return turns, game.World(game.BUniverse.Worlds[lastWorldIndex].Name)
+	return reactions, game.World(game.BUniverse.Worlds[lastWorldIndex].Name)
 }
 
 func playTurn(truth game.World, perspective game.Perspective, possibleWorlds game.BPossibleWorlds) (game.Reaction, game.BPossibleWorlds) {

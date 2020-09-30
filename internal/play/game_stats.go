@@ -1,5 +1,7 @@
 package play
 
+import "github.com/chrisconley/go-hangman/internal/game"
+
 type Stats struct {
 	GameCount    int
 	TotalTurns   int
@@ -7,15 +9,15 @@ type Stats struct {
 	MaxTurns     int
 }
 
-func CalculateStats(turnCounts []int) Stats {
+func CalculateStats(turns []game.Reactions) Stats {
 	stats := Stats{}
 	stats.TotalTurns = 0
 	stats.MaxTurns = 0
-	stats.GameCount = len(turnCounts)
-	for _, turnCount := range turnCounts {
-		stats.TotalTurns = stats.TotalTurns + turnCount
-		if turnCount > stats.MaxTurns {
-			stats.MaxTurns = turnCount
+	stats.GameCount = len(turns)
+	for _, reactions := range turns {
+		stats.TotalTurns = stats.TotalTurns + reactions.TurnCount
+		if reactions.TurnCount > stats.MaxTurns {
+			stats.MaxTurns = reactions.TurnCount
 		}
 	}
 

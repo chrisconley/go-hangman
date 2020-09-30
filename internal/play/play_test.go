@@ -67,14 +67,47 @@ func TestDecideDeterminism(t *testing.T) {
 
 func TestDecideLexicallySortsOnTie(t *testing.T) {
 	predictions := game.Predictions{
-		"b": game.Prediction{Action: "b", Entropy: 1.0, Reward: 0.5},
-		"a": game.Prediction{Action: "a", Entropy: 1.0, Reward: 0.5},
+		"b": game.Prediction{Action: "b", Entropy: 1.0, ActionMatchesAPossibleWorld: true},
+		"a": game.Prediction{Action: "a", Entropy: 1.0, ActionMatchesAPossibleWorld: true},
 	}
 
 	// All Entropy
 	motivation := game.Motivation{Reward: 0.0, Entropy: 1.0, Time: 0.0}
 	actual := Decide(predictions, motivation)
 	test.AssertDeepEqual(actual, game.Action("a"), t)
+
+	predictions = game.Predictions{
+		"b": game.Prediction{Action: "b", Entropy: 1.0, ActionMatchesAPossibleWorld: false},
+		"a": game.Prediction{Action: "a", Entropy: 1.0, ActionMatchesAPossibleWorld: false},
+	}
+
+	// All Entropy
+	motivation = game.Motivation{Reward: 0.0, Entropy: 1.0, Time: 0.0}
+	actual = Decide(predictions, motivation)
+	test.AssertDeepEqual(actual, game.Action("a"), t)
+}
+func TestDecideValidSortsOnTie(t *testing.T) {
+	predictions := game.Predictions{
+		"b": game.Prediction{Action: "b", Entropy: 1.0, ActionMatchesAPossibleWorld: false},
+		"c": game.Prediction{Action: "c", Entropy: 1.0, ActionMatchesAPossibleWorld: true},
+		"a": game.Prediction{Action: "a", Entropy: 1.0, ActionMatchesAPossibleWorld: false},
+	}
+
+	// All Entropy
+	motivation := game.Motivation{Reward: 0.0, Entropy: 1.0, Time: 0.0}
+	actual := Decide(predictions, motivation)
+	test.AssertDeepEqual(actual, game.Action("c"), t)
+
+	predictions = game.Predictions{
+		"b": game.Prediction{Action: "b", Entropy: 1.0, ActionMatchesAPossibleWorld: true},
+		"c": game.Prediction{Action: "c", Entropy: 1.0, ActionMatchesAPossibleWorld: true},
+		"a": game.Prediction{Action: "a", Entropy: 1.0, ActionMatchesAPossibleWorld: false},
+	}
+
+	// All Entropy
+	motivation = game.Motivation{Reward: 0.0, Entropy: 1.0, Time: 0.0}
+	actual = Decide(predictions, motivation)
+	test.AssertDeepEqual(actual, game.Action("b"), t)
 }
 
 func TestAct(t *testing.T) {
@@ -137,6 +170,33 @@ func TestPlayMastermind(t *testing.T) {
 		test.AssertDeepEqual(actual, truth, t)
 	}
 }
+func TestIntegrationPlayKnuthMastermind(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping TestIntegrationPlayKnuthMastermind in short mode.")
+	}
+	lines := utils.ReadLinesFromFilePath("../../fixtures/commercial-mastermind.txt")
+	game.InitUniverse(lines)
+
+	perspective := game.NewPerspective(
+		game.Motivation{Entropy: 0.00, MiniMax: 1.0},
+		mastermind.Agreement,
+	)
+
+	truth := game.World("CFCB")
+	reactions, _ := PlayGame(truth, perspective)
+
+	test.AssertDeepEqual(reactions.Turns[0].Action, game.Action("AABB"), t)
+	test.AssertDeepEqual(reactions.Turns[0].Response, game.Response("B"), t)
+
+	test.AssertDeepEqual(reactions.Turns[1].Action, game.Action("ACDD"), t)
+	test.AssertDeepEqual(reactions.Turns[1].Response, game.Response("W"), t)
+
+	test.AssertDeepEqual(reactions.Turns[2].Action, game.Action("CEBF"), t)
+	test.AssertDeepEqual(reactions.Turns[2].Response, game.Response("BWW"), t)
+
+	test.AssertDeepEqual(reactions.Turns[3].Action, game.Action("ADFB"), t)
+	test.AssertDeepEqual(reactions.Turns[3].Response, game.Response("BW"), t)
+}
 
 func TestPlayGames(t *testing.T) {
 	lines := utils.ReadLinesFromFilePath("../../fixtures/nine-letter-words.txt")
@@ -144,5 +204,7 @@ func TestPlayGames(t *testing.T) {
 
 	motivation := game.Motivation{Reward: 0.0, Entropy: 1.0, Time: 0.0}
 	turns := PlayGames(mastermind.Agreement, motivation, lines, 3)
-	test.AssertDeepEqual(turns, []int{1, 2, 2}, t)
+	test.AssertDeepEqual(turns[0].TurnCount, 1, t)
+	test.AssertDeepEqual(turns[1].TurnCount, 2, t)
+	test.AssertDeepEqual(turns[2].TurnCount, 2, t)
 }

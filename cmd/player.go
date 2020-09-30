@@ -31,7 +31,7 @@ func main() {
 
 	limit := flag.Int("limit", len(lines), "How many games to play. Defaults to all games piped in from stdin.")
 	gameString := flag.String("game", "none", "What game to play. Valid games: hangman, mastermind. Required")
-	motivation := game.Motivation{Reward: 0.0, Entropy: 1.0, Time: 0.0}
+	motivation := game.Motivation{Reward: 0.0, Entropy: 0.0, MiniMax: 1.0}
 	flag.Parse()
 
 	agreement := hangman.Agreement

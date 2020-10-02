@@ -90,10 +90,48 @@ type Universe struct {
 }
 
 var BUniverse = Universe{}
-var BPossibleWorldsStore = make(map[string]map[string]PossibleWorlds)
-var BCountsStore = make(map[string]utils.GroupedIncrementer)
-var BRewardsStore = make(map[string]utils.GroupedIncrementer)
-var BActionMatchesStore = make(map[string]bool)
+
+type Cache struct{}
+
+var TheCache = Cache{}
+var worldsCache = make(map[string]map[string]PossibleWorlds)
+var countsCache = make(map[string]utils.GroupedIncrementer)
+var rewardsCache = make(map[string]utils.GroupedIncrementer)
+var actionMatchesCache = make(map[string]bool)
+
+func (c *Cache) GetNextWorlds(hash string, response string) PossibleWorlds {
+	return worldsCache[hash][response]
+}
+
+func (c *Cache) Write(
+	hash string,
+	responseWorlds map[string]PossibleWorlds,
+	counts utils.GroupedIncrementer,
+	rewards utils.GroupedIncrementer,
+	actionMatchesAPossibleWorld bool,
+) {
+	worldsCache[hash] = responseWorlds
+	countsCache[hash] = counts
+	rewardsCache[hash] = rewards
+	actionMatchesCache[hash] = actionMatchesAPossibleWorld
+}
+
+func (c *Cache) Exists(hash string) bool {
+	_, ok := worldsCache[hash]
+	return ok
+}
+
+func (c *Cache) GetCounts(hash string) utils.GroupedIncrementer {
+	return countsCache[hash]
+}
+
+func (c *Cache) GetRewards(hash string) utils.GroupedIncrementer {
+	return rewardsCache[hash]
+}
+
+func (c *Cache) GetActionMatches(hash string) bool {
+	return actionMatchesCache[hash]
+}
 
 func InitUniverse(lines []string) Universe {
 	universe := Universe{}

@@ -13,16 +13,19 @@ func ExploreReactions(possibleWorlds PossibleWorlds, actions []Action, act Act) 
 	worldIndices := possibleWorlds.Indices()
 	for _, action := range actions {
 		hash := BuildActionWorldHash(action, worldsHash)
-		if _, ok := BPossibleWorldsStore[hash]; !ok {
+		if ok := TheCache.Exists(hash); !ok {
 			actionMatchesAPossibleWorld, counts, rewards, responseWorlds := ExploreReactionsForAction(
 				worldIndices,
 				action,
 				act,
 			)
-			BCountsStore[hash] = counts
-			BRewardsStore[hash] = rewards
-			BPossibleWorldsStore[hash] = responseWorlds
-			BActionMatchesStore[hash] = actionMatchesAPossibleWorld
+			TheCache.Write(
+				hash,
+				responseWorlds,
+				counts,
+				rewards,
+				actionMatchesAPossibleWorld,
+			)
 		}
 	}
 }
@@ -94,12 +97,12 @@ func BBuildPredictions(actions []Action, bpw PossibleWorlds) Predictions {
 	for _, action := range actions {
 		hash := BuildActionWorldHash(action, worldsHash)
 		prediction := Prediction{Action: action}
-		counts := BCountsStore[hash]
-		rewards := BRewardsStore[hash]
+		counts := TheCache.GetCounts(hash)
+		rewards := TheCache.GetRewards(hash)
 		prediction.Reward = rewards.Total() / counts.Total()
 		prediction.Entropy = mth.CalcEntropy(counts.Total(), counts.All())
 		prediction.InversedMax = mth.FindInversedMax(counts.Total(), counts.All())
-		prediction.ActionMatchesAPossibleWorld = BActionMatchesStore[hash]
+		prediction.ActionMatchesAPossibleWorld = TheCache.GetActionMatches(hash)
 		predictions.AddPrediction(action, prediction)
 	}
 	return predictions

@@ -70,7 +70,9 @@ func Act(world game.World, action game.Action) (r game.Reaction) {
 			worldString = strings.Replace(worldString, match, "-", 1)
 		}
 	}
-
+	if response == "" {
+		response = "!"
+	}
 	return game.Reaction{Action: action, Response: game.Response(response), Reward: reward}
 }
 

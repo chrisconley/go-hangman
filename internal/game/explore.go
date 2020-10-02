@@ -51,7 +51,8 @@ func ExploreReactionsForAction(
 		counts.Increment(response, 1.0)
 		rewards.Increment(response, reaction.Reward)
 		worlds := responseWorlds[response]
-		worlds.SetBit(world.Index)
+		worlds.Add(world.Index)
+		responseWorlds[response] = worlds
 
 		if string(action) == world.Name {
 			actionMatchesPossibleWorld = true

@@ -45,11 +45,11 @@ func TestExploreReactionsForAction(t *testing.T) {
 	test.AssertAlmostEqual(rewards.Get("c"), 0.444, 3, t)
 
 	expected := NewPossibleWorlds(universeLength)
-	expected.SetBit(1)
+	expected.Add(1)
 	test.AssertDeepEqual(responseWorlds["!"], expected, t)
 
 	expected = NewPossibleWorlds(universeLength)
-	expected.SetBit(0)
-	expected.SetBit(2)
+	expected.Add(0)
+	expected.Add(2)
 	test.AssertDeepEqual(responseWorlds["c"], expected, t)
 }

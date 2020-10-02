@@ -7,7 +7,7 @@ import (
 	"github.com/chrisconley/go-hangman/internal/game"
 )
 
-func GetActions(remainingWorlds game.PossibleWorlds, aa game.AvailableActions) []game.Action {
+func GetActions(remainingWorlds game.BPossibleWorlds, aa game.AvailableActions) []game.Action {
 	return aa.WorldActions()
 
 }

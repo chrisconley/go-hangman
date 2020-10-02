@@ -12,11 +12,19 @@ func TestGetActions(t *testing.T) {
 	allWorlds := game.BuildPossibleWorlds([]string{"aa", "bb"})
 	aa := game.BuildAvailableActions(allWorlds)
 
-	remainingWorlds := game.BuildPossibleWorlds([]string{"aa", "bb"})
+	remainingWorlds := game.NewPossibleWorlds(2)
+	lines := []string{"aa", "bb"}
+	for index, _ := range lines {
+		remainingWorlds.Add(uint64(index))
+	}
 	actions := GetActions(remainingWorlds, aa)
 	test.AssertDeepEqual(actions, []game.Action{"aa", "bb"}, t)
 
-	remainingWorlds = game.BuildPossibleWorlds([]string{"aa"})
+	remainingWorlds = game.NewPossibleWorlds(1)
+	lines = []string{"aa"}
+	for index, _ := range lines {
+		remainingWorlds.Add(uint64(index))
+	}
 	actions = GetActions(remainingWorlds, aa)
 	test.AssertDeepEqual(actions, []game.Action{"aa", "bb"}, t)
 }

@@ -13,7 +13,7 @@ type World string
 type Action string
 type Response string
 type Act func(w World, action Action) (reaction Reaction)
-type GetActions func(w PossibleWorlds, aa AvailableActions) []Action
+type GetActions func(w BPossibleWorlds, aa AvailableActions) []Action
 
 type Agreement struct {
 	GetActions GetActions
@@ -32,7 +32,8 @@ type Reactions struct {
 }
 
 type BPossibleWorlds struct {
-	Bits *roaring64.Bitmap
+	Bits  *roaring64.Bitmap
+	count int
 }
 
 func (pw *BPossibleWorlds) GetHash() []byte {
@@ -40,8 +41,13 @@ func (pw *BPossibleWorlds) GetHash() []byte {
 	return bytes
 }
 
-func (pw *BPossibleWorlds) SetBit(index uint64) {
+func (pw *BPossibleWorlds) Add(index uint64) {
+	pw.count += 1
 	pw.Bits.Add(index)
+}
+
+func (pw *BPossibleWorlds) Len() int {
+	return pw.count
 }
 
 func (pw *BPossibleWorlds) Indices() []uint64 {
@@ -53,6 +59,7 @@ func NewPossibleWorlds(length int) BPossibleWorlds {
 	length64 := uint64(length)
 	pw := BPossibleWorlds{}
 	pw.Bits = roaring64.BitmapOf(length64 + 1)
+	pw.count = 0
 	return pw
 }
 
@@ -81,7 +88,6 @@ type Universe struct {
 }
 
 var BUniverse = Universe{}
-var BPossibleWorldsStore = make(map[string]BPossibleWorlds)
 var BBPossibleWorldsStore = make(map[string]map[string]BPossibleWorlds)
 var BCountsStore = make(map[string]utils.GroupedIncrementer)
 var BRewardsStore = make(map[string]utils.GroupedIncrementer)
@@ -93,7 +99,7 @@ func InitUniverse(lines []string) BPossibleWorlds {
 	pw := NewPossibleWorlds(universeLength)
 	for index, name := range lines {
 		BUniverse.Worlds[index] = BWorld{Index: uint64(index), Name: name}
-		pw.SetBit(uint64(index))
+		pw.Add(uint64(index))
 	}
 	BUniverse.PossibleWorlds = BuildPossibleWorlds(lines)
 	BUniverse.Actions = BuildAvailableActions(BUniverse.PossibleWorlds)

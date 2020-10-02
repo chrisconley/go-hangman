@@ -33,7 +33,7 @@ func logReaction(reaction game.Reaction) {
 // ###########################
 func Explore(agreement game.Agreement, possibleWorlds game.BPossibleWorlds) (predictions game.Predictions) {
 	actions := agreement.GetActions(
-		game.BUniverse.PossibleWorlds,
+		possibleWorlds,
 		game.BUniverse.Actions,
 	)
 	game.ExploreReactions(possibleWorlds, actions, agreement.Act)
@@ -102,10 +102,10 @@ func PlayGames(agreement game.Agreement, motivation game.Motivation, lines []str
 
 		btruth := game.BUniverse.Worlds[j]
 		truth := game.World(btruth.Name)
-		turnCount, _ := PlayGame(truth, perspective)
+		reactions, _ := PlayGame(truth, perspective)
 		// fmt.Printf("TRUTH: %s | ", truth)
-		// fmt.Printf("TURNS: %d\n", turnCount)
-		turns = append(turns, turnCount)
+		// fmt.Printf("TURNS: %d\n", reactions.TurnCount)
+		turns = append(turns, reactions)
 	}
 
 	return turns
@@ -119,14 +119,11 @@ func PlayGame(truth game.World, perspective game.Perspective) (game.Reactions, g
 		reaction, possibleWorlds = playTurn(truth, perspective, possibleWorlds)
 		reactions.Turns = append(reactions.Turns, reaction)
 		reactions.TurnCount++
-		remainingWorldIndices := possibleWorlds.Indices()
-		if len(remainingWorldIndices) == 1 {
+		if string(reaction.Action) == string(truth) {
 			break
 		}
 	}
-	remainingWorldIndices := possibleWorlds.Indices()
-	lastWorldIndex := remainingWorldIndices[0]
-	return reactions, game.World(game.BUniverse.Worlds[lastWorldIndex].Name)
+	return reactions, game.World(reaction.Action)
 }
 
 func playTurn(truth game.World, perspective game.Perspective, possibleWorlds game.BPossibleWorlds) (game.Reaction, game.BPossibleWorlds) {

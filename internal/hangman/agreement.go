@@ -7,12 +7,13 @@ import (
 )
 
 // TODO: Make this take game.BPossibleWorlds
-func GetActions(remainingWorlds game.PossibleWorlds, aa game.AvailableActions) []game.Action {
+func GetActions(remainingWorlds game.BPossibleWorlds, aa game.AvailableActions) []game.Action {
 	// Only use world actions when there are only a few choices left
 	if remainingWorlds.Len() < aa.ActionsLength() {
 		worldActions := []game.Action{}
-		for _, world := range remainingWorlds.Worlds {
-			worldActions = append(worldActions, game.Action(world))
+		for _, index := range remainingWorlds.Indices() {
+			world := game.BUniverse.Worlds[index]
+			worldActions = append(worldActions, game.Action(world.Name))
 		}
 		return append(aa.Actions(), worldActions...)
 	} else {

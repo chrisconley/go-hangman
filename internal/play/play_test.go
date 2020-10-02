@@ -198,13 +198,77 @@ func TestIntegrationPlayKnuthMastermind(t *testing.T) {
 	test.AssertDeepEqual(reactions.Turns[3].Response, game.Response("BW"), t)
 }
 
+func TestIntegrationVerifyMiniMaxMastermind(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping TestIntegrationVerifyMiniMaxMastermind in short mode.")
+	}
+	lines := utils.ReadLinesFromFilePath("../../fixtures/commercial-mastermind.txt")
+
+	motivation := game.Motivation{MiniMax: 1.0}
+	limit := len(lines)
+	turns := PlayGames(mastermind.Agreement, motivation, lines, limit)
+	stats := CalculateStats(turns)
+	test.AssertDeepEqual(stats.GameCount, 1296, t)
+	test.AssertDeepEqual(stats.MaxTurns, 5, t)
+	test.AssertDeepEqual(stats.TotalTurns, 5801, t)
+	test.AssertAlmostEqual(stats.AverageTurns, 4.4761, 4, t)
+}
+
+func TestIntegrationVerifyEntropyMastermind(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping TestIntegrationVerifyEntropyMastermind in short mode.")
+	}
+	lines := utils.ReadLinesFromFilePath("../../fixtures/commercial-mastermind.txt")
+
+	motivation := game.Motivation{Entropy: 1.0}
+	limit := len(lines)
+	turns := PlayGames(mastermind.Agreement, motivation, lines, limit)
+	stats := CalculateStats(turns)
+	test.AssertDeepEqual(stats.GameCount, 1296, t)
+	test.AssertDeepEqual(stats.MaxTurns, 6, t)
+	test.AssertDeepEqual(stats.TotalTurns, 5723, t)
+	test.AssertAlmostEqual(stats.AverageTurns, 4.4159, 4, t)
+}
+
+func TestIntegrationVerifyEntropyHangman(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping TestIntegrationVerifyEntropyHangman in short mode.")
+	}
+	lines := utils.ReadLinesFromFilePath("../../fixtures/nine-letter-words.txt")
+
+	motivation := game.Motivation{Entropy: 1.0}
+	limit := len(lines)
+	turns := PlayGames(mastermind.Agreement, motivation, lines, limit)
+	stats := CalculateStats(turns)
+	test.AssertDeepEqual(stats.GameCount, 25011, t)
+	test.AssertDeepEqual(stats.MaxTurns, 13, t)
+	test.AssertDeepEqual(stats.TotalTurns, 146387, t)
+	test.AssertAlmostEqual(stats.AverageTurns, 5.8529, 4, t)
+}
+
+func TestIntegrationVerifyMiniMaxHangman(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping TestIntegrationVerifyMiniMaxHangman in short mode.")
+	}
+	lines := utils.ReadLinesFromFilePath("../../fixtures/nine-letter-words.txt")
+
+	motivation := game.Motivation{MiniMax: 1.0}
+	limit := len(lines)
+	turns := PlayGames(mastermind.Agreement, motivation, lines, limit)
+	stats := CalculateStats(turns)
+	test.AssertDeepEqual(stats.GameCount, 25011, t)
+	test.AssertDeepEqual(stats.MaxTurns, 12, t)
+	test.AssertDeepEqual(stats.TotalTurns, 149552, t)
+	test.AssertAlmostEqual(stats.AverageTurns, 5.9794, 4, t)
+}
+
 func TestPlayGames(t *testing.T) {
 	lines := utils.ReadLinesFromFilePath("../../fixtures/nine-letter-words.txt")
 	lines = lines[:100]
 
 	motivation := game.Motivation{Reward: 0.0, Entropy: 1.0, Time: 0.0}
 	turns := PlayGames(mastermind.Agreement, motivation, lines, 3)
-	test.AssertDeepEqual(turns[0].TurnCount, 1, t)
-	test.AssertDeepEqual(turns[1].TurnCount, 2, t)
-	test.AssertDeepEqual(turns[2].TurnCount, 2, t)
+	test.AssertDeepEqual(turns[0].TurnCount, 2, t)
+	test.AssertDeepEqual(turns[1].TurnCount, 3, t)
+	test.AssertDeepEqual(turns[2].TurnCount, 3, t)
 }

@@ -2,7 +2,6 @@ package game
 
 import (
 	"encoding/binary"
-	"sort"
 
 	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/chrisconley/go-hangman/internal/utils"
@@ -84,7 +83,6 @@ type Universe struct {
 	Worlds          []BWorld
 	WorldLength     int
 	Actions         AvailableActions
-	PossibleWorlds  PossibleWorlds
 	BPossibleWorlds BPossibleWorlds
 }
 
@@ -103,47 +101,9 @@ func InitUniverse(lines []string) BPossibleWorlds {
 		BUniverse.Worlds[index] = BWorld{Index: uint64(index), Name: name}
 		pw.Add(uint64(index))
 	}
-	BUniverse.PossibleWorlds = BuildPossibleWorlds(lines)
 	BUniverse.Actions = buildAvailableActions()
 	BUniverse.BPossibleWorlds = pw
 	return pw
-}
-
-type PossibleWorlds struct {
-	Worlds []World
-	key    string
-}
-
-func BuildPossibleWorlds(lines []string) PossibleWorlds {
-	sort.SliceStable(lines, func(i, j int) bool {
-		return lines[i] < lines[j]
-	})
-	key := ""
-	worlds := []World{}
-	for _, line := range lines {
-		key += string(line)
-		worlds = append(worlds, World(line))
-	}
-	return PossibleWorlds{Worlds: worlds, key: key}
-}
-
-func BuildPossibleWorldsDeprecated(worlds []World) PossibleWorlds {
-	sort.SliceStable(worlds, func(i, j int) bool {
-		return worlds[i] < worlds[j]
-	})
-	key := ""
-	for _, world := range worlds {
-		key += string(world)
-	}
-	return PossibleWorlds{Worlds: worlds, key: key}
-}
-
-func (w *PossibleWorlds) Key() string {
-	return w.key
-}
-
-func (pw *PossibleWorlds) Len() int {
-	return len(pw.Worlds)
 }
 
 type AvailableActions struct {

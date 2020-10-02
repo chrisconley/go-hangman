@@ -6,8 +6,8 @@ import (
 	"github.com/chrisconley/go-hangman/internal/game"
 )
 
-// TODO: Make this take game.BPossibleWorlds
-func GetActions(remainingWorlds game.BPossibleWorlds, aa game.AvailableActions) []game.Action {
+// TODO: Make this take game.PossibleWorlds
+func GetActions(remainingWorlds game.PossibleWorlds, aa game.AvailableActions) []game.Action {
 	// Only use world actions when there are only a few choices left
 	if remainingWorlds.Len() < aa.ActionsLength() {
 		worldActions := []game.Action{}

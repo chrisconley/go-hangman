@@ -95,7 +95,7 @@ func BenchmarkAvailableActionsActionsLengthLarge(b *testing.B) {
 	}
 }
 
-func TestBPossibleWorldsLen(t *testing.T) {
+func TestPossibleWorldsLen(t *testing.T) {
 	pw := NewPossibleWorlds(10)
 	test.AssertDeepEqual(pw.Len(), 0, t)
 	pw.Add(2)

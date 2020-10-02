@@ -30,7 +30,7 @@ func logReaction(reaction game.Reaction) {
 // ###########################
 // ### THE DECISION PROCESS ###
 // ###########################
-func Explore(agreement game.Agreement, possibleWorlds game.BPossibleWorlds) (predictions game.Predictions) {
+func Explore(agreement game.Agreement, possibleWorlds game.PossibleWorlds) (predictions game.Predictions) {
 	actions := agreement.GetActions(
 		possibleWorlds,
 		game.BUniverse.Actions,
@@ -53,10 +53,10 @@ func Act(action game.Action, act game.Act, truth game.World) game.Reaction {
 	return reaction
 }
 
-func Observe(action game.Action, reaction game.Reaction, possibleWorlds game.BPossibleWorlds) game.BPossibleWorlds {
+func Observe(action game.Action, reaction game.Reaction, possibleWorlds game.PossibleWorlds) game.PossibleWorlds {
 	hash := game.BuildActionWorldHash(action, possibleWorlds.GetHash())
 	response := string(reaction.Response)
-	return game.BBPossibleWorldsStore[hash][response]
+	return game.BPossibleWorldsStore[hash][response]
 }
 
 // ###########################
@@ -84,7 +84,7 @@ func PlayGames(agreement game.Agreement, motivation game.Motivation, lines []str
 }
 
 func PlayGame(truth game.World, perspective game.Perspective) (game.Reactions, game.World) {
-	possibleWorlds := game.BUniverse.BPossibleWorlds
+	possibleWorlds := game.BUniverse.PossibleWorlds
 	reactions := game.Reactions{}
 	reaction := game.Reaction{}
 	for true {
@@ -98,7 +98,7 @@ func PlayGame(truth game.World, perspective game.Perspective) (game.Reactions, g
 	return reactions, game.World(reaction.Action)
 }
 
-func playTurn(truth game.World, perspective game.Perspective, possibleWorlds game.BPossibleWorlds) (game.Reaction, game.BPossibleWorlds) {
+func playTurn(truth game.World, perspective game.Perspective, possibleWorlds game.PossibleWorlds) (game.Reaction, game.PossibleWorlds) {
 	predictions := Explore(perspective.Agreement, possibleWorlds)
 	action := Decide(predictions, perspective.Motivation)
 	reaction := Act(action, perspective.Agreement.Act, truth)

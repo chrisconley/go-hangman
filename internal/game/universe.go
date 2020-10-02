@@ -12,7 +12,7 @@ type World string
 type Action string
 type Response string
 type Act func(w World, action Action) (reaction Reaction)
-type GetActions func(w BPossibleWorlds, aa AvailableActions) []Action
+type GetActions func(w PossibleWorlds, aa AvailableActions) []Action
 
 type Agreement struct {
 	GetActions GetActions
@@ -30,33 +30,33 @@ type Reactions struct {
 	TurnCount int
 }
 
-type BPossibleWorlds struct {
+type PossibleWorlds struct {
 	Bits  *roaring64.Bitmap
 	count int
 }
 
-func (pw *BPossibleWorlds) GetHash() []byte {
+func (pw *PossibleWorlds) GetHash() []byte {
 	bytes, _ := pw.Bits.ToBytes()
 	return bytes
 }
 
-func (pw *BPossibleWorlds) Add(index uint64) {
+func (pw *PossibleWorlds) Add(index uint64) {
 	pw.count += 1
 	pw.Bits.Add(index)
 }
 
-func (pw *BPossibleWorlds) Len() int {
+func (pw *PossibleWorlds) Len() int {
 	return pw.count
 }
 
-func (pw *BPossibleWorlds) Indices() []uint64 {
+func (pw *PossibleWorlds) Indices() []uint64 {
 	nums := pw.Bits.ToArray()
 	return nums[:len(nums)-1]
 }
 
-func NewPossibleWorlds(length int) BPossibleWorlds {
+func NewPossibleWorlds(length int) PossibleWorlds {
 	length64 := uint64(length)
-	pw := BPossibleWorlds{}
+	pw := PossibleWorlds{}
 	pw.Bits = roaring64.BitmapOf(length64 + 1)
 	pw.count = 0
 	return pw
@@ -80,19 +80,19 @@ type BWorld struct {
 }
 
 type Universe struct {
-	Worlds          []BWorld
-	WorldLength     int
-	Actions         AvailableActions
-	BPossibleWorlds BPossibleWorlds
+	Worlds         []BWorld
+	WorldLength    int
+	Actions        AvailableActions
+	PossibleWorlds PossibleWorlds
 }
 
 var BUniverse = Universe{}
-var BBPossibleWorldsStore = make(map[string]map[string]BPossibleWorlds)
+var BPossibleWorldsStore = make(map[string]map[string]PossibleWorlds)
 var BCountsStore = make(map[string]utils.GroupedIncrementer)
 var BRewardsStore = make(map[string]utils.GroupedIncrementer)
 var BActionMatchesStore = make(map[string]bool)
 
-func InitUniverse(lines []string) BPossibleWorlds {
+func InitUniverse(lines []string) PossibleWorlds {
 	universeLength := len(lines)
 	BUniverse.Worlds = make([]BWorld, universeLength)
 	BUniverse.WorldLength = len(lines[0])
@@ -102,7 +102,7 @@ func InitUniverse(lines []string) BPossibleWorlds {
 		pw.Add(uint64(index))
 	}
 	BUniverse.Actions = buildAvailableActions()
-	BUniverse.BPossibleWorlds = pw
+	BUniverse.PossibleWorlds = pw
 	return pw
 }
 

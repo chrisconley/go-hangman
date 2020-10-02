@@ -199,7 +199,6 @@ func TestIntegrationPlayKnuthMastermind(t *testing.T) {
 }
 
 func TestIntegrationVerifyMiniMaxMastermind(t *testing.T) {
-	t.Skip("Skipping TestIntegrationVerifyMiniMaxMastermind because it's hanging.")
 	if testing.Short() {
 		t.Skip("Skipping TestIntegrationVerifyMiniMaxMastermind in short mode.")
 	}
@@ -216,7 +215,6 @@ func TestIntegrationVerifyMiniMaxMastermind(t *testing.T) {
 }
 
 func TestIntegrationVerifyEntropyMastermind(t *testing.T) {
-	t.Skip("Skipping TestIntegrationVerifyEntropyMastermind because it's hanging.")
 	if testing.Short() {
 		t.Skip("Skipping TestIntegrationVerifyEntropyMastermind in short mode.")
 	}
@@ -250,7 +248,7 @@ func TestIntegrationVerifyEntropyHangman(t *testing.T) {
 }
 
 func TestIntegrationVerifyMiniMaxHangman(t *testing.T) {
-	t.Skip("Skipping TestIntegrationVerifyMiniMaxHangman because it's hanging.")
+	t.Skip("Skipping TestIntegrationVerifyEntropyHangman because it's hanging.")
 	if testing.Short() {
 		t.Skip("Skipping TestIntegrationVerifyMiniMaxHangman in short mode.")
 	}

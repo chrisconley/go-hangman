@@ -37,33 +37,33 @@ func TestHashingConflicts(t *testing.T) {
 }
 
 func TestAvailableActions(t *testing.T) {
-	InitUniverse([]string{"aa", "bb"})
-	actual := BUniverse.Actions.AllActions()
+	universe := InitUniverse([]string{"aa", "bb"})
+	actual := universe.Actions.AllActions()
 	expected := []Action{"a", "b", "aa", "bb"}
 	test.AssertDeepEqual(actual, expected, t)
 }
 
 func TestAvailableActionsWorldActionsLength(t *testing.T) {
-	InitUniverse([]string{"aa", "bb"})
-	actual := BUniverse.Actions.WorldActionsLength()
+	universe := InitUniverse([]string{"aa", "bb"})
+	actual := universe.Actions.WorldActionsLength()
 	test.AssertDeepEqual(actual, 2, t)
 }
 
 func TestAvailableActionsActionsLength(t *testing.T) {
-	InitUniverse([]string{"aa", "bb"})
-	actual := BUniverse.Actions.ActionsLength()
+	universe := InitUniverse([]string{"aa", "bb"})
+	actual := universe.Actions.ActionsLength()
 	test.AssertDeepEqual(actual, 2, t)
 }
 
 func TestAvailableActionsActions(t *testing.T) {
-	InitUniverse([]string{"aa", "bb"})
-	actual := BUniverse.Actions.Actions()
+	universe := InitUniverse([]string{"aa", "bb"})
+	actual := universe.Actions.Actions()
 	test.AssertDeepEqual(actual, []Action{"a", "b"}, t)
 }
 
 func TestAvailableActionsWorldActions(t *testing.T) {
-	InitUniverse([]string{"aa", "bb"})
-	actual := BUniverse.Actions.WorldActions()
+	universe := InitUniverse([]string{"aa", "bb"})
+	actual := universe.Actions.WorldActions()
 	test.AssertDeepEqual(actual, []Action{"aa", "bb"}, t)
 }
 
@@ -73,8 +73,8 @@ func BenchmarkAvailableActionsActionsLengthSmall(b *testing.B) {
 	for i := 0; i < numElements; i++ {
 		worlds = append(worlds, fmt.Sprintf("hi%d", i))
 	}
-	InitUniverse(worlds)
-	aa := BUniverse.Actions
+	universe := InitUniverse(worlds)
+	aa := universe.Actions
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		aa.ActionsLength()
@@ -87,8 +87,8 @@ func BenchmarkAvailableActionsActionsLengthLarge(b *testing.B) {
 	for i := 0; i < numElements; i++ {
 		worlds = append(worlds, fmt.Sprintf("hi%d", i))
 	}
-	InitUniverse(worlds)
-	aa := BUniverse.Actions
+	universe := InitUniverse(worlds)
+	aa := universe.Actions
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		aa.ActionsLength()

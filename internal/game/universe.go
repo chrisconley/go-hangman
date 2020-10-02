@@ -31,8 +31,9 @@ type Reactions struct {
 }
 
 type PossibleWorlds struct {
-	Bits  *roaring64.Bitmap
-	count int
+	Bits     *roaring64.Bitmap
+	count    int
+	Capacity int
 }
 
 func (pw *PossibleWorlds) GetHash() []byte {
@@ -59,6 +60,7 @@ func NewPossibleWorlds(length int) PossibleWorlds {
 	pw := PossibleWorlds{}
 	pw.Bits = roaring64.BitmapOf(length64 + 1)
 	pw.count = 0
+	pw.Capacity = length
 	return pw
 }
 
@@ -84,6 +86,7 @@ type Universe struct {
 	WorldLength    int
 	Actions        AvailableActions
 	PossibleWorlds PossibleWorlds
+	Size           int
 }
 
 var BUniverse = Universe{}
@@ -92,18 +95,23 @@ var BCountsStore = make(map[string]utils.GroupedIncrementer)
 var BRewardsStore = make(map[string]utils.GroupedIncrementer)
 var BActionMatchesStore = make(map[string]bool)
 
-func InitUniverse(lines []string) PossibleWorlds {
-	universeLength := len(lines)
-	BUniverse.Worlds = make([]BWorld, universeLength)
-	BUniverse.WorldLength = len(lines[0])
-	pw := NewPossibleWorlds(universeLength)
+func InitUniverse(lines []string) Universe {
+	universe := Universe{}
+	universe.Size = len(lines)
+	universe.Worlds = make([]BWorld, universe.Size)
+	universe.WorldLength = len(lines[0])
+	pw := NewPossibleWorlds(universe.Size)
 	for index, name := range lines {
-		BUniverse.Worlds[index] = BWorld{Index: uint64(index), Name: name}
+		universe.Worlds[index] = BWorld{Index: uint64(index), Name: name}
 		pw.Add(uint64(index))
 	}
-	BUniverse.Actions = buildAvailableActions()
-	BUniverse.PossibleWorlds = pw
-	return pw
+	universe.PossibleWorlds = pw
+	universe.Actions = buildAvailableActions(universe)
+	return universe
+}
+
+func (u *Universe) GetWorldByIndex(index uint64) BWorld {
+	return u.Worlds[index]
 }
 
 type AvailableActions struct {
@@ -115,15 +123,15 @@ type AvailableActions struct {
 
 // TODO: Just move this to universe creation then the performance shouldn't matter
 // because it'll get called once instead of every new game with NewPerspective
-func buildAvailableActions() AvailableActions {
+func buildAvailableActions(universe Universe) AvailableActions {
 	aa := AvailableActions{
 		actions:      []Action{},
-		worldActions: make([]Action, len(BUniverse.Worlds)),
-		worldSize:    BUniverse.WorldLength,
+		worldActions: make([]Action, universe.Size),
+		worldSize:    universe.WorldLength,
 	}
 
 	keys := make(map[int32]bool)
-	for index, world := range BUniverse.Worlds {
+	for index, world := range universe.Worlds {
 		worldAction := Action(world.Name)
 		aa.worldActions[index] = worldAction
 		for _, runeValue := range world.Name {

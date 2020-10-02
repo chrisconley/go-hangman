@@ -9,8 +9,8 @@ import (
 )
 
 func TestGetActions(t *testing.T) {
-	game.InitUniverse([]string{"aa", "bb"})
-	aa := game.BUniverse.Actions
+	universe := game.InitUniverse([]string{"aa", "bb"})
+	aa := universe.Actions
 
 	remainingWorlds := game.NewPossibleWorlds(2)
 	lines := []string{"aa", "bb"}

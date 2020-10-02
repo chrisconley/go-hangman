@@ -38,7 +38,7 @@ func TestPlayBHangman(t *testing.T) {
 		"abattises",
 		"abattoirs",
 	}
-	game.InitUniverse(lines)
+	game.BUniverse = game.InitUniverse(lines)
 
 	for _, line := range lines {
 		perspective := game.NewPerspective(
@@ -58,7 +58,7 @@ func TestPlayMastermind(t *testing.T) {
 		"121",
 		"211",
 	}
-	game.InitUniverse(lines)
+	game.BUniverse = game.InitUniverse(lines)
 
 	for _, line := range lines {
 		perspective := game.NewPerspective(
@@ -76,7 +76,7 @@ func TestIntegrationPlayKnuthMastermind(t *testing.T) {
 		t.Skip("Skipping TestIntegrationPlayKnuthMastermind in short mode.")
 	}
 	lines := utils.ReadLinesFromFilePath("../../fixtures/commercial-mastermind.txt")
-	game.InitUniverse(lines)
+	game.BUniverse = game.InitUniverse(lines)
 
 	perspective := game.NewPerspective(
 		game.Motivation{Entropy: 0.00, MiniMax: 1.0},

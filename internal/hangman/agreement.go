@@ -12,7 +12,7 @@ func GetActions(remainingWorlds game.PossibleWorlds, aa game.AvailableActions) [
 	if remainingWorlds.Len() < aa.ActionsLength() {
 		worldActions := []game.Action{}
 		for _, index := range remainingWorlds.Indices() {
-			world := game.BUniverse.Worlds[index]
+			world := game.BUniverse.GetWorldByIndex(index)
 			worldActions = append(worldActions, game.Action(world.Name))
 		}
 		return append(aa.Actions(), worldActions...)

@@ -42,11 +42,11 @@ func ExploreReactionsForAction(
 	responseWorlds := make(map[string]PossibleWorlds)
 	actionMatchesPossibleWorld := false
 	for _, worldIndex := range possibleWorldIndices {
-		world := BUniverse.Worlds[worldIndex]
+		world := BUniverse.GetWorldByIndex(worldIndex)
 		reaction := act(World(world.Name), action)
 		response := string(reaction.Response)
 		if _, ok := responseWorlds[response]; !ok {
-			responseWorlds[response] = NewPossibleWorlds(len(BUniverse.Worlds))
+			responseWorlds[response] = NewPossibleWorlds(BUniverse.Size)
 		}
 		counts.Increment(response, 1.0)
 		rewards.Increment(response, reaction.Reward)

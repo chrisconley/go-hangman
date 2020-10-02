@@ -9,7 +9,7 @@ import (
 )
 
 func TestGetActions(t *testing.T) {
-	game.InitUniverse([]string{"aa", "bb"})
+	game.BUniverse = game.InitUniverse([]string{"aa", "bb"})
 	aa := game.BUniverse.Actions
 
 	remainingWorlds := game.NewPossibleWorlds(2)

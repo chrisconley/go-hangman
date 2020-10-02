@@ -8,7 +8,8 @@ import (
 
 func TestBuildPredictions(t *testing.T) {
 	lines := []string{"abc", "aab", "bbb"}
-	pw := InitUniverse(lines)
+	BUniverse = InitUniverse(lines)
+	pw := BUniverse.PossibleWorlds
 	actions := []Action{"a", "b", "c"}
 
 	ExploreReactions(pw, actions, BuildTestAct(1.0))
@@ -30,7 +31,8 @@ func TestBuildPredictions(t *testing.T) {
 func TestExploreReactionsForAction(t *testing.T) {
 	lines := []string{"abc", "aab", "cab"}
 	universeLength := len(lines)
-	pw := InitUniverse(lines)
+	BUniverse = InitUniverse(lines)
+	pw := BUniverse.PossibleWorlds
 
 	_, counts, rewards, responseWorlds := ExploreReactionsForAction(
 		pw.Indices(),

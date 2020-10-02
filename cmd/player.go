@@ -31,8 +31,15 @@ func main() {
 
 	limit := flag.Int("limit", len(lines), "How many games to play. Defaults to all games piped in from stdin.")
 	gameString := flag.String("game", "none", "What game to play. Valid games: hangman, mastermind. Required")
-	motivation := game.Motivation{Reward: 0.0, Entropy: 1.0, MiniMax: 0.0}
+	reward := flag.Float64("motivation.reward", 0.0, "How much weight to put into Reward.")
+	entropy := flag.Float64("motivation.entropy", 0.0, "How much weight to put into Entropy.")
+	minimax := flag.Float64("motivation.minimax", 0.0, "How much weight to put into MiniMax.")
 	flag.Parse()
+
+	if *reward+*entropy+*minimax != 1.0 {
+		fmt.Printf("%f %f %f", *reward, *entropy, *minimax)
+		panic("Reward + Entropy + Minimax must equal 1.0. All params default to 0.0")
+	}
 
 	agreement := hangman.Agreement
 	if *gameString == "hangman" {
@@ -42,6 +49,8 @@ func main() {
 	} else {
 		panic("A game must be specified.")
 	}
+
+	motivation := game.Motivation{Reward: *reward, Entropy: *entropy, MiniMax: *minimax}
 
 	turns := play.PlayGames(agreement, motivation, lines, *limit)
 	stats := play.CalculateStats(turns)

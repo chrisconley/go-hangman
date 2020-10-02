@@ -39,9 +39,9 @@ build:
 hangman:
   stage: run
   script:
-    - cat $CI_PROJECT_DIR/fixtures/nine-letter-words.txt | ./player -game hangman -motivation.entropy 1.0 -limit 100
+    - head -n 1000 $CI_PROJECT_DIR/fixtures/nine-letter-words.txt | ./player -game hangman -motivation.entropy 1.0 -limit 100
 
-# mastermind:
-#   stage: run
-#   script:
-#     - cat $CI_PROJECT_DIR/fixtures/commercial-mastermind.txt | ./player -game mastermind -limit 10
+mastermind:
+  stage: run
+  script:
+    - head -n 100 $CI_PROJECT_DIR/fixtures/commercial-mastermind.txt | ./player -game mastermind -motivation.entropy 1.0 -limit 10

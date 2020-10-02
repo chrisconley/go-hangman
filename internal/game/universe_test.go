@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/chrisconley/go-hangman/internal/utils"
 	"github.com/chrisconley/go-hangman/test"
 )
 
@@ -37,39 +36,34 @@ func TestHashingConflicts(t *testing.T) {
 	)
 }
 
-func TestBuildAvailableActions(t *testing.T) {
-	worlds := BuildPossibleWorlds([]string{"aa", "bb"})
-	aa := BuildAvailableActions(worlds)
-	actual := aa.AllActions()
+func TestAvailableActions(t *testing.T) {
+	InitUniverse([]string{"aa", "bb"})
+	actual := BUniverse.Actions.AllActions()
 	expected := []Action{"a", "b", "aa", "bb"}
 	test.AssertDeepEqual(actual, expected, t)
 }
 
 func TestAvailableActionsWorldActionsLength(t *testing.T) {
-	worlds := BuildPossibleWorlds([]string{"aa", "bb"})
-	aa := BuildAvailableActions(worlds)
-	actual := aa.WorldActionsLength()
+	InitUniverse([]string{"aa", "bb"})
+	actual := BUniverse.Actions.WorldActionsLength()
 	test.AssertDeepEqual(actual, 2, t)
 }
 
 func TestAvailableActionsActionsLength(t *testing.T) {
-	worlds := BuildPossibleWorlds([]string{"aa", "bb"})
-	aa := BuildAvailableActions(worlds)
-	actual := aa.ActionsLength()
+	InitUniverse([]string{"aa", "bb"})
+	actual := BUniverse.Actions.ActionsLength()
 	test.AssertDeepEqual(actual, 2, t)
 }
 
 func TestAvailableActionsActions(t *testing.T) {
-	worlds := BuildPossibleWorlds([]string{"aa", "bb"})
-	aa := BuildAvailableActions(worlds)
-	actual := aa.Actions()
+	InitUniverse([]string{"aa", "bb"})
+	actual := BUniverse.Actions.Actions()
 	test.AssertDeepEqual(actual, []Action{"a", "b"}, t)
 }
 
 func TestAvailableActionsWorldActions(t *testing.T) {
-	worlds := BuildPossibleWorlds([]string{"aa", "bb"})
-	aa := BuildAvailableActions(worlds)
-	actual := aa.WorldActions()
+	InitUniverse([]string{"aa", "bb"})
+	actual := BUniverse.Actions.WorldActions()
 	test.AssertDeepEqual(actual, []Action{"aa", "bb"}, t)
 }
 
@@ -79,7 +73,8 @@ func BenchmarkAvailableActionsActionsLengthSmall(b *testing.B) {
 	for i := 0; i < numElements; i++ {
 		worlds = append(worlds, fmt.Sprintf("hi%d", i))
 	}
-	aa := BuildAvailableActions(BuildPossibleWorlds(worlds))
+	InitUniverse(worlds)
+	aa := BUniverse.Actions
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		aa.ActionsLength()
@@ -92,30 +87,11 @@ func BenchmarkAvailableActionsActionsLengthLarge(b *testing.B) {
 	for i := 0; i < numElements; i++ {
 		worlds = append(worlds, fmt.Sprintf("hi%d", i))
 	}
-	aa := BuildAvailableActions(BuildPossibleWorlds(worlds))
+	InitUniverse(worlds)
+	aa := BUniverse.Actions
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		aa.ActionsLength()
-	}
-}
-
-func BenchmarkBuildAvailableActionsSmall(b *testing.B) {
-	lines := utils.ReadLinesFromFilePath("../../fixtures/nine-letter-words.txt")
-	lines = lines[:10]
-	possibleWorlds := BuildPossibleWorlds(lines)
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		BuildAvailableActions(possibleWorlds)
-	}
-}
-
-func BenchmarkBuildAvailableActionsLarge(b *testing.B) {
-	lines := utils.ReadLinesFromFilePath("../../fixtures/nine-letter-words.txt")
-	lines = lines[:10000]
-	possibleWorlds := BuildPossibleWorlds(lines)
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		BuildAvailableActions(possibleWorlds)
 	}
 }
 

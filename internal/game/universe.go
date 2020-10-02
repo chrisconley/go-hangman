@@ -82,6 +82,7 @@ type BWorld struct {
 
 type Universe struct {
 	Worlds          []BWorld
+	WorldLength     int
 	Actions         AvailableActions
 	PossibleWorlds  PossibleWorlds
 	BPossibleWorlds BPossibleWorlds
@@ -96,13 +97,14 @@ var BActionMatchesStore = make(map[string]bool)
 func InitUniverse(lines []string) BPossibleWorlds {
 	universeLength := len(lines)
 	BUniverse.Worlds = make([]BWorld, universeLength)
+	BUniverse.WorldLength = len(lines[0])
 	pw := NewPossibleWorlds(universeLength)
 	for index, name := range lines {
 		BUniverse.Worlds[index] = BWorld{Index: uint64(index), Name: name}
 		pw.Add(uint64(index))
 	}
 	BUniverse.PossibleWorlds = BuildPossibleWorlds(lines)
-	BUniverse.Actions = BuildAvailableActions(BUniverse.PossibleWorlds)
+	BUniverse.Actions = buildAvailableActions()
 	BUniverse.BPossibleWorlds = pw
 	return pw
 }
@@ -153,18 +155,18 @@ type AvailableActions struct {
 
 // TODO: Just move this to universe creation then the performance shouldn't matter
 // because it'll get called once instead of every new game with NewPerspective
-func BuildAvailableActions(worlds PossibleWorlds) AvailableActions {
+func buildAvailableActions() AvailableActions {
 	aa := AvailableActions{
 		actions:      []Action{},
-		worldActions: make([]Action, worlds.Len()),
-		worldSize:    len(worlds.Worlds[0]),
+		worldActions: make([]Action, len(BUniverse.Worlds)),
+		worldSize:    BUniverse.WorldLength,
 	}
 
 	keys := make(map[int32]bool)
-	for index, world := range worlds.Worlds {
-		worldAction := Action(world)
+	for index, world := range BUniverse.Worlds {
+		worldAction := Action(world.Name)
 		aa.worldActions[index] = worldAction
-		for _, runeValue := range string(world) {
+		for _, runeValue := range world.Name {
 			if _, ok := keys[runeValue]; !ok {
 				keys[runeValue] = true
 				aa.actions = append(aa.actions, Action(runeValue))

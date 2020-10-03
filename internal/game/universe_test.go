@@ -7,7 +7,7 @@ import (
 	"github.com/chrisconley/go-hangman/test"
 )
 
-func TestPossibleWorldsGetBytesHash(t *testing.T) {
+func TestPossibleWorldsGetHash(t *testing.T) {
 	pw1 := NewPossibleWorlds(100)
 	pw1.Add(1)
 	pw1.Add(99)
@@ -17,7 +17,7 @@ func TestPossibleWorldsGetBytesHash(t *testing.T) {
 	pw2.Add(2)
 	pw2.Add(98)
 	pw2.SetHash()
-	test.AssertDeepNotEqual(pw1.GetBytesHash(), pw2.GetBytesHash(), t)
+	test.AssertDeepNotEqual(pw1.GetHash(), pw2.GetHash(), t)
 }
 
 func TestHashingConflicts(t *testing.T) {
@@ -34,8 +34,8 @@ func TestHashingConflicts(t *testing.T) {
 	action := Action("t")
 
 	test.AssertDeepNotEqual(
-		BuildActionWorldHash(action, pw1.GetBytesHash()),
-		BuildActionWorldHash(action, pw2.GetBytesHash()),
+		BuildActionWorldHash(action, pw1.GetHash()),
+		BuildActionWorldHash(action, pw2.GetHash()),
 		t,
 	)
 }

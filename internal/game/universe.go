@@ -1,11 +1,9 @@
 package game
 
 import (
-	"encoding/binary"
-
 	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/chrisconley/go-hangman/internal/utils"
-	"github.com/mitchellh/hashstructure"
+	"github.com/segmentio/fasthash/fnv1a"
 )
 
 type World string
@@ -31,22 +29,21 @@ type Reactions struct {
 }
 
 type PossibleWorlds struct {
-	Bits      *roaring64.Bitmap
-	count     int
-	Capacity  int
-	bytesHash []byte
-	hash      string
+	Bits     *roaring64.Bitmap
+	count    int
+	Capacity int
+	hash     uint64
 }
 
-func (pw *PossibleWorlds) GetBytesHash() []byte {
-	return pw.bytesHash
+func (pw *PossibleWorlds) GetHash() uint64 {
+	return pw.hash
 }
 
-func (pw *PossibleWorlds) SetHash() ([]byte, string) {
+func (pw *PossibleWorlds) SetHash() uint64 {
 	bytes, _ := pw.Bits.ToBytes()
-	pw.bytesHash = bytes
-	pw.hash = string(bytes)
-	return pw.bytesHash, pw.hash
+	pw.hash = fnv1a.Init64
+	pw.hash = fnv1a.AddBytes64(pw.hash, bytes)
+	return pw.hash
 }
 
 func (pw *PossibleWorlds) Add(index uint64) {
@@ -72,15 +69,9 @@ func NewPossibleWorlds(length int) PossibleWorlds {
 	return pw
 }
 
-func BuildActionWorldHash(action Action, worldsHash []byte) string {
-	actionHash, err := hashstructure.Hash(action, nil)
-	if err != nil {
-		panic(err)
-	}
-	b := make([]byte, 8)
-	binary.LittleEndian.PutUint64(b, actionHash)
-	worldsHash = append(worldsHash, b...)
-	return string(worldsHash)
+func BuildActionWorldHash(action Action, worldsHash uint64) uint64 {
+	worldsHash = fnv1a.AddString64(worldsHash, string(action))
+	return worldsHash
 
 }
 
@@ -102,31 +93,31 @@ var BUniverse = Universe{}
 type Cache struct{}
 
 var TheCache = Cache{}
-var possibleWorldsCache = make(map[string]PossibleWorlds)
-var theCache = make(map[string]ActionCacheModel)
+var possibleWorldsCache = make(map[uint64]PossibleWorlds)
+var theCache = make(map[uint64]ActionCacheModel)
 
 type ActionCacheModel struct {
-	Worlds        map[string]string
+	Worlds        map[string]uint64
 	Counts        utils.GroupedIncrementer
 	Rewards       utils.GroupedIncrementer
 	ActionMatches bool
 }
 
-func (c *Cache) GetNextWorlds(hash string, response string) PossibleWorlds {
+func (c *Cache) GetNextWorlds(hash uint64, response string) PossibleWorlds {
 	pwHash := theCache[hash].Worlds[response]
 	return possibleWorldsCache[pwHash]
 }
 
 func (c *Cache) Write(
-	hash string,
+	hash uint64,
 	responseWorlds map[string]PossibleWorlds,
 	counts utils.GroupedIncrementer,
 	rewards utils.GroupedIncrementer,
 	actionMatchesAPossibleWorld bool,
 ) {
-	responseCache := make(map[string]string)
+	responseCache := make(map[string]uint64)
 	for response, possibleWorlds := range responseWorlds {
-		_, pwHash := possibleWorlds.SetHash()
+		pwHash := possibleWorlds.SetHash()
 		possibleWorldsCache[pwHash] = possibleWorlds
 		responseCache[response] = pwHash
 	}
@@ -138,20 +129,20 @@ func (c *Cache) Write(
 	}
 }
 
-func (c *Cache) Exists(hash string) bool {
+func (c *Cache) Exists(hash uint64) bool {
 	_, ok := theCache[hash]
 	return ok
 }
 
-func (c *Cache) GetCounts(hash string) utils.GroupedIncrementer {
+func (c *Cache) GetCounts(hash uint64) utils.GroupedIncrementer {
 	return theCache[hash].Counts
 }
 
-func (c *Cache) GetRewards(hash string) utils.GroupedIncrementer {
+func (c *Cache) GetRewards(hash uint64) utils.GroupedIncrementer {
 	return theCache[hash].Rewards
 }
 
-func (c *Cache) GetActionMatches(hash string) bool {
+func (c *Cache) GetActionMatches(hash uint64) bool {
 	return theCache[hash].ActionMatches
 }
 

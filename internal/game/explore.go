@@ -5,10 +5,7 @@ import (
 	"github.com/chrisconley/go-hangman/internal/utils"
 )
 
-var ExploreCount = 0
-
 func ExploreReactions(possibleWorlds PossibleWorlds, actions []Action, act Act) {
-	ExploreCount++
 	worldsHash := possibleWorlds.GetHash()
 	worldIndices := possibleWorlds.Indices()
 	for _, action := range actions {

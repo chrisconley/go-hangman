@@ -8,7 +8,7 @@ import (
 )
 
 func TestCalculateStats(t *testing.T) {
-	turns := []game.GamePlay{
+	games := []game.GamePlay{
 		game.GamePlay{TurnCount: 1},
 		game.GamePlay{TurnCount: 2},
 		game.GamePlay{TurnCount: 3},
@@ -16,7 +16,7 @@ func TestCalculateStats(t *testing.T) {
 		game.GamePlay{TurnCount: 11},
 		game.GamePlay{TurnCount: 7},
 	}
-	stats := CalculateStats(turns)
+	stats := CalculateStats(games)
 
 	test.AssertDeepEqual(stats.GameCount, 6, t)
 	test.AssertDeepEqual(stats.TotalTurns, 29, t)

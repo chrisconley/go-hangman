@@ -52,8 +52,8 @@ func main() {
 
 	motivation := game.Motivation{Reward: *reward, Entropy: *entropy, MiniMax: *minimax}
 
-	turns := play.PlayGames(agreement, motivation, lines, *limit)
-	stats := play.CalculateStats(turns)
+	games := play.PlayGames(agreement, motivation, lines, *limit)
+	stats := play.CalculateStats(games)
 
 	b, err := json.Marshal(stats)
 	fmt.Printf("GameStats: %s\n", string(b))

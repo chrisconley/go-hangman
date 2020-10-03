@@ -65,7 +65,7 @@ func Observe(action game.Action, reaction game.Reaction, possibleWorlds game.Pos
 func PlayGames(agreement game.Agreement, motivation game.Motivation, lines []string, limit int) []game.GamePlay {
 	game.BUniverse = game.InitUniverse(lines)
 	// defer profile.Start().Stop()
-	turns := []game.GamePlay{}
+	games := []game.GamePlay{}
 	for j := uint64(0); j < uint64(limit); j++ {
 		perspective := game.NewPerspective(
 			motivation,
@@ -76,26 +76,26 @@ func PlayGames(agreement game.Agreement, motivation game.Motivation, lines []str
 		truth := game.World(btruth.Name)
 		gameplay, _ := PlayGame(truth, perspective)
 		// fmt.Printf("TRUTH: %s | ", truth)
-		// fmt.Printf("TURNS: %d\n", reactions.TurnCount)
-		turns = append(turns, gameplay)
+		// fmt.Printf("TURNS: %d\n", gameplay.TurnCount)
+		games = append(games, gameplay)
 	}
 
-	return turns
+	return games
 }
 
 func PlayGame(truth game.World, perspective game.Perspective) (game.GamePlay, game.World) {
 	possibleWorlds := game.BUniverse.PossibleWorlds
-	reactions := game.GamePlay{}
+	gameplay := game.GamePlay{}
 	reaction := game.Reaction{}
 	for true {
 		reaction, possibleWorlds = playTurn(truth, perspective, possibleWorlds)
-		reactions.Reactions = append(reactions.Reactions, reaction)
-		reactions.TurnCount++
+		gameplay.Reactions = append(gameplay.Reactions, reaction)
+		gameplay.TurnCount++
 		if string(reaction.Action) == string(truth) {
 			break
 		}
 	}
-	return reactions, game.World(reaction.Action)
+	return gameplay, game.World(reaction.Action)
 }
 
 func playTurn(truth game.World, perspective game.Perspective, possibleWorlds game.PossibleWorlds) (game.Reaction, game.PossibleWorlds) {

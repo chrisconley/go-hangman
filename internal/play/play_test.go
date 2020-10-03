@@ -108,8 +108,8 @@ func TestIntegrationVerifyMiniMaxMastermind(t *testing.T) {
 
 	motivation := game.Motivation{MiniMax: 1.0}
 	limit := len(lines)
-	turns := PlayGames(mastermind.Agreement, motivation, lines, limit)
-	stats := CalculateStats(turns)
+	games := PlayGames(mastermind.Agreement, motivation, lines, limit)
+	stats := CalculateStats(games)
 	test.AssertDeepEqual(stats.GameCount, 1296, t)
 	test.AssertDeepEqual(stats.MaxTurns, 5, t)
 	test.AssertDeepEqual(stats.TotalTurns, 5801, t)
@@ -125,8 +125,8 @@ func TestIntegrationVerifyEntropyMastermind(t *testing.T) {
 
 	motivation := game.Motivation{Entropy: 1.0}
 	limit := len(lines)
-	turns := PlayGames(mastermind.Agreement, motivation, lines, limit)
-	stats := CalculateStats(turns)
+	games := PlayGames(mastermind.Agreement, motivation, lines, limit)
+	stats := CalculateStats(games)
 	test.AssertDeepEqual(stats.GameCount, 1296, t)
 	test.AssertDeepEqual(stats.MaxTurns, 6, t)
 	test.AssertDeepEqual(stats.TotalTurns, 5723, t)
@@ -142,8 +142,8 @@ func TestIntegrationVerifyEntropyHangman(t *testing.T) {
 
 	motivation := game.Motivation{Entropy: 1.0}
 	limit := len(lines)
-	turns := PlayGames(mastermind.Agreement, motivation, lines, limit)
-	stats := CalculateStats(turns)
+	games := PlayGames(mastermind.Agreement, motivation, lines, limit)
+	stats := CalculateStats(games)
 	test.AssertDeepEqual(stats.GameCount, 25011, t)
 	test.AssertDeepEqual(stats.MaxTurns, 13, t)
 	test.AssertDeepEqual(stats.TotalTurns, 146387, t)
@@ -159,8 +159,8 @@ func TestIntegrationVerifyMiniMaxHangman(t *testing.T) {
 
 	motivation := game.Motivation{MiniMax: 1.0}
 	limit := len(lines)
-	turns := PlayGames(mastermind.Agreement, motivation, lines, limit)
-	stats := CalculateStats(turns)
+	games := PlayGames(mastermind.Agreement, motivation, lines, limit)
+	stats := CalculateStats(games)
 	test.AssertDeepEqual(stats.GameCount, 25011, t)
 	test.AssertDeepEqual(stats.MaxTurns, 12, t)
 	test.AssertDeepEqual(stats.TotalTurns, 149552, t)
@@ -172,8 +172,8 @@ func TestPlayGames(t *testing.T) {
 	lines = lines[:100]
 
 	motivation := game.Motivation{Reward: 0.0, Entropy: 1.0, Time: 0.0}
-	turns := PlayGames(mastermind.Agreement, motivation, lines, 3)
-	test.AssertDeepEqual(turns[0].TurnCount, 2, t)
-	test.AssertDeepEqual(turns[1].TurnCount, 3, t)
-	test.AssertDeepEqual(turns[2].TurnCount, 3, t)
+	games := PlayGames(mastermind.Agreement, motivation, lines, 3)
+	test.AssertDeepEqual(games[0].TurnCount, 2, t)
+	test.AssertDeepEqual(games[1].TurnCount, 3, t)
+	test.AssertDeepEqual(games[2].TurnCount, 3, t)
 }

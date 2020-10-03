@@ -9,15 +9,15 @@ type Stats struct {
 	MaxTurns     int
 }
 
-func CalculateStats(turns []game.GamePlay) Stats {
+func CalculateStats(games []game.GamePlay) Stats {
 	stats := Stats{}
 	stats.TotalTurns = 0
 	stats.MaxTurns = 0
-	stats.GameCount = len(turns)
-	for _, reactions := range turns {
-		stats.TotalTurns = stats.TotalTurns + reactions.TurnCount
-		if reactions.TurnCount > stats.MaxTurns {
-			stats.MaxTurns = reactions.TurnCount
+	stats.GameCount = len(games)
+	for _, gameplay := range games {
+		stats.TotalTurns = stats.TotalTurns + gameplay.TurnCount
+		if gameplay.TurnCount > stats.MaxTurns {
+			stats.MaxTurns = gameplay.TurnCount
 		}
 	}
 

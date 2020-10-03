@@ -2,6 +2,9 @@
 test:
 	go test ./...
 
+stest:
+	go test -short ./...
+
 vtest:
 	go test -v ./...
 

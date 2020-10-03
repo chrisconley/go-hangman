@@ -9,7 +9,7 @@ import (
 type World string
 type Action string
 type Response string
-type Act func(w World, action Action) (reaction Reaction)
+type Act func(gp GamePlay, w World, action Action) (reaction Reaction)
 type GetActions func(w PossibleWorlds, aa AvailableActions) []Action
 
 type Agreement struct {
@@ -26,6 +26,11 @@ type Reaction struct {
 type GamePlay struct {
 	Reactions []Reaction
 	TurnCount int
+}
+
+func (gp *GamePlay) AddTurn(reaction Reaction) {
+	gp.Reactions = append(gp.Reactions, reaction)
+	gp.TurnCount++
 }
 
 type PossibleWorlds struct {

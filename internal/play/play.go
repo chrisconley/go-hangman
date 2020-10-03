@@ -30,12 +30,12 @@ func logReaction(reaction game.Reaction) {
 // ###########################
 // ### THE DECISION PROCESS ###
 // ###########################
-func Explore(agreement game.Agreement, possibleWorlds game.PossibleWorlds) (predictions game.Predictions) {
+func Explore(gameplay game.GamePlay, agreement game.Agreement, possibleWorlds game.PossibleWorlds) (predictions game.Predictions) {
 	actions := agreement.GetActions(
 		possibleWorlds,
 		game.BUniverse.Actions,
 	)
-	game.ExploreReactions(possibleWorlds, actions, agreement.Act)
+	game.ExploreReactions(gameplay, possibleWorlds, actions, agreement.Act)
 	predictions = game.BBuildPredictions(actions, possibleWorlds)
 	logPredictions(predictions)
 	return predictions
@@ -47,8 +47,8 @@ func Decide(predictions game.Predictions, motivation game.Motivation) game.Actio
 	return prediction.Action
 }
 
-func Act(action game.Action, act game.Act, truth game.World) game.Reaction {
-	reaction := act(truth, action)
+func Act(gameplay game.GamePlay, action game.Action, act game.Act, truth game.World) game.Reaction {
+	reaction := act(gameplay, truth, action)
 	logReaction(reaction)
 	return reaction
 }
@@ -85,12 +85,11 @@ func PlayGames(agreement game.Agreement, motivation game.Motivation, lines []str
 
 func PlayGame(truth game.World, perspective game.Perspective) (game.GamePlay, game.World) {
 	possibleWorlds := game.BUniverse.PossibleWorlds
-	gameplay := game.GamePlay{}
+	gameplay := game.GamePlay{} // Should this be on perspective?
 	reaction := game.Reaction{}
 	for true {
-		reaction, possibleWorlds = playTurn(truth, perspective, possibleWorlds)
-		gameplay.Reactions = append(gameplay.Reactions, reaction)
-		gameplay.TurnCount++
+		reaction, possibleWorlds = playTurn(gameplay, truth, perspective, possibleWorlds)
+		gameplay.AddTurn(reaction)
 		if string(reaction.Action) == string(truth) {
 			break
 		}
@@ -98,10 +97,18 @@ func PlayGame(truth game.World, perspective game.Perspective) (game.GamePlay, ga
 	return gameplay, game.World(reaction.Action)
 }
 
-func playTurn(truth game.World, perspective game.Perspective, possibleWorlds game.PossibleWorlds) (game.Reaction, game.PossibleWorlds) {
-	predictions := Explore(perspective.Agreement, possibleWorlds)
+func playTurn(
+	gameplay game.GamePlay,
+	truth game.World,
+	perspective game.Perspective,
+	possibleWorlds game.PossibleWorlds,
+) (
+	game.Reaction,
+	game.PossibleWorlds,
+) {
+	predictions := Explore(gameplay, perspective.Agreement, possibleWorlds)
 	action := Decide(predictions, perspective.Motivation)
-	reaction := Act(action, perspective.Agreement.Act, truth)
+	reaction := Act(gameplay, action, perspective.Agreement.Act, truth)
 	possibleWorlds = Observe(action, reaction, possibleWorlds)
 	return reaction, possibleWorlds
 }

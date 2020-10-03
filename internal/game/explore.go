@@ -5,7 +5,7 @@ import (
 	"github.com/chrisconley/go-hangman/internal/utils"
 )
 
-func ExploreReactions(possibleWorlds PossibleWorlds, actions []Action, act Act) {
+func ExploreReactions(gameplay GamePlay, possibleWorlds PossibleWorlds, actions []Action, act Act) {
 	// If we've already explored the first action,
 	// that means we've explored all actions already and can skip.
 	worldsHash := possibleWorlds.GetHash()
@@ -16,6 +16,7 @@ func ExploreReactions(possibleWorlds PossibleWorlds, actions []Action, act Act) 
 		for _, action := range actions {
 			hash := BuildActionWorldHash(action, worldsHash)
 			actionMatchesAPossibleWorld, counts, rewards, responseWorlds := ExploreReactionsForAction(
+				gameplay,
 				worldIndices,
 				action,
 				act,
@@ -32,6 +33,7 @@ func ExploreReactions(possibleWorlds PossibleWorlds, actions []Action, act Act) 
 }
 
 func ExploreReactionsForAction(
+	gameplay GamePlay,
 	possibleWorldIndices []uint64,
 	action Action,
 	act Act,
@@ -47,7 +49,7 @@ func ExploreReactionsForAction(
 	actionMatchesPossibleWorld := false
 	for _, worldIndex := range possibleWorldIndices {
 		world := BUniverse.GetWorldByIndex(worldIndex)
-		reaction := act(World(world.Name), action)
+		reaction := act(gameplay, World(world.Name), action)
 		response := string(reaction.Response)
 		if _, ok := responseWorlds[response]; !ok {
 			responseWorlds[response] = NewPossibleWorlds(BUniverse.Size)

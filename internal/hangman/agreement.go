@@ -21,7 +21,7 @@ func GetActions(remainingWorlds game.PossibleWorlds, aa game.AvailableActions) [
 	}
 }
 
-func Act(world game.World, action game.Action) (r game.Reaction) {
+func Act(gameplay game.GamePlay, world game.World, action game.Action) (r game.Reaction) {
 	actionLength := len(action)
 	worldString := string(world)
 	actionString := string(action)

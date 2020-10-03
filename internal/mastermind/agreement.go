@@ -12,7 +12,7 @@ func GetActions(remainingWorlds game.PossibleWorlds, aa game.AvailableActions) [
 
 }
 
-func Act(world game.World, action game.Action) (r game.Reaction) {
+func Act(gameplay game.GamePlay, world game.World, action game.Action) (r game.Reaction) {
 	// In An Optimal Mastermind (4,7) Strategy and More Results in the Expected Case
 	// https://arxiv.org/pdf/1305.1010.pdf, the author "double" counts duplicate guesses
 	// that garner a "white" response.

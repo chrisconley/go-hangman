@@ -1,7 +1,6 @@
 package game
 
 import (
-	"crypto/sha256"
 	"encoding/binary"
 
 	"github.com/RoaringBitmap/roaring/roaring64"
@@ -46,9 +45,7 @@ func (pw *PossibleWorlds) GetBytesHash() []byte {
 func (pw *PossibleWorlds) SetHash() ([]byte, string) {
 	bytes, _ := pw.Bits.ToBytes()
 	pw.bytesHash = bytes
-	hash := sha256.New()
-	hash.Write(bytes)
-	pw.hash = string(hash.Sum(nil))
+	pw.hash = string(bytes)
 	return pw.bytesHash, pw.hash
 }
 
@@ -82,10 +79,8 @@ func BuildActionWorldHash(action Action, worldsHash []byte) string {
 	}
 	b := make([]byte, 8)
 	binary.LittleEndian.PutUint64(b, actionHash)
-	hash := sha256.New()
-	hash.Write(worldsHash)
-	hash.Write(b)
-	return string(hash.Sum(nil))
+	worldsHash = append(worldsHash, b...)
+	return string(worldsHash)
 
 }
 

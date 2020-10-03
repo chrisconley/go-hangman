@@ -6,11 +6,15 @@ import (
 )
 
 func ExploreReactions(possibleWorlds PossibleWorlds, actions []Action, act Act) {
+	// If we've already explored the first action,
+	// that means we've explored all actions already and can skip.
 	worldsHash := possibleWorlds.GetHash()
-	worldIndices := possibleWorlds.Indices()
-	for _, action := range actions {
-		hash := BuildActionWorldHash(action, worldsHash)
-		if ok := TheCache.Exists(hash); !ok {
+	hash := BuildActionWorldHash(actions[0], worldsHash)
+	if ok := TheCache.Exists(hash); !ok {
+		// Only get Indices once to improve performance
+		worldIndices := possibleWorlds.Indices()
+		for _, action := range actions {
+			hash := BuildActionWorldHash(action, worldsHash)
 			actionMatchesAPossibleWorld, counts, rewards, responseWorlds := ExploreReactionsForAction(
 				worldIndices,
 				action,

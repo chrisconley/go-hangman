@@ -1,6 +1,7 @@
 package game
 
 import (
+	"crypto/sha256"
 	"encoding/binary"
 
 	"github.com/RoaringBitmap/roaring/roaring64"
@@ -45,7 +46,9 @@ func (pw *PossibleWorlds) GetBytesHash() []byte {
 func (pw *PossibleWorlds) SetHash() ([]byte, string) {
 	bytes, _ := pw.Bits.ToBytes()
 	pw.bytesHash = bytes
-	pw.hash = string(bytes)
+	hash := sha256.New()
+	hash.Write(bytes)
+	pw.hash = string(hash.Sum(nil))
 	return pw.bytesHash, pw.hash
 }
 
@@ -79,8 +82,10 @@ func BuildActionWorldHash(action Action, worldsHash []byte) string {
 	}
 	b := make([]byte, 8)
 	binary.LittleEndian.PutUint64(b, actionHash)
-	worldsHash = append(worldsHash, b...)
-	return string(worldsHash)
+	hash := sha256.New()
+	hash.Write(worldsHash)
+	hash.Write(b)
+	return string(hash.Sum(nil))
 
 }
 
@@ -103,13 +108,17 @@ type Cache struct{}
 
 var TheCache = Cache{}
 var possibleWorldsCache = make(map[string]PossibleWorlds)
-var worldsCache = make(map[string]map[string]string)
-var countsCache = make(map[string]utils.GroupedIncrementer)
-var rewardsCache = make(map[string]utils.GroupedIncrementer)
-var actionMatchesCache = make(map[string]bool)
+var theCache = make(map[string]ActionCacheModel)
+
+type ActionCacheModel struct {
+	Worlds        map[string]string
+	Counts        utils.GroupedIncrementer
+	Rewards       utils.GroupedIncrementer
+	ActionMatches bool
+}
 
 func (c *Cache) GetNextWorlds(hash string, response string) PossibleWorlds {
-	pwHash := worldsCache[hash][response]
+	pwHash := theCache[hash].Worlds[response]
 	return possibleWorldsCache[pwHash]
 }
 
@@ -126,27 +135,29 @@ func (c *Cache) Write(
 		possibleWorldsCache[pwHash] = possibleWorlds
 		responseCache[response] = pwHash
 	}
-	worldsCache[hash] = responseCache
-	countsCache[hash] = counts
-	rewardsCache[hash] = rewards
-	actionMatchesCache[hash] = actionMatchesAPossibleWorld
+	theCache[hash] = ActionCacheModel{
+		Worlds:        responseCache,
+		Counts:        counts,
+		Rewards:       rewards,
+		ActionMatches: actionMatchesAPossibleWorld,
+	}
 }
 
 func (c *Cache) Exists(hash string) bool {
-	_, ok := worldsCache[hash]
+	_, ok := theCache[hash]
 	return ok
 }
 
 func (c *Cache) GetCounts(hash string) utils.GroupedIncrementer {
-	return countsCache[hash]
+	return theCache[hash].Counts
 }
 
 func (c *Cache) GetRewards(hash string) utils.GroupedIncrementer {
-	return rewardsCache[hash]
+	return theCache[hash].Rewards
 }
 
 func (c *Cache) GetActionMatches(hash string) bool {
-	return actionMatchesCache[hash]
+	return theCache[hash].ActionMatches
 }
 
 func InitUniverse(lines []string) Universe {
@@ -159,6 +170,7 @@ func InitUniverse(lines []string) Universe {
 		universe.Worlds[index] = BWorld{Index: uint64(index), Name: name}
 		pw.Add(uint64(index))
 	}
+	pw.SetHash()
 	universe.PossibleWorlds = pw
 	universe.Actions = buildAvailableActions(universe)
 	return universe

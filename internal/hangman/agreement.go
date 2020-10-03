@@ -22,6 +22,10 @@ func GetActions(remainingWorlds game.PossibleWorlds, aa game.AvailableActions) [
 }
 
 func Act(gameplay game.GamePlay, world game.World, action game.Action) (r game.Reaction) {
+	if gameplay.PreviouslyActed(action) {
+		return game.Reaction{Action: action, Response: game.Response("/"), Reward: 0.0}
+	}
+
 	actionLength := len(action)
 	worldString := string(world)
 	actionString := string(action)

@@ -33,6 +33,10 @@ func Act(gameplay game.GamePlay, world game.World, action game.Action) (r game.R
 	//     for the first "6" in the guess
 	// This results in a response of 'WWW'.
 
+	if gameplay.PreviouslyActed(action) {
+		return game.Reaction{Action: action, Response: game.Response("/"), Reward: 0.0}
+	}
+
 	worldString := string(world)
 	actionString := string(action)
 	worldLength := len(worldString)

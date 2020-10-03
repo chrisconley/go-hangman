@@ -33,6 +33,15 @@ func (gp *GamePlay) AddTurn(reaction Reaction) {
 	gp.TurnCount++
 }
 
+func (gp *GamePlay) PreviouslyActed(action Action) bool {
+	for _, reaction := range gp.Reactions {
+		if reaction.Action == action {
+			return true
+		}
+	}
+	return false
+}
+
 type PossibleWorlds struct {
 	Bits     *roaring64.Bitmap
 	count    int

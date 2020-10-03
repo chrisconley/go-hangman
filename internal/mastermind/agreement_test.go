@@ -52,6 +52,14 @@ func TestActMiss(t *testing.T) {
 	test.AssertDeepEqual(reaction.Response, game.Response("!"), t)
 }
 
+func TestActPreviousAction(t *testing.T) {
+	gameplay := game.GamePlay{}
+	gameplay.AddTurn(game.Reaction{Action: "1111"})
+	reaction := Act(gameplay, game.World("1122"), game.Action("1111"))
+	test.AssertDeepEqual(reaction.Response, game.Response("/"), t)
+	test.AssertDeepEqual(reaction.Reward, 0.0, t)
+}
+
 func TestActWikipediaExample(t *testing.T) {
 	// Wikipedia example: https://en.wikipedia.org/wiki/Mastermind_(board_game)#Gameplay_and_rules
 	reaction := Act(game.GamePlay{}, game.World("1122"), game.Action("1112"))

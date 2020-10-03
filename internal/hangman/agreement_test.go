@@ -59,6 +59,14 @@ func TestAct(t *testing.T) {
 	test.AssertDeepEqual(reaction.Reward, 0.0, t)
 }
 
+func TestActPreviousAction(t *testing.T) {
+	gameplay := game.GamePlay{}
+	gameplay.AddTurn(game.Reaction{Action: "a"})
+	reaction := Act(gameplay, game.World("abc"), game.Action("a"))
+	test.AssertDeepEqual(reaction.Response, game.Response("/"), t)
+	test.AssertDeepEqual(reaction.Reward, 0.0, t)
+}
+
 func BenchmarkActSmall(b *testing.B) {
 	world := ""
 	numElements := 10

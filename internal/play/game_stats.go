@@ -9,7 +9,7 @@ type Stats struct {
 	MaxTurns     int
 }
 
-func CalculateStats(turns []game.Reactions) Stats {
+func CalculateStats(turns []game.GamePlay) Stats {
 	stats := Stats{}
 	stats.TotalTurns = 0
 	stats.MaxTurns = 0

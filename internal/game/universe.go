@@ -23,7 +23,7 @@ type Reaction struct {
 	Reward   float64
 }
 
-type Reactions struct {
+type GamePlay struct {
 	Turns     []Reaction
 	TurnCount int
 }

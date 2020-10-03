@@ -8,13 +8,13 @@ import (
 )
 
 func TestCalculateStats(t *testing.T) {
-	turns := []game.Reactions{
-		game.Reactions{TurnCount: 1},
-		game.Reactions{TurnCount: 2},
-		game.Reactions{TurnCount: 3},
-		game.Reactions{TurnCount: 5},
-		game.Reactions{TurnCount: 11},
-		game.Reactions{TurnCount: 7},
+	turns := []game.GamePlay{
+		game.GamePlay{TurnCount: 1},
+		game.GamePlay{TurnCount: 2},
+		game.GamePlay{TurnCount: 3},
+		game.GamePlay{TurnCount: 5},
+		game.GamePlay{TurnCount: 11},
+		game.GamePlay{TurnCount: 7},
 	}
 	stats := CalculateStats(turns)
 

@@ -39,8 +39,7 @@ type PossibleWorlds struct {
 }
 
 func (pw *PossibleWorlds) GetBytesHash() []byte {
-	bytes, _ := pw.Bits.ToBytes()
-	return bytes
+	return pw.bytesHash
 }
 
 func (pw *PossibleWorlds) SetHash() ([]byte, string) {

@@ -11,10 +11,12 @@ func TestPossibleWorldsGetBytesHash(t *testing.T) {
 	pw1 := NewPossibleWorlds(100)
 	pw1.Add(1)
 	pw1.Add(99)
+	pw1.SetHash()
 
 	pw2 := NewPossibleWorlds(100)
 	pw2.Add(2)
 	pw2.Add(98)
+	pw2.SetHash()
 	test.AssertDeepNotEqual(pw1.GetBytesHash(), pw2.GetBytesHash(), t)
 }
 
@@ -22,10 +24,12 @@ func TestHashingConflicts(t *testing.T) {
 	pw1 := NewPossibleWorlds(25011)
 	pw1.Add(uint64(617))
 	pw1.Add(uint64(618))
+	pw1.SetHash()
 
 	pw2 := NewPossibleWorlds(25011)
 	pw2.Add(uint64(809))
 	pw2.Add(uint64(810))
+	pw2.SetHash()
 
 	action := Action("t")
 

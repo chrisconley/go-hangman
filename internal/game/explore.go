@@ -9,7 +9,7 @@ var ExploreCount = 0
 
 func ExploreReactions(possibleWorlds PossibleWorlds, actions []Action, act Act) {
 	ExploreCount++
-	worldsHash := possibleWorlds.GetHash()
+	worldsHash := possibleWorlds.GetBytesHash()
 	worldIndices := possibleWorlds.Indices()
 	for _, action := range actions {
 		hash := BuildActionWorldHash(action, worldsHash)
@@ -93,7 +93,7 @@ func (p Predictions) AddPrediction(action Action, prediction Prediction) {
 
 func BBuildPredictions(actions []Action, bpw PossibleWorlds) Predictions {
 	predictions := Predictions{}
-	worldsHash := bpw.GetHash()
+	worldsHash := bpw.GetBytesHash()
 	for _, action := range actions {
 		hash := BuildActionWorldHash(action, worldsHash)
 		prediction := Prediction{Action: action}

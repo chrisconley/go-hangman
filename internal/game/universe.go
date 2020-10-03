@@ -31,14 +31,23 @@ type Reactions struct {
 }
 
 type PossibleWorlds struct {
-	Bits     *roaring64.Bitmap
-	count    int
-	Capacity int
+	Bits      *roaring64.Bitmap
+	count     int
+	Capacity  int
+	bytesHash []byte
+	hash      string
 }
 
-func (pw *PossibleWorlds) GetHash() []byte {
+func (pw *PossibleWorlds) GetBytesHash() []byte {
 	bytes, _ := pw.Bits.ToBytes()
 	return bytes
+}
+
+func (pw *PossibleWorlds) SetHash() ([]byte, string) {
+	bytes, _ := pw.Bits.ToBytes()
+	pw.bytesHash = bytes
+	pw.hash = string(bytes)
+	return pw.bytesHash, pw.hash
 }
 
 func (pw *PossibleWorlds) Add(index uint64) {
@@ -94,13 +103,15 @@ var BUniverse = Universe{}
 type Cache struct{}
 
 var TheCache = Cache{}
-var worldsCache = make(map[string]map[string]PossibleWorlds)
+var possibleWorldsCache = make(map[string]PossibleWorlds)
+var worldsCache = make(map[string]map[string]string)
 var countsCache = make(map[string]utils.GroupedIncrementer)
 var rewardsCache = make(map[string]utils.GroupedIncrementer)
 var actionMatchesCache = make(map[string]bool)
 
 func (c *Cache) GetNextWorlds(hash string, response string) PossibleWorlds {
-	return worldsCache[hash][response]
+	pwHash := worldsCache[hash][response]
+	return possibleWorldsCache[pwHash]
 }
 
 func (c *Cache) Write(
@@ -110,7 +121,13 @@ func (c *Cache) Write(
 	rewards utils.GroupedIncrementer,
 	actionMatchesAPossibleWorld bool,
 ) {
-	worldsCache[hash] = responseWorlds
+	responseCache := make(map[string]string)
+	for response, possibleWorlds := range responseWorlds {
+		_, pwHash := possibleWorlds.SetHash()
+		possibleWorldsCache[pwHash] = possibleWorlds
+		responseCache[response] = pwHash
+	}
+	worldsCache[hash] = responseCache
 	countsCache[hash] = counts
 	rewardsCache[hash] = rewards
 	actionMatchesCache[hash] = actionMatchesAPossibleWorld

@@ -54,7 +54,7 @@ func Act(action game.Action, act game.Act, truth game.World) game.Reaction {
 }
 
 func Observe(action game.Action, reaction game.Reaction, possibleWorlds game.PossibleWorlds) game.PossibleWorlds {
-	hash := game.BuildActionWorldHash(action, possibleWorlds.GetHash())
+	hash := game.BuildActionWorldHash(action, possibleWorlds.GetBytesHash())
 	response := string(reaction.Response)
 	return game.TheCache.GetNextWorlds(hash, response)
 }

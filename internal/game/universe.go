@@ -24,7 +24,7 @@ type Reaction struct {
 }
 
 type GamePlay struct {
-	Turns     []Reaction
+	Reactions []Reaction
 	TurnCount int
 }
 

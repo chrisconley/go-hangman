@@ -10,3 +10,6 @@ vtest:
 
 rtest:
 	go test -v -run $(test) ./...
+
+build:
+	go build -o ./player ./cmd/player.go

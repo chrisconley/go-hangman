@@ -24,13 +24,17 @@ type Reaction struct {
 }
 
 type GamePlay struct {
-	Reactions []Reaction
-	TurnCount int
+	Reactions   []Reaction
+	TurnCount   int
+	TotalReward float64
+	TotalPain   float64
 }
 
 func (gp *GamePlay) AddTurn(reaction Reaction) {
 	gp.Reactions = append(gp.Reactions, reaction)
 	gp.TurnCount++
+	gp.TotalReward += reaction.Reward
+	gp.TotalPain += 1.0 - reaction.Reward
 }
 
 func (gp *GamePlay) PreviouslyActed(action Action) bool {

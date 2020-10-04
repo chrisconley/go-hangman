@@ -6,24 +6,33 @@ import (
 	"github.com/chrisconley/go-hangman/internal/game"
 )
 
-// TODO: Make this take game.PossibleWorlds
-func GetActions(remainingWorlds game.PossibleWorlds, aa game.AvailableActions) []game.Action {
+func GetActions(gameplay game.GamePlay, remainingWorlds game.PossibleWorlds, aa game.AvailableActions) []game.Action {
+	actions := []game.Action{}
+	for _, action := range aa.Actions() {
+		if !gameplay.PreviouslyActed(action) {
+			actions = append(actions, action)
+		}
+	}
+
 	// Only use world actions when there are only a few choices left
 	if remainingWorlds.Len() < aa.ActionsLength() {
 		worldActions := []game.Action{}
 		for _, index := range remainingWorlds.Indices() {
 			world := game.BUniverse.GetWorldByIndex(index)
-			worldActions = append(worldActions, game.Action(world.Name))
+			worldAction := game.Action(world.Name)
+			if !gameplay.PreviouslyActed(worldAction) {
+				worldActions = append(worldActions, worldAction)
+			}
 		}
-		return append(aa.Actions(), worldActions...)
+		return append(actions, worldActions...)
 	} else {
-		return aa.Actions()
+		return actions
 	}
 }
 
 func Act(gameplay game.GamePlay, world game.World, action game.Action) (r game.Reaction) {
 	if gameplay.PreviouslyActed(action) {
-		return game.Reaction{Action: action, Response: game.Response("/"), Reward: 0.0}
+		panic("This action is not allowed because it has already been used")
 	}
 
 	actionLength := len(action)

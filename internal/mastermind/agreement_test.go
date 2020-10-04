@@ -14,19 +14,33 @@ func TestGetActions(t *testing.T) {
 
 	remainingWorlds := game.NewPossibleWorlds(2)
 	lines := []string{"aa", "bb"}
-	for index, _ := range lines {
+	for index := range lines {
 		remainingWorlds.Add(uint64(index))
 	}
-	actions := GetActions(remainingWorlds, aa)
+	gp := game.GamePlay{}
+	actions := GetActions(gp, remainingWorlds, aa)
 	test.AssertDeepEqual(actions, []game.Action{"aa", "bb"}, t)
 
+	// Still return worlds that are not in remaining possible worlds
 	remainingWorlds = game.NewPossibleWorlds(1)
 	lines = []string{"aa"}
-	for index, _ := range lines {
+	for index := range lines {
 		remainingWorlds.Add(uint64(index))
 	}
-	actions = GetActions(remainingWorlds, aa)
+	gp = game.GamePlay{}
+	actions = GetActions(gp, remainingWorlds, aa)
 	test.AssertDeepEqual(actions, []game.Action{"aa", "bb"}, t)
+
+	// Don't return worlds that have already been used
+	remainingWorlds = game.NewPossibleWorlds(1)
+	lines = []string{"aa"}
+	for index := range lines {
+		remainingWorlds.Add(uint64(index))
+	}
+	gp = game.GamePlay{}
+	gp.AddTurn(game.Reaction{Action: "aa"})
+	actions = GetActions(gp, remainingWorlds, aa)
+	test.AssertDeepEqual(actions, []game.Action{"bb"}, t)
 }
 
 func TestActRewards(t *testing.T) {

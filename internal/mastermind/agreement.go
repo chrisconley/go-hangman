@@ -7,9 +7,14 @@ import (
 	"github.com/chrisconley/go-hangman/internal/game"
 )
 
-func GetActions(remainingWorlds game.PossibleWorlds, aa game.AvailableActions) []game.Action {
-	return aa.WorldActions()
-
+func GetActions(gameplay game.GamePlay, remainingWorlds game.PossibleWorlds, aa game.AvailableActions) []game.Action {
+	actions := []game.Action{}
+	for _, action := range aa.WorldActions() {
+		if !gameplay.PreviouslyActed(action) {
+			actions = append(actions, action)
+		}
+	}
+	return actions
 }
 
 func Act(gameplay game.GamePlay, world game.World, action game.Action) (r game.Reaction) {
@@ -34,7 +39,7 @@ func Act(gameplay game.GamePlay, world game.World, action game.Action) (r game.R
 	// This results in a response of 'WWW'.
 
 	if gameplay.PreviouslyActed(action) {
-		return game.Reaction{Action: action, Response: game.Response("/"), Reward: 0.0}
+		panic("This action is not allowed because it has already been used")
 	}
 
 	worldString := string(world)

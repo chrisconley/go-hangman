@@ -32,6 +32,7 @@ func logReaction(reaction game.Reaction) {
 // ###########################
 func Explore(gameplay game.GamePlay, agreement game.Agreement, possibleWorlds game.PossibleWorlds) (predictions game.Predictions) {
 	actions := agreement.GetActions(
+		gameplay,
 		possibleWorlds,
 		game.BUniverse.Actions,
 	)
@@ -75,8 +76,8 @@ func PlayGames(agreement game.Agreement, motivation game.Motivation, lines []str
 		btruth := game.BUniverse.GetWorldByIndex(j)
 		truth := game.World(btruth.Name)
 		gameplay, _ := PlayGame(truth, perspective)
-		fmt.Printf("TRUTH: %s | ", truth)
-		fmt.Printf("TURNS: %d\n", gameplay.TurnCount)
+		// fmt.Printf("TRUTH: %s | ", truth)
+		// fmt.Printf("TURNS: %d\n", gameplay.TurnCount)
 		games = append(games, gameplay)
 	}
 

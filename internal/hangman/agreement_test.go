@@ -9,24 +9,50 @@ import (
 )
 
 func TestGetActions(t *testing.T) {
-	game.BUniverse = game.InitUniverse([]string{"aa", "bb"})
+	game.BUniverse = game.InitUniverse([]string{"aa", "bb", "cc"})
 	aa := game.BUniverse.Actions
 
+	// When there are the same or more remaining worlds than letters, only use letters
 	remainingWorlds := game.NewPossibleWorlds(2)
-	lines := []string{"aa", "bb"}
-	for index, _ := range lines {
+	lines := []string{"aa", "bb", "cc"}
+	for index := range lines {
 		remainingWorlds.Add(uint64(index))
 	}
-	actions := GetActions(remainingWorlds, aa)
-	test.AssertDeepEqual(actions, []game.Action{"a", "b"}, t)
+	gp := game.GamePlay{}
+	actions := GetActions(gp, remainingWorlds, aa)
+	test.AssertDeepEqual(actions, []game.Action{"a", "b", "c"}, t)
 
+	// When there are less remaining worlds than letters, add the worlds
 	remainingWorlds = game.NewPossibleWorlds(1)
-	lines = []string{"aa"}
-	for index, _ := range lines {
+	lines = []string{"aa", "bb"}
+	for index := range lines {
 		remainingWorlds.Add(uint64(index))
 	}
-	actions = GetActions(remainingWorlds, aa)
-	test.AssertDeepEqual(actions, []game.Action{"a", "b", "aa"}, t)
+	gp = game.GamePlay{}
+	actions = GetActions(gp, remainingWorlds, aa)
+	test.AssertDeepEqual(actions, []game.Action{"a", "b", "c", "aa", "bb"}, t)
+
+	// When an action has already been used, don't add it
+	remainingWorlds = game.NewPossibleWorlds(1)
+	lines = []string{"aa", "bb", "cc"}
+	for index := range lines {
+		remainingWorlds.Add(uint64(index))
+	}
+	gp = game.GamePlay{}
+	gp.AddTurn(game.Reaction{Action: "b"})
+	actions = GetActions(gp, remainingWorlds, aa)
+	test.AssertDeepEqual(actions, []game.Action{"a", "c"}, t)
+
+	// When a world action has already been used, don't add it
+	remainingWorlds = game.NewPossibleWorlds(1)
+	lines = []string{"aa", "bb"}
+	for index := range lines {
+		remainingWorlds.Add(uint64(index))
+	}
+	gp = game.GamePlay{}
+	gp.AddTurn(game.Reaction{Action: "bb"})
+	actions = GetActions(gp, remainingWorlds, aa)
+	test.AssertDeepEqual(actions, []game.Action{"a", "b", "c", "aa"}, t)
 }
 
 func TestAct(t *testing.T) {

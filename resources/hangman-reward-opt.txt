@@ -1,0 +1,60 @@
+$ time cat ./fixtures/nine-letter-words.txt | go run ./cmd/player.go -game hangman -motivation.reward 0.7 -motivation.entropy 0.3
+GameStats: {"GameCount":25011,"TotalTurns":155451,"AverageTurns":6.215305265683099,"MaxTurns":14,"TotalReward":120756,"AverageReward":4.828115629123186,"TotalPain":34695,"AveragePain":1.3871896365599137}
+
+real	0m7.465s
+user	0m10.826s
+sys	0m0.807s
+$ time cat ./fixtures/nine-letter-words.txt | go run ./cmd/player.go -game hangman -motivation.reward 0.65 -motivation.entropy 0.35
+GameStats: {"GameCount":25011,"TotalTurns":154662,"AverageTurns":6.18375914597577,"MaxTurns":14,"TotalReward":119906,"AverageReward":4.794130582543681,"TotalPain":34756,"AveragePain":1.38962856343209}
+
+real	0m7.319s
+user	0m10.291s
+sys	0m0.750s
+$ time cat ./fixtures/nine-letter-words.txt | go run ./cmd/player.go -game hangman -motivation.reward 0.72 -motivation.entropy 0.28
+GameStats: {"GameCount":25011,"TotalTurns":155639,"AverageTurns":6.222821958338331,"MaxTurns":14,"TotalReward":120953,"AverageReward":4.835992163448083,"TotalPain":34686,"AveragePain":1.3868297948902484}
+
+real	0m7.392s
+user	0m10.740s
+sys	0m0.759s
+$ time cat ./fixtures/nine-letter-words.txt | go run ./cmd/player.go -game hangman -motivation.reward 0.74 -motivation.entropy 0.26
+GameStats: {"GameCount":25011,"TotalTurns":155975,"AverageTurns":6.236256047339171,"MaxTurns":14,"TotalReward":121273,"AverageReward":4.848786533925073,"TotalPain":34702,"AveragePain":1.3874695134140977}
+
+real	0m7.574s
+user	0m11.406s
+sys	0m0.840s
+$ time cat ./fixtures/nine-letter-words.txt | go run ./cmd/player.go -game hangman -motivation.reward 0.75 -motivation.entropy 0.25
+GameStats: {"GameCount":25011,"TotalTurns":156126,"AverageTurns":6.242293390908,"MaxTurns":14,"TotalReward":121431,"AverageReward":4.855103754348087,"TotalPain":34695,"AveragePain":1.3871896365599137}
+
+real	0m7.300s
+user	0m10.540s
+sys	0m0.720s
+$ time cat ./fixtures/nine-letter-words.txt | go run ./cmd/player.go -game hangman -motivation.reward 0.76 -motivation.entropy 0.24
+GameStats: {"GameCount":25011,"TotalTurns":156330,"AverageTurns":6.250449802087082,"MaxTurns":14,"TotalReward":121651,"AverageReward":4.863899884051017,"TotalPain":34679,"AveragePain":1.386549918036064}
+
+real	0m7.330s
+user	0m10.546s
+sys	0m0.733s
+$ time cat ./fixtures/nine-letter-words.txt | go run ./cmd/player.go -game hangman -motivation.reward 0.77 -motivation.entropy 0.23
+GameStats: {"GameCount":25011,"TotalTurns":156440,"AverageTurns":6.254847866938547,"MaxTurns":14,"TotalReward":121756,"AverageReward":4.86809803686378,"TotalPain":34684,"AveragePain":1.3867498300747672}
+
+real	0m7.365s
+user	0m11.248s
+sys	0m0.732s
+$ time cat ./fixtures/nine-letter-words.txt | go run ./cmd/player.go -game hangman -motivation.reward 0.765 -motivation.entropy 0.235
+GameStats: {"GameCount":25011,"TotalTurns":156359,"AverageTurns":6.251609291911559,"MaxTurns":14,"TotalReward":121678,"AverageReward":4.864979409060013,"TotalPain":34681,"AveragePain":1.3866298828515453}
+
+real	0m7.288s
+user	0m11.154s
+sys	0m0.699s
+$ time cat ./fixtures/nine-letter-words.txt | go run ./cmd/player.go -game hangman -motivation.reward 0.762 -motivation.entropy 0.238
+GameStats: {"GameCount":25011,"TotalTurns":156349,"AverageTurns":6.251209467834153,"MaxTurns":14,"TotalReward":121667,"AverageReward":4.864539602574867,"TotalPain":34682,"AveragePain":1.386669865259286}
+
+real	0m7.337s
+user	0m10.694s
+sys	0m0.699s
+$ time cat ./fixtures/nine-letter-words.txt | go run ./cmd/player.go -game hangman -motivation.reward 1.0 -motivation.entropy 0.0
+GameStats: {"GameCount":25011,"TotalTurns":170676,"AverageTurns":6.824037423533645,"MaxTurns":14,"TotalReward":135414,"AverageReward":5.414177761784814,"TotalPain":35262,"AveragePain":1.4098596617488306}
+
+real	0m7.369s
+user	0m11.269s
+sys	0m0.773s

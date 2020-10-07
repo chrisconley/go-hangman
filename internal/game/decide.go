@@ -12,7 +12,8 @@ func Decide(predictions Predictions, motivation Motivation) Prediction {
 	for _, prediction := range predictions {
 		weight := math.Pow(prediction.Reward, motivation.Reward) *
 			math.Pow(prediction.Entropy, motivation.Entropy) *
-			math.Pow(prediction.InversedMax, motivation.MiniMax)
+			math.Pow(prediction.InversedMax, motivation.MiniMax) *
+			math.Pow(prediction.PartsCount, motivation.MostParts)
 
 		isValid := prediction.ActionMatchesAPossibleWorld
 

@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/chrisconley/go-hangman/test"
@@ -26,6 +27,11 @@ func TestBuildPredictions(t *testing.T) {
 	test.AssertAlmostEqual(actual.GetInversedMax("a"), 1.0000, 4, t)
 	test.AssertAlmostEqual(actual.GetInversedMax("b"), 0.0000, 4, t)
 	test.AssertAlmostEqual(actual.GetInversedMax("c"), 1.0000, 4, t)
+	fmt.Printf("%+v\n", actual)
+
+	test.AssertAlmostEqual(actual.GetPartsCount("a"), 2.0000, 4, t)
+	test.AssertAlmostEqual(actual.GetPartsCount("b"), 1.0000, 4, t)
+	test.AssertAlmostEqual(actual.GetPartsCount("c"), 2.0000, 4, t)
 }
 
 func TestExploreReactionsForAction(t *testing.T) {

@@ -23,6 +23,17 @@ func TestDecide(t *testing.T) {
 	test.AssertDeepEqual(actual, predictions["a"], t)
 }
 
+func TestDecideMostParts(t *testing.T) {
+	predictions := Predictions{
+		"a": Prediction{Action: "a", PartsCount: 1.0},
+		"b": Prediction{Action: "b", PartsCount: 2.0},
+	}
+
+	motivation := Motivation{MostParts: 1.0}
+	actual := Decide(predictions, motivation)
+	test.AssertDeepEqual(actual, predictions["b"], t)
+}
+
 func TestDecideDeterminism(t *testing.T) {
 	predictions := Predictions{
 		"a": Prediction{Action: "a", Reward: 1, Entropy: 0},

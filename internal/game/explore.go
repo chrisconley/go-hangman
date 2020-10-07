@@ -75,6 +75,7 @@ type Prediction struct {
 	Reward                      float64
 	Entropy                     float64
 	InversedMax                 float64
+	PartsCount                  float64
 	ActionMatchesAPossibleWorld bool
 }
 
@@ -88,6 +89,10 @@ func (p Predictions) GetReward(action string) float64 {
 
 func (p Predictions) GetInversedMax(action string) float64 {
 	return p[Action(action)].InversedMax
+}
+
+func (p Predictions) GetPartsCount(action string) float64 {
+	return p[Action(action)].PartsCount
 }
 
 func (p Predictions) AddPrediction(action Action, prediction Prediction) {
@@ -104,6 +109,7 @@ func BBuildPredictions(actions []Action, bpw PossibleWorlds) Predictions {
 		rewards := TheCache.GetRewards(hash)
 		prediction.Reward = rewards.Total() / counts.Total()
 		prediction.Entropy = mth.CalcEntropy(counts.Total(), counts.All())
+		prediction.PartsCount = float64(len(counts.All()))
 		prediction.InversedMax = mth.FindInversedMax(counts.Total(), counts.All())
 		prediction.ActionMatchesAPossibleWorld = TheCache.GetActionMatches(hash)
 		predictions.AddPrediction(action, prediction)

@@ -2,6 +2,7 @@ package play
 
 import (
 	"fmt"
+	"math"
 	"os"
 
 	"github.com/chrisconley/go-hangman/internal/game"
@@ -112,4 +113,35 @@ func playTurn(
 	reaction := Act(gameplay, action, perspective.Agreement.Act, truth)
 	possibleWorlds = Observe(action, reaction, possibleWorlds)
 	return reaction, possibleWorlds
+}
+
+func BuildTrials(min float64, max float64, stepSize float64, numDimensions int) [][]float64 {
+	values := []float64{}
+	currentValue := min
+	for true {
+		values = append(values, currentValue)
+		if math.Abs(currentValue-max) <= 1e-9 {
+			break
+		} else if currentValue-max > 1e-9 {
+			fmt.Printf("min %f, max %f, stepSize %f, currentValue %f", min, max, stepSize, currentValue)
+			panic("stepSize is not equally divisible")
+		}
+		currentValue += stepSize
+	}
+
+	trials := [][]float64{}
+	if numDimensions == 2 {
+		for _, value := range values {
+			trials = append(trials, []float64{value, max - value})
+		}
+		return trials
+	}
+
+	for _, value := range values {
+		newTrials := BuildTrials(min, max-value, stepSize, numDimensions-1)
+		for _, newTrial := range newTrials {
+			trials = append(trials, append([]float64{value}, newTrial...))
+		}
+	}
+	return trials
 }

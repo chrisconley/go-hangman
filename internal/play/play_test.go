@@ -146,7 +146,7 @@ func TestIntegrationVerifyEntropyHangman(t *testing.T) {
 	stats := CalculateStats(games)
 	test.AssertDeepEqual(stats.GameCount, 25011, t)
 	test.AssertDeepEqual(stats.MaxTurns, 13, t)
-	test.AssertDeepEqual(stats.TotalTurns, 146387, t)
+	test.AssertDeepEqual(stats.TotalTurns, 146356, t)
 	test.AssertAlmostEqual(stats.AverageTurns, 5.8529, 4, t)
 }
 
@@ -176,4 +176,64 @@ func TestPlayGames(t *testing.T) {
 	test.AssertDeepEqual(games[0].TurnCount, 2, t)
 	test.AssertDeepEqual(games[1].TurnCount, 3, t)
 	test.AssertDeepEqual(games[2].TurnCount, 3, t)
+}
+
+func TestBuildTrialsTwoDimensions(t *testing.T) {
+	trials := BuildTrials(0.0, 1.0, 0.25, 2)
+	test.AssertDeepEqual(len(trials), 5, t)
+	test.AssertDeepEqual(trials[0], []float64{0.0, 1.0}, t)
+	test.AssertDeepEqual(trials[1], []float64{0.25, 0.75}, t)
+	test.AssertDeepEqual(trials[2], []float64{0.5, 0.5}, t)
+	test.AssertDeepEqual(trials[3], []float64{0.75, 0.25}, t)
+	test.AssertDeepEqual(trials[4], []float64{1.0, 0.0}, t)
+}
+func TestBuildTrialsThreeDimensions(t *testing.T) {
+	trials := BuildTrials(0.0, 1.0, 0.25, 3)
+	test.AssertDeepEqual(len(trials), 15, t)
+	test.AssertDeepEqual(trials[0], []float64{0.0, 0.0, 1.0}, t)
+	test.AssertDeepEqual(trials[1], []float64{0.0, 0.25, 0.75}, t)
+	test.AssertDeepEqual(trials[2], []float64{0.0, 0.5, 0.5}, t)
+	test.AssertDeepEqual(trials[3], []float64{0.0, 0.75, 0.25}, t)
+	test.AssertDeepEqual(trials[4], []float64{0.0, 1.0, 0.0}, t)
+
+	test.AssertDeepEqual(trials[5], []float64{0.25, 0.0, 0.75}, t)
+	test.AssertDeepEqual(trials[6], []float64{0.25, 0.25, 0.5}, t)
+	test.AssertDeepEqual(trials[7], []float64{0.25, 0.5, 0.25}, t)
+	test.AssertDeepEqual(trials[8], []float64{0.25, 0.75, 0.0}, t)
+
+	test.AssertDeepEqual(trials[9], []float64{0.5, 0.0, 0.5}, t)
+	test.AssertDeepEqual(trials[10], []float64{0.5, 0.25, 0.25}, t)
+	test.AssertDeepEqual(trials[11], []float64{0.5, 0.5, 0.0}, t)
+
+	test.AssertDeepEqual(trials[12], []float64{0.75, 0.0, 0.25}, t)
+	test.AssertDeepEqual(trials[13], []float64{0.75, 0.25, 0.0}, t)
+
+	test.AssertDeepEqual(trials[14], []float64{1.0, 0.0, 0.0}, t)
+}
+func TestBuildTrialsFourDimensions(t *testing.T) {
+	trials := BuildTrials(0.0, 1.0, 0.25, 4)
+	test.AssertDeepEqual(len(trials), 35, t)
+	test.AssertDeepEqual(trials[0], []float64{0.0, 0.0, 0.0, 1.0}, t)
+	test.AssertDeepEqual(trials[14], []float64{0.0, 1.0, 0.0, 0.0}, t)
+	test.AssertDeepEqual(trials[15], []float64{0.25, 0.0, 0.0, 0.75}, t)
+	test.AssertDeepEqual(trials[24], []float64{0.25, 0.75, 0.0, 0.0}, t)
+	test.AssertDeepEqual(trials[25], []float64{0.5, 0.0, 0.0, 0.5}, t)
+	test.AssertDeepEqual(trials[30], []float64{0.5, 0.5, 0.0, 0.0}, t)
+	test.AssertDeepEqual(trials[31], []float64{0.75, 0.0, 0.0, 0.25}, t)
+	test.AssertDeepEqual(trials[33], []float64{0.75, 0.25, 0.0, 0.0}, t)
+	test.AssertDeepEqual(trials[34], []float64{1.0, 0.0, 0.0, 0.0}, t)
+}
+
+func TestBuildTrialsFourDimensionSmallerStep(t *testing.T) {
+	trials := BuildTrials(0.0, 1.0, 0.2, 4)
+	test.AssertDeepEqual(len(trials), 56, t)
+
+	trials = BuildTrials(0.0, 1.0, 0.1, 3)
+	test.AssertDeepEqual(len(trials), 66, t)
+
+	trials = BuildTrials(0.0, 1.0, 0.05, 3)
+	test.AssertDeepEqual(len(trials), 231, t)
+
+	trials = BuildTrials(0.0, 1.0, 0.01, 3)
+	test.AssertDeepEqual(len(trials), 5151, t)
 }

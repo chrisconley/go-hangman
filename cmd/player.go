@@ -6,7 +6,7 @@
 // head -n 1000 ./build/splits/9 | python3 ./games/play.py - --game hangman --limit 100 --strategy "weighted_sum|reward:0;info:100;speed:0" > /tmp/hangman.txt
 // diff -u /tmp/hangman.txt /tmp/go-hangman.tx | ydiff -s
 
-package main
+package cmd
 
 import (
 	"encoding/json"

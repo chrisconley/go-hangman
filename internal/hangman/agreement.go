@@ -44,23 +44,29 @@ func Act(gameplay game.GamePlay, world game.World, action game.Action) (r game.R
 	} else if actionLength > 1 && actionString != worldString {
 		return game.Reaction{Action: action, Response: game.Response("!"), Reward: 0.0}
 	} else {
-		hasMatch := false
-		var buffer strings.Builder
-		for _, character := range worldString {
-			if string(character) == actionString {
-				buffer.WriteString(actionString)
-				hasMatch = true
-			} else {
-				buffer.WriteString("-")
-			}
-		}
+		hasMatch, replacement := replaceNonMatches(actionString, "-", worldString)
 		if hasMatch {
-			return game.Reaction{Action: action, Response: game.Response(buffer.String()), Reward: 1.0}
+			return game.Reaction{Action: action, Response: game.Response(replacement), Reward: 1.0}
 		} else {
 			return game.Reaction{Action: action, Response: game.Response("!"), Reward: 0.0}
 		}
 
 	}
+}
+
+func replaceNonMatches(sentinel string, replacement string, str string) (bool, string) {
+	hasMatch := false
+	var buffer strings.Builder
+	for _, character := range str {
+		if string(character) == sentinel {
+			buffer.WriteString(sentinel)
+			hasMatch = true
+		} else {
+			buffer.WriteString("-")
+		}
+	}
+	return hasMatch, buffer.String()
+
 }
 
 var Agreement = game.Agreement{

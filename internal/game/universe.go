@@ -164,6 +164,10 @@ func (c *Cache) GetActionMatches(hash uint64) bool {
 	return theCache[hash].ActionMatches
 }
 
+func (c *Cache) Size() int {
+	return len(theCache)
+}
+
 func InitUniverse(lines []string) Universe {
 	universe := Universe{}
 	universe.Size = len(lines)

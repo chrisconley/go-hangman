@@ -1,7 +1,6 @@
 package mastermind
 
 import (
-	"regexp"
 	"strings"
 
 	"github.com/chrisconley/go-hangman/internal/game"
@@ -46,39 +45,34 @@ func Act(gameplay game.GamePlay, world game.World, action game.Action) (r game.R
 	actionString := string(action)
 	worldLength := len(worldString)
 
-	response := ""
+	var responseBuffer strings.Builder
 	reward := 0.0
 
+	var remainingActions strings.Builder
+	remainingWorldCharacters := make(map[byte]int)
+
 	// First, we're going to look for "B" responses (guesses in the correction position)
-	for i := 0; i < len(actionString); i++ {
+	for i := range actionString {
 		if worldString[i] == actionString[i] {
-			response = response + "B"
+			responseBuffer.WriteString("B")
 			reward += 1 / float64(worldLength)
-			// When we find an exact match,
-			// we replace current character with a "-" sentinel
-			// so we don't assign a "W" below for a guess that has already received a "B"
-			worldString = worldString[:i] + "-" + worldString[i+1:]
-			actionString = actionString[:i] + "-" + actionString[i+1:]
+		} else {
+			remainingActions.WriteByte(actionString[i])
+			remainingWorldCharacters[worldString[i]]++
 		}
 	}
 
-	for i := 0; i < len(actionString); i++ {
-		// If this guess has already received a "B" response, skip it
-		if actionString[i] == '-' {
-			continue
-		}
-
-		re := regexp.MustCompile(string(actionString[i]))
-		match := re.FindString(worldString)
-		if match != "" {
-			response = response + "W"
+	for _, char := range remainingActions.String() {
+		character := byte(char)
+		if remainingWorldCharacters[character] > 0 {
+			responseBuffer.WriteString("W")
 			reward += 0.5 / float64(worldLength)
-			// When we find a match,
-			// we replace all occurences of the guess in the worldString
-			// so we don't double count it
-			worldString = strings.Replace(worldString, match, "-", 1)
+			remainingWorldCharacters[character]--
+
 		}
 	}
+
+	response := responseBuffer.String()
 	if response == "" {
 		response = "!"
 	}

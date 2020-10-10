@@ -95,7 +95,7 @@ func TestActWhiteCounting(t *testing.T) {
 	test.AssertDeepEqual(reaction.Response, game.Response("W"), t)
 
 	// Duplicates in both
-	reaction = Act(game.GamePlay{}, game.World("2311"), game.Action("1178"))
+	reaction = Act(game.GamePlay{}, game.World("BCAA"), game.Action("AAYZ"))
 	test.AssertDeepEqual(reaction.Response, game.Response("WW"), t)
 
 	reaction = Act(game.GamePlay{}, game.World("1123"), game.Action("7811"))

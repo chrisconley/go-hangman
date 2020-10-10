@@ -17,19 +17,11 @@ func GetActions(gameplay game.GamePlay, remainingWorlds game.PossibleWorlds, aa 
 }
 
 func Act(gameplay game.GamePlay, world game.World, action game.Action) (r game.Reaction) {
-	// In An Optimal Mastermind (4,7) Strategy and More Results in the Expected Case
-	// https://arxiv.org/pdf/1305.1010.pdf, the author "double" counts duplicate guesses
-	// that garner a "white" response.
+	// The mastermind rules can be a bit ambiguous.
 
-	// Example: The code word is 3632. Let's work out the response for guess 6326:
-	// 6 garners a "white" response
-	// 3 garners a "white" response
-	// 2 garners a "white" response
-	// 6 garners a "white" response again
-	// This results in a response of 'WWWW'.
-
-	// In contrast, the code below is implemented so that duplicate white responses are not returned.
-	// This matches the rules of the game and what Knuth implemented his original minimax solution:
+	// The code below is implemented so that duplicate white responses are not returned.
+	// This matches the rules of the game and what Knuth implemented his original minimax solution
+	// and subsequent papers in resources/ use:
 	// 6 garners a "white" response
 	// 3 garners a "white" response
 	// 2 garners a "white" response
@@ -43,30 +35,40 @@ func Act(gameplay game.GamePlay, world game.World, action game.Action) (r game.R
 
 	worldString := string(world)
 	actionString := string(action)
-	worldLength := len(worldString)
 
-	var responseBuffer strings.Builder
+	responseBuffer := strings.Builder{}
 	reward := 0.0
+	totalPossibleReward := float64(len(worldString))
 
-	var remainingActions strings.Builder
+	remainingActionCharacters := strings.Builder{}
 	remainingWorldCharacters := make(map[byte]int)
 
 	// First, we're going to look for "B" responses (guesses in the correction position)
 	for i := range actionString {
 		if worldString[i] == actionString[i] {
+			// If the character in position i is the same in both
+			// Add a "B" to the response and record reward
 			responseBuffer.WriteString("B")
-			reward += 1 / float64(worldLength)
+			reward += 1 / totalPossibleReward
 		} else {
-			remainingActions.WriteByte(actionString[i])
+			// Otherwise, save the character to check for "W" matches
+			// and increase the count of the world character
+			remainingActionCharacters.WriteByte(actionString[i])
 			remainingWorldCharacters[worldString[i]]++
 		}
 	}
 
-	for _, char := range remainingActions.String() {
+	// Now iterate through the action characters that were not already used for a "B" match
+	for _, char := range remainingActionCharacters.String() {
 		character := byte(char)
+		// Look up the action character to see if there are any matching
+		// world characters left
 		if remainingWorldCharacters[character] > 0 {
+			// If there are, record the "W" response and reward
 			responseBuffer.WriteString("W")
-			reward += 0.5 / float64(worldLength)
+			reward += 0.5 / totalPossibleReward
+			// Reduce the count to record that that world character has been used
+			// so we don't double count it in a future iteration
 			remainingWorldCharacters[character]--
 
 		}

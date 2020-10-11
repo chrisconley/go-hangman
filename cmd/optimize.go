@@ -31,8 +31,8 @@ func main() {
 	trials := play.BuildTrials(0.0, 1.0, 0.5, 4)
 	// fmt.Println(len(trials))
 	defer profile.Start(
-		// profile.MemProfileHeap,
-		// profile.MemProfileRate(4096*10),
+		profile.MemProfile,
+		profile.MemProfileRate(4096*10),
 		profile.ProfilePath("/tmp/mem.pprof"),
 	).Stop()
 

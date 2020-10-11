@@ -144,16 +144,14 @@ func (pwc *pwCache) findOrInitializeGroup(group uint64) uint32 {
 }
 
 type ActionCacheModel struct {
-	Worlds        map[uint64]uint64
+	Worlds        map[string]uint64
 	Counts        utils.GroupedIncrementer
 	Rewards       utils.GroupedIncrementer
 	ActionMatches bool
 }
 
 func (c *Cache) GetNextWorlds(hash uint64, response string) PossibleWorlds {
-	rhash := fnv1a.Init64
-	rhash = fnv1a.AddString64(hash, response)
-	pwHash := theCache[hash].Worlds[rhash]
+	pwHash := theCache[hash].Worlds[response]
 	return thePWCache.Get(pwHash)
 }
 
@@ -164,13 +162,11 @@ func (c *Cache) Write(
 	rewards utils.GroupedIncrementer,
 	actionMatchesAPossibleWorld bool,
 ) {
-	responseCache := make(map[uint64]uint64)
+	responseCache := make(map[string]uint64)
 	for response, possibleWorlds := range responseWorlds {
 		pwHash := possibleWorlds.SetHash()
 		thePWCache.Set(pwHash, possibleWorlds)
-		rhash := fnv1a.Init64
-		rhash = fnv1a.AddString64(hash, response)
-		responseCache[rhash] = pwHash
+		responseCache[response] = pwHash
 	}
 	theCache[hash] = ActionCacheModel{
 		Worlds:        responseCache,

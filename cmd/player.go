@@ -22,7 +22,7 @@ import (
 	"github.com/chrisconley/go-hangman/internal/utils"
 )
 
-func main() {
+func mainTODO() {
 	lines, err := utils.ReadLinesFromStdin()
 	if err != nil {
 		fmt.Println(err)

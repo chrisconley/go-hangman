@@ -7,6 +7,7 @@ import (
 	"github.com/chrisconley/go-hangman/internal/hangman"
 	"github.com/chrisconley/go-hangman/internal/play"
 	"github.com/chrisconley/go-hangman/internal/utils"
+	"github.com/pkg/profile"
 )
 
 func TryTry(motivation game.Motivation, lines []string) play.Stats {
@@ -22,18 +23,18 @@ func TryTry(motivation game.Motivation, lines []string) play.Stats {
 	return stats
 }
 
-func mainTODO() {
+func main() {
 	// lines := utils.ReadLinesFromFilePath("./fixtures/commercial-mastermind.txt")
 	lines := utils.ReadLinesFromFilePath("./fixtures/nine-letter-words.txt")
 	// lines = lines[:10000]
 	game.BUniverse = game.InitUniverse(lines)
 	trials := play.BuildTrials(0.0, 1.0, 0.5, 4)
 	// fmt.Println(len(trials))
-	// defer profile.Start(
-	// 	profile.MemProfileHeap,
-	// 	profile.MemProfileRate(4096*10),
-	// 	profile.ProfilePath("/tmp/mem.pprof"),
-	// ).Stop()
+	defer profile.Start(
+		// profile.MemProfileHeap,
+		// profile.MemProfileRate(4096*10),
+		profile.ProfilePath("/tmp/mem.pprof"),
+	).Stop()
 
 	minTotalTurnsMotivation := game.Motivation{}
 	minTotalTurns := 1000000

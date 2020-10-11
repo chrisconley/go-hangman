@@ -112,7 +112,36 @@ type Cache struct{}
 
 var TheCache = Cache{}
 var possibleWorldsCache = make(map[uint64]PossibleWorlds)
+var thePWCache = pwCache{lookup: make(map[uint64]uint32)}
 var theCache = make(map[uint64]ActionCacheModel)
+
+type pwCache struct {
+	values []PossibleWorlds
+	size   uint32
+	lookup map[uint64]uint32
+}
+
+func (pwc *pwCache) Set(group uint64, value PossibleWorlds) {
+	index := pwc.findOrInitializeGroup(group)
+	pwc.values[index] = value
+}
+
+func (pwc *pwCache) Get(group uint64) PossibleWorlds {
+	index := pwc.findOrInitializeGroup(group)
+	return pwc.values[index]
+}
+
+func (pwc *pwCache) findOrInitializeGroup(group uint64) uint32 {
+	index, ok := pwc.lookup[group]
+	if !ok {
+		pwc.values = append(pwc.values, PossibleWorlds{})
+		pwc.size++
+		pwc.lookup[group] = pwc.size - 1
+		return pwc.size - 1
+	}
+	return index
+
+}
 
 type ActionCacheModel struct {
 	Worlds        map[string]uint64
@@ -123,7 +152,7 @@ type ActionCacheModel struct {
 
 func (c *Cache) GetNextWorlds(hash uint64, response string) PossibleWorlds {
 	pwHash := theCache[hash].Worlds[response]
-	return possibleWorldsCache[pwHash]
+	return thePWCache.Get(pwHash)
 }
 
 func (c *Cache) Write(
@@ -136,7 +165,7 @@ func (c *Cache) Write(
 	responseCache := make(map[string]uint64)
 	for response, possibleWorlds := range responseWorlds {
 		pwHash := possibleWorlds.SetHash()
-		possibleWorldsCache[pwHash] = possibleWorlds
+		thePWCache.Set(pwHash, possibleWorlds)
 		responseCache[response] = pwHash
 	}
 	theCache[hash] = ActionCacheModel{

@@ -111,9 +111,9 @@ var BUniverse = Universe{}
 type Cache struct{}
 
 var TheCache = Cache{}
-var possibleWorldsCache = make(map[uint64]PossibleWorlds)
+
 var thePWCache = pwCache{lookup: make(map[uint64]uint32)}
-var theCache = make(map[uint64]ActionCacheModel)
+var theCacheMap = cacheMap{lookup: make(map[uint64]uint32)}
 
 type pwCache struct {
 	values []PossibleWorlds
@@ -143,6 +143,42 @@ func (pwc *pwCache) findOrInitializeGroup(group uint64) uint32 {
 
 }
 
+type cacheMap struct {
+	values []ActionCacheModel
+	size   uint32
+	lookup map[uint64]uint32
+}
+
+func (m *cacheMap) Set(group uint64, value ActionCacheModel) {
+	index := m.findOrInitializeGroup(group)
+	m.values[index] = value
+}
+
+func (m *cacheMap) Get(group uint64) ActionCacheModel {
+	index := m.findOrInitializeGroup(group)
+	return m.values[index]
+}
+
+func (m *cacheMap) Exists(group uint64) bool {
+	_, ok := m.lookup[group]
+	return ok
+}
+
+func (m *cacheMap) Size() uint32 {
+	return m.size
+}
+
+func (m *cacheMap) findOrInitializeGroup(group uint64) uint32 {
+	index, ok := m.lookup[group]
+	if !ok {
+		m.values = append(m.values, ActionCacheModel{})
+		m.size++
+		m.lookup[group] = m.size - 1
+		return m.size - 1
+	}
+	return index
+}
+
 type ActionCacheModel struct {
 	Worlds        map[string]uint64
 	Counts        utils.GroupedIncrementer
@@ -151,7 +187,7 @@ type ActionCacheModel struct {
 }
 
 func (c *Cache) GetNextWorlds(hash uint64, response string) PossibleWorlds {
-	pwHash := theCache[hash].Worlds[response]
+	pwHash := theCacheMap.Get(hash).Worlds[response]
 	return thePWCache.Get(pwHash)
 }
 
@@ -168,33 +204,32 @@ func (c *Cache) Write(
 		thePWCache.Set(pwHash, possibleWorlds)
 		responseCache[response] = pwHash
 	}
-	theCache[hash] = ActionCacheModel{
+	theCacheMap.Set(hash, ActionCacheModel{
 		Worlds:        responseCache,
 		Counts:        counts,
 		Rewards:       rewards,
 		ActionMatches: actionMatchesAPossibleWorld,
-	}
+	})
 }
 
 func (c *Cache) Exists(hash uint64) bool {
-	_, ok := theCache[hash]
-	return ok
+	return theCacheMap.Exists(hash)
 }
 
 func (c *Cache) GetCounts(hash uint64) utils.GroupedIncrementer {
-	return theCache[hash].Counts
+	return theCacheMap.Get(hash).Counts
 }
 
 func (c *Cache) GetRewards(hash uint64) utils.GroupedIncrementer {
-	return theCache[hash].Rewards
+	return theCacheMap.Get(hash).Rewards
 }
 
 func (c *Cache) GetActionMatches(hash uint64) bool {
-	return theCache[hash].ActionMatches
+	return theCacheMap.Get(hash).ActionMatches
 }
 
 func (c *Cache) Size() int {
-	return len(theCache)
+	return int(theCacheMap.Size())
 }
 
 func InitUniverse(lines []string) Universe {

@@ -10,7 +10,7 @@ import (
 
 func logPredictions(predictions game.Predictions) {
 	if os.Getenv("DEBUGPREDICTIONS") != "" {
-		for _, prediction := range predictions {
+		for _, prediction := range predictions.PredictionsMap.Values {
 			fmt.Printf("PREDICTION: %+v\n", prediction)
 		}
 	}

@@ -6,10 +6,10 @@ func Decide(predictions Predictions, motivation Motivation) Prediction {
 	maxWeight := 0.0
 	maxAction := Action("")
 	maxIsValid := false
-	if len(predictions) == 1 {
+	if predictions.Size() == 1 {
 		panic("There is only one prediction for the decision.")
 	}
-	for _, prediction := range predictions {
+	for _, prediction := range predictions.PredictionsMap.Values {
 		weight := math.Pow(prediction.Reward, motivation.Reward) *
 			math.Pow(prediction.Entropy, motivation.Entropy) *
 			math.Pow(prediction.InversedMax, motivation.MiniMax) *
@@ -32,5 +32,5 @@ func Decide(predictions Predictions, motivation Motivation) Prediction {
 			maxIsValid = isValid
 		}
 	}
-	return predictions[maxAction]
+	return predictions.Get(string(maxAction))
 }

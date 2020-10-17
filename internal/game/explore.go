@@ -56,24 +56,25 @@ func ExploreReactionsForAction(
 	bool,
 	utils.GroupedIncrementer,
 	utils.GroupedIncrementer,
-	map[string]PossibleWorlds,
+	map[uint64]PossibleWorlds,
 ) {
 	counts := utils.NewGroupedIncrementer()
 	rewards := utils.NewGroupedIncrementer()
-	responseWorlds := make(map[string]PossibleWorlds)
+	responseWorlds := make(map[uint64]PossibleWorlds)
 	actionMatchesPossibleWorld := false
 	for _, worldIndex := range possibleWorldIndices {
 		world := BUniverse.GetWorldByIndex(worldIndex)
 		reaction := act(gameplay, World(world.Name), action)
 		response := string(reaction.Response)
-		if _, ok := responseWorlds[response]; !ok {
-			responseWorlds[response] = NewPossibleWorlds(BUniverse.Size)
+		responseHash := fnv1a.HashString64(response)
+		if _, ok := responseWorlds[responseHash]; !ok {
+			responseWorlds[responseHash] = NewPossibleWorlds(BUniverse.Size)
 		}
 		counts.Increment(response, 1.0)
 		rewards.Increment(response, reaction.Reward)
-		worlds := responseWorlds[response]
+		worlds := responseWorlds[responseHash]
 		worlds.Add(world.Index)
-		responseWorlds[response] = worlds
+		responseWorlds[responseHash] = worlds
 
 		if string(action) == world.Name {
 			actionMatchesPossibleWorld = true

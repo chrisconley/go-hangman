@@ -183,26 +183,27 @@ func (m *cacheMap) initializeGroup(group uint64) uint32 {
 }
 
 type ActionCacheModel struct {
-	Worlds map[string]uint64
+	Worlds map[uint64]uint64
 }
 
 func (c *Cache) GetNextWorlds(hash uint64, response string) PossibleWorlds {
-	pwHash := theCacheMap.Get(hash).Worlds[response]
+	responseHash := fnv1a.HashString64(response)
+	pwHash := theCacheMap.Get(hash).Worlds[responseHash]
 	return thePWCache.Get(pwHash)
 }
 
 func (c *Cache) Write(
 	hash uint64,
-	responseWorlds map[string]PossibleWorlds,
+	responseWorlds map[uint64]PossibleWorlds,
 ) {
 	if exists := theCacheMap.Exists(hash); !exists {
-		responseCache := make(map[string]uint64)
-		for response, possibleWorlds := range responseWorlds {
+		responseCache := make(map[uint64]uint64)
+		for responseHash, possibleWorlds := range responseWorlds {
 			pwHash := possibleWorlds.SetHash()
 			if exists := thePWCache.Exists(pwHash); !exists {
 				thePWCache.Set(pwHash, possibleWorlds)
 			}
-			responseCache[response] = pwHash
+			responseCache[responseHash] = pwHash
 		}
 		theCacheMap.Set(hash, ActionCacheModel{
 			Worlds: responseCache,

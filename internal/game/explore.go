@@ -34,7 +34,7 @@ func ExploreReactions(
 			prediction.PartsCount = float64(len(counts.All()))
 			prediction.InversedMax = mth.FindInversedMax(counts.Total(), counts.All())
 			prediction.ActionMatchesAPossibleWorld = actionMatchesAPossibleWorld
-			predictions.AddPrediction(string(action), prediction)
+			predictions.AddPrediction(action.String(), prediction)
 			TheCache.Write(
 				hash,
 				responseWorlds,
@@ -76,7 +76,7 @@ func ExploreReactionsForAction(
 		worlds.Add(world.Index)
 		responseWorlds[responseHash] = worlds
 
-		if string(action) == world.Name {
+		if action.String() == world.Name {
 			actionMatchesPossibleWorld = true
 		}
 

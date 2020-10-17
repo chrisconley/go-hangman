@@ -13,10 +13,10 @@ import (
 
 func TestAct(t *testing.T) {
 	truth := game.World("abc")
-	actual := Act(game.InitGamePlay(), game.Action("a"), game.BuildTestAct(0.222), truth)
+	actual := Act(game.InitGamePlay(), game.NewAction("a"), game.BuildTestAct(0.222), truth)
 	test.AssertDeepEqual(
 		actual,
-		game.Reaction{Action: "a", Response: "a", Reward: 0.222},
+		game.Reaction{Action: game.NewAction("a"), Response: "a", Reward: 0.222},
 		t,
 	)
 }
@@ -86,16 +86,16 @@ func TestIntegrationPlayKnuthMastermind(t *testing.T) {
 	truth := game.World("CFCB")
 	gameplay, _ := PlayGame(truth, perspective)
 
-	test.AssertDeepEqual(gameplay.Reactions[0].Action, game.Action("AABB"), t)
+	test.AssertDeepEqual(gameplay.Reactions[0].Action, game.NewAction("AABB"), t)
 	test.AssertDeepEqual(gameplay.Reactions[0].Response, game.Response("B"), t)
 
-	test.AssertDeepEqual(gameplay.Reactions[1].Action, game.Action("ACDD"), t)
+	test.AssertDeepEqual(gameplay.Reactions[1].Action, game.NewAction("ACDD"), t)
 	test.AssertDeepEqual(gameplay.Reactions[1].Response, game.Response("W"), t)
 
-	test.AssertDeepEqual(gameplay.Reactions[2].Action, game.Action("CEBF"), t)
+	test.AssertDeepEqual(gameplay.Reactions[2].Action, game.NewAction("CEBF"), t)
 	test.AssertDeepEqual(gameplay.Reactions[2].Response, game.Response("BWW"), t)
 
-	test.AssertDeepEqual(gameplay.Reactions[3].Action, game.Action("ADFB"), t)
+	test.AssertDeepEqual(gameplay.Reactions[3].Action, game.NewAction("ADFB"), t)
 	test.AssertDeepEqual(gameplay.Reactions[3].Response, game.Response("BW"), t)
 }
 

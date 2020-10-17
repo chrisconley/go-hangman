@@ -92,11 +92,11 @@ func PlayGame(truth game.World, perspective game.Perspective) (game.GamePlay, ga
 	for true {
 		reaction, possibleWorlds = playTurn(gameplay, truth, perspective, possibleWorlds)
 		gameplay.AddTurn(reaction)
-		if string(reaction.Action) == string(truth) {
+		if reaction.Action.String() == string(truth) {
 			break
 		}
 	}
-	return gameplay, game.World(reaction.Action)
+	return gameplay, game.World(reaction.Action.String())
 }
 
 func playTurn(

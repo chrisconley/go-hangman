@@ -34,7 +34,7 @@ func Act(gameplay game.GamePlay, world game.World, action game.Action) (r game.R
 	}
 
 	worldString := string(world)
-	actionString := string(action)
+	actionString := action.String()
 
 	responseBuffer := strings.Builder{}
 	reward := 0.0

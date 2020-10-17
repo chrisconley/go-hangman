@@ -6,10 +6,31 @@ import (
 )
 
 type World string
-type Action string
 type Response string
 type Act func(gp GamePlay, w World, action Action) (reaction Reaction)
 type GetActions func(gp GamePlay, w PossibleWorlds, aa AvailableActions) []Action
+
+type Action struct {
+	Bytes  []byte
+	Hash   uint64
+	Length int
+}
+
+func (a Action) String() string {
+	return string(a.Bytes)
+}
+
+func (a Action) Equals(other Action) bool {
+	return a.Hash == other.Hash
+}
+
+func NewAction(actionString string) Action {
+	a := Action{}
+	a.Bytes = []byte(actionString)
+	a.Hash = fnv1a.HashBytes64(a.Bytes)
+	a.Length = len(actionString)
+	return a
+}
 
 type Agreement struct {
 	GetActions GetActions
@@ -41,12 +62,12 @@ func (gp *GamePlay) AddTurn(reaction Reaction) {
 	gp.TurnCount++
 	gp.TotalReward += reaction.Reward
 	gp.TotalPain += 1.0 - reaction.Reward
-	gp.Hash = fnv1a.AddString64(gp.Hash, string(reaction.Action))
+	gp.Hash = fnv1a.AddBytes64(gp.Hash, reaction.Action.Bytes)
 }
 
 func (gp *GamePlay) PreviouslyActed(action Action) bool {
 	for _, reaction := range gp.Reactions {
-		if reaction.Action == action {
+		if reaction.Action.Equals(action) {
 			return true
 		}
 	}
@@ -95,7 +116,7 @@ func NewPossibleWorlds(length int) PossibleWorlds {
 }
 
 func BuildActionWorldHash(action Action, worldsHash uint64) uint64 {
-	worldsHash = fnv1a.AddString64(worldsHash, string(action))
+	worldsHash = fnv1a.AddBytes64(worldsHash, action.Bytes)
 	return worldsHash
 
 }
@@ -257,12 +278,12 @@ func buildAvailableActions(universe Universe) AvailableActions {
 
 	keys := make(map[int32]bool)
 	for index, world := range universe.Worlds {
-		worldAction := Action(world.Name)
+		worldAction := NewAction(world.Name)
 		aa.worldActions[index] = worldAction
 		for _, runeValue := range world.Name {
 			if _, ok := keys[runeValue]; !ok {
 				keys[runeValue] = true
-				aa.actions = append(aa.actions, Action(runeValue))
+				aa.actions = append(aa.actions, NewAction(string(runeValue)))
 			}
 		}
 	}

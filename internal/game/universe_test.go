@@ -31,7 +31,7 @@ func TestHashingConflicts(t *testing.T) {
 	pw2.Add(uint64(810))
 	pw2.SetHash()
 
-	action := Action("t")
+	action := NewAction("t")
 
 	test.AssertDeepNotEqual(
 		BuildActionWorldHash(action, pw1.GetHash()),
@@ -43,7 +43,12 @@ func TestHashingConflicts(t *testing.T) {
 func TestAvailableActions(t *testing.T) {
 	universe := InitUniverse([]string{"aa", "bb"})
 	actual := universe.Actions.AllActions()
-	expected := []Action{"a", "b", "aa", "bb"}
+	expected := []Action{
+		NewAction("a"),
+		NewAction("b"),
+		NewAction("aa"),
+		NewAction("bb"),
+	}
 	test.AssertDeepEqual(actual, expected, t)
 }
 
@@ -62,13 +67,13 @@ func TestAvailableActionsActionsLength(t *testing.T) {
 func TestAvailableActionsActions(t *testing.T) {
 	universe := InitUniverse([]string{"aa", "bb"})
 	actual := universe.Actions.Actions()
-	test.AssertDeepEqual(actual, []Action{"a", "b"}, t)
+	test.AssertDeepEqual(actual, []Action{NewAction("a"), NewAction("b")}, t)
 }
 
 func TestAvailableActionsWorldActions(t *testing.T) {
 	universe := InitUniverse([]string{"aa", "bb"})
 	actual := universe.Actions.WorldActions()
-	test.AssertDeepEqual(actual, []Action{"aa", "bb"}, t)
+	test.AssertDeepEqual(actual, []Action{NewAction("aa"), NewAction("bb")}, t)
 }
 
 func BenchmarkAvailableActionsActionsLengthSmall(b *testing.B) {

@@ -20,7 +20,7 @@ func TestGetActions(t *testing.T) {
 	}
 	gp := game.InitGamePlay()
 	actions := GetActions(gp, remainingWorlds, aa)
-	test.AssertDeepEqual(actions, []game.Action{"a", "b", "c"}, t)
+	test.AssertDeepEqual(actions, game.BuildActions("a", "b", "c"), t)
 
 	// When there are less remaining worlds than letters, add the worlds
 	remainingWorlds = game.NewPossibleWorlds(1)
@@ -30,7 +30,7 @@ func TestGetActions(t *testing.T) {
 	}
 	gp = game.InitGamePlay()
 	actions = GetActions(gp, remainingWorlds, aa)
-	test.AssertDeepEqual(actions, []game.Action{"a", "b", "c", "aa", "bb"}, t)
+	test.AssertDeepEqual(actions, game.BuildActions("a", "b", "c", "aa", "bb"), t)
 
 	// When an action has already been used, don't add it
 	remainingWorlds = game.NewPossibleWorlds(1)
@@ -39,9 +39,9 @@ func TestGetActions(t *testing.T) {
 		remainingWorlds.Add(uint64(index))
 	}
 	gp = game.InitGamePlay()
-	gp.AddTurn(game.Reaction{Action: "b"})
+	gp.AddTurn(game.Reaction{Action: game.NewAction("b")})
 	actions = GetActions(gp, remainingWorlds, aa)
-	test.AssertDeepEqual(actions, []game.Action{"a", "c"}, t)
+	test.AssertDeepEqual(actions, game.BuildActions("a", "c"), t)
 
 	// When a world action has already been used, don't add it
 	remainingWorlds = game.NewPossibleWorlds(1)
@@ -50,37 +50,37 @@ func TestGetActions(t *testing.T) {
 		remainingWorlds.Add(uint64(index))
 	}
 	gp = game.InitGamePlay()
-	gp.AddTurn(game.Reaction{Action: "bb"})
+	gp.AddTurn(game.Reaction{Action: game.NewAction("bb")})
 	actions = GetActions(gp, remainingWorlds, aa)
-	test.AssertDeepEqual(actions, []game.Action{"a", "b", "c", "aa"}, t)
+	test.AssertDeepEqual(actions, game.BuildActions("a", "b", "c", "aa"), t)
 }
 
 func TestAct(t *testing.T) {
-	reaction := Act(game.InitGamePlay(), game.World("abc"), game.Action("a"))
+	reaction := Act(game.InitGamePlay(), game.World("abc"), game.NewAction("a"))
 	test.AssertDeepEqual(reaction.Response, game.Response("a--"), t)
 	test.AssertDeepEqual(reaction.Reward, 1.0, t)
 
-	reaction = Act(game.InitGamePlay(), game.World("abc"), game.Action("b"))
+	reaction = Act(game.InitGamePlay(), game.World("abc"), game.NewAction("b"))
 	test.AssertDeepEqual(reaction.Response, game.Response("-b-"), t)
 	test.AssertDeepEqual(reaction.Reward, 1.0, t)
 
-	reaction = Act(game.InitGamePlay(), game.World("abc"), game.Action("c"))
+	reaction = Act(game.InitGamePlay(), game.World("abc"), game.NewAction("c"))
 	test.AssertDeepEqual(reaction.Response, game.Response("--c"), t)
 	test.AssertDeepEqual(reaction.Reward, 1.0, t)
 
-	reaction = Act(game.InitGamePlay(), game.World("aaebaacdaa"), game.Action("a"))
+	reaction = Act(game.InitGamePlay(), game.World("aaebaacdaa"), game.NewAction("a"))
 	test.AssertDeepEqual(reaction.Response, game.Response("aa--aa--aa"), t)
 	test.AssertDeepEqual(reaction.Reward, 1.0, t)
 
-	reaction = Act(game.InitGamePlay(), game.World("abc"), game.Action("abc"))
+	reaction = Act(game.InitGamePlay(), game.World("abc"), game.NewAction("abc"))
 	test.AssertDeepEqual(reaction.Response, game.Response("abc"), t)
 	test.AssertDeepEqual(reaction.Reward, 1.0, t)
 
-	reaction = Act(game.InitGamePlay(), game.World("abc"), game.Action("x"))
+	reaction = Act(game.InitGamePlay(), game.World("abc"), game.NewAction("x"))
 	test.AssertDeepEqual(reaction.Response, game.Response("!"), t)
 	test.AssertDeepEqual(reaction.Reward, 0.0, t)
 
-	reaction = Act(game.InitGamePlay(), game.World("abc"), game.Action("aaa"))
+	reaction = Act(game.InitGamePlay(), game.World("abc"), game.NewAction("aaa"))
 	test.AssertDeepEqual(reaction.Response, game.Response("!"), t)
 	test.AssertDeepEqual(reaction.Reward, 0.0, t)
 }
@@ -93,7 +93,7 @@ func BenchmarkActSmall(b *testing.B) {
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		Act(game.InitGamePlay(), game.World(world), game.Action("x"))
+		Act(game.InitGamePlay(), game.World(world), game.NewAction("x"))
 	}
 }
 
@@ -105,6 +105,6 @@ func BenchmarkActLarge(b *testing.B) {
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		Act(game.InitGamePlay(), game.World(world), game.Action("x"))
+		Act(game.InitGamePlay(), game.World(world), game.NewAction("x"))
 	}
 }

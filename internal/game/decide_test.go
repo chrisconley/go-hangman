@@ -8,8 +8,8 @@ import (
 
 func TestDecide(t *testing.T) {
 	predictions := NewPredictions()
-	predictions.AddPrediction("a", Prediction{Action: "a", Entropy: 1.75, Reward: 0.9})
-	predictions.AddPrediction("b", Prediction{Action: "b", Entropy: 2.50, Reward: 0.1})
+	predictions.AddPrediction("a", Prediction{Action: NewAction("a"), Entropy: 1.75, Reward: 0.9})
+	predictions.AddPrediction("b", Prediction{Action: NewAction("b"), Entropy: 2.50, Reward: 0.1})
 
 	// All Entropy
 	motivation := Motivation{Reward: 0.0, Entropy: 1.0, Time: 0.0}
@@ -35,8 +35,8 @@ type sliceTest struct {
 
 func TestDecideMostParts(t *testing.T) {
 	predictions := NewPredictions()
-	predictions.AddPrediction("a", Prediction{Action: "a", PartsCount: 1.0})
-	predictions.AddPrediction("b", Prediction{Action: "b", PartsCount: 2.0})
+	predictions.AddPrediction("a", Prediction{Action: NewAction("a"), PartsCount: 1.0})
+	predictions.AddPrediction("b", Prediction{Action: NewAction("b"), PartsCount: 2.0})
 
 	motivation := Motivation{MostParts: 1.0}
 	actual := Decide(predictions, motivation)

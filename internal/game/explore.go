@@ -73,7 +73,7 @@ func ExploreReactionsForAction(
 		counts.Increment(response, 1.0)
 		rewards.Increment(response, reaction.Reward)
 		worlds := responseWorlds[responseHash]
-		worlds.Add(world.Index)
+		worlds.Add(worldIndex)
 		responseWorlds[responseHash] = worlds
 
 		if action.String() == world.Name {

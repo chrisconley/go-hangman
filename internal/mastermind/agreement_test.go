@@ -44,67 +44,67 @@ func TestGetActions(t *testing.T) {
 }
 
 func TestActRewards(t *testing.T) {
-	reaction := Act(game.InitGamePlay(), game.NewWorld(0, "1122"), game.NewAction("1313"))
+	reaction := Act(game.InitGamePlay(), game.NewWorld("1122"), game.NewAction("1313"))
 	test.AssertDeepEqual(reaction.Response, game.Response("BW"), t)
 	test.AssertAlmostEqual(reaction.Reward, 0.375, 4, t)
 
-	reaction = Act(game.InitGamePlay(), game.NewWorld(0, "1122"), game.NewAction("2211"))
+	reaction = Act(game.InitGamePlay(), game.NewWorld("1122"), game.NewAction("2211"))
 	test.AssertDeepEqual(reaction.Response, game.Response("WWWW"), t)
 	test.AssertAlmostEqual(reaction.Reward, 0.5, 4, t)
 
-	reaction = Act(game.InitGamePlay(), game.NewWorld(0, "11224"), game.NewAction("13135"))
+	reaction = Act(game.InitGamePlay(), game.NewWorld("11224"), game.NewAction("13135"))
 	test.AssertDeepEqual(reaction.Response, game.Response("BW"), t)
 	test.AssertAlmostEqual(reaction.Reward, 0.3, 4, t)
 
-	reaction = Act(game.InitGamePlay(), game.NewWorld(0, "112244"), game.NewAction("131355"))
+	reaction = Act(game.InitGamePlay(), game.NewWorld("112244"), game.NewAction("131355"))
 	test.AssertDeepEqual(reaction.Response, game.Response("BW"), t)
 	test.AssertAlmostEqual(reaction.Reward, 0.25, 4, t)
 }
 
 func TestActMiss(t *testing.T) {
-	reaction := Act(game.InitGamePlay(), game.NewWorld(0, "1122"), game.NewAction("3333"))
+	reaction := Act(game.InitGamePlay(), game.NewWorld("1122"), game.NewAction("3333"))
 	test.AssertDeepEqual(reaction.Response, game.Response("!"), t)
 }
 
 func TestActWikipediaExample(t *testing.T) {
 	// Wikipedia example: https://en.wikipedia.org/wiki/Mastermind_(board_game)#Gameplay_and_rules
-	reaction := Act(game.InitGamePlay(), game.NewWorld(0, "1122"), game.NewAction("1112"))
+	reaction := Act(game.InitGamePlay(), game.NewWorld("1122"), game.NewAction("1112"))
 	test.AssertDeepEqual(reaction.Response, game.Response("BBB"), t)
 	test.AssertDeepEqual(reaction.Reward, 0.75, t)
 }
 
 func TestActWhiteCounting(t *testing.T) {
 	// Duplicates in world
-	reaction := Act(game.InitGamePlay(), game.NewWorld(0, "1112"), game.NewAction("7891"))
+	reaction := Act(game.InitGamePlay(), game.NewWorld("1112"), game.NewAction("7891"))
 	test.AssertDeepEqual(reaction.Response, game.Response("W"), t)
 
-	reaction = Act(game.InitGamePlay(), game.NewWorld(0, "2111"), game.NewAction("1789"))
+	reaction = Act(game.InitGamePlay(), game.NewWorld("2111"), game.NewAction("1789"))
 	test.AssertDeepEqual(reaction.Response, game.Response("W"), t)
 
-	reaction = Act(game.InitGamePlay(), game.NewWorld(0, "1211"), game.NewAction("7189"))
+	reaction = Act(game.InitGamePlay(), game.NewWorld("1211"), game.NewAction("7189"))
 	test.AssertDeepEqual(reaction.Response, game.Response("W"), t)
 
 	// Duplicates in action
-	reaction = Act(game.InitGamePlay(), game.NewWorld(0, "1234"), game.NewAction("7111"))
+	reaction = Act(game.InitGamePlay(), game.NewWorld("1234"), game.NewAction("7111"))
 	test.AssertDeepEqual(reaction.Response, game.Response("W"), t)
 
-	reaction = Act(game.InitGamePlay(), game.NewWorld(0, "2341"), game.NewAction("1117"))
+	reaction = Act(game.InitGamePlay(), game.NewWorld("2341"), game.NewAction("1117"))
 	test.AssertDeepEqual(reaction.Response, game.Response("W"), t)
 
-	reaction = Act(game.InitGamePlay(), game.NewWorld(0, "2134"), game.NewAction("1711"))
+	reaction = Act(game.InitGamePlay(), game.NewWorld("2134"), game.NewAction("1711"))
 	test.AssertDeepEqual(reaction.Response, game.Response("W"), t)
 
 	// Duplicates in both
-	reaction = Act(game.InitGamePlay(), game.NewWorld(0, "BCAA"), game.NewAction("AAYZ"))
+	reaction = Act(game.InitGamePlay(), game.NewWorld("BCAA"), game.NewAction("AAYZ"))
 	test.AssertDeepEqual(reaction.Response, game.Response("WW"), t)
 
-	reaction = Act(game.InitGamePlay(), game.NewWorld(0, "1123"), game.NewAction("7811"))
+	reaction = Act(game.InitGamePlay(), game.NewWorld("1123"), game.NewAction("7811"))
 	test.AssertDeepEqual(reaction.Response, game.Response("WW"), t)
 
-	reaction = Act(game.InitGamePlay(), game.NewWorld(0, "2113"), game.NewAction("1781"))
+	reaction = Act(game.InitGamePlay(), game.NewWorld("2113"), game.NewAction("1781"))
 	test.AssertDeepEqual(reaction.Response, game.Response("WW"), t)
 
-	reaction = Act(game.InitGamePlay(), game.NewWorld(0, "1231"), game.NewAction("7118"))
+	reaction = Act(game.InitGamePlay(), game.NewWorld("1231"), game.NewAction("7118"))
 	test.AssertDeepEqual(reaction.Response, game.Response("WW"), t)
 }
 
@@ -115,45 +115,45 @@ func TestActInstructionsExamples(t *testing.T) {
 	// Basic example responding with "BW"
 	// "B" is for the third position "U" guess
 	// "W" is for the first position "W" guess
-	reaction := Act(game.InitGamePlay(), game.NewWorld(0, "RWUG"), game.NewAction("WYUK"))
+	reaction := Act(game.InitGamePlay(), game.NewWorld("RWUG"), game.NewAction("WYUK"))
 	test.AssertDeepEqual(reaction.Response, game.Response("BW"), t)
 
 	// Prefer "B" response over "W".
 	// Do not respond with "BW" because the code word only has one G
-	reaction = Act(game.InitGamePlay(), game.NewWorld(0, "RUGK"), game.NewAction("WYGG"))
+	reaction = Act(game.InitGamePlay(), game.NewWorld("RUGK"), game.NewAction("WYGG"))
 	test.AssertDeepEqual(reaction.Response, game.Response("B"), t)
 
 	// Only one "W" because the guess only has one "Y"
-	reaction = Act(game.InitGamePlay(), game.NewWorld(0, "YUYK"), game.NewAction("RYGW"))
+	reaction = Act(game.InitGamePlay(), game.NewWorld("YUYK"), game.NewAction("RYGW"))
 	test.AssertDeepEqual(reaction.Response, game.Response("W"), t)
 
 	// Two "R" guesses; one is in right place, one is not
-	reaction = Act(game.InitGamePlay(), game.NewWorld(0, "RURY"), game.NewAction("GRRW"))
+	reaction = Act(game.InitGamePlay(), game.NewWorld("RURY"), game.NewAction("GRRW"))
 	test.AssertDeepEqual(reaction.Response, game.Response("BW"), t)
 }
 
 func TestActFromPythonImplementation(t *testing.T) {
 	// Various examples using 3632 code word from python implementation tests
-	reaction := Act(game.InitGamePlay(), game.NewWorld(0, "3632"), game.NewAction("1611"))
+	reaction := Act(game.InitGamePlay(), game.NewWorld("3632"), game.NewAction("1611"))
 	test.AssertDeepEqual(reaction.Response, game.Response("B"), t)
 	test.AssertDeepEqual(reaction.Reward, 0.25, t)
 
-	reaction = Act(game.InitGamePlay(), game.NewWorld(0, "3632"), game.NewAction("6642"))
+	reaction = Act(game.InitGamePlay(), game.NewWorld("3632"), game.NewAction("6642"))
 	test.AssertDeepEqual(reaction.Response, game.Response("BB"), t)
 
-	reaction = Act(game.InitGamePlay(), game.NewWorld(0, "3632"), game.NewAction("6326"))
+	reaction = Act(game.InitGamePlay(), game.NewWorld("3632"), game.NewAction("6326"))
 	test.AssertDeepEqual(reaction.Response, game.Response("WWW"), t)
 
-	reaction = Act(game.InitGamePlay(), game.NewWorld(0, "3632"), game.NewAction("2363"))
+	reaction = Act(game.InitGamePlay(), game.NewWorld("3632"), game.NewAction("2363"))
 	test.AssertDeepEqual(reaction.Response, game.Response("WWWW"), t)
 
-	reaction = Act(game.InitGamePlay(), game.NewWorld(0, "3632"), game.NewAction("6323"))
+	reaction = Act(game.InitGamePlay(), game.NewWorld("3632"), game.NewAction("6323"))
 	test.AssertDeepEqual(reaction.Response, game.Response("WWWW"), t)
 
-	reaction = Act(game.InitGamePlay(), game.NewWorld(0, "3632"), game.NewAction("1435"))
+	reaction = Act(game.InitGamePlay(), game.NewWorld("3632"), game.NewAction("1435"))
 	test.AssertDeepEqual(reaction.Response, game.Response("B"), t)
 
-	reaction = Act(game.InitGamePlay(), game.NewWorld(0, "3632"), game.NewAction("1335"))
+	reaction = Act(game.InitGamePlay(), game.NewWorld("3632"), game.NewAction("1335"))
 	test.AssertDeepEqual(reaction.Response, game.Response("BW"), t)
 }
 
@@ -256,7 +256,7 @@ func TestKnuthCounts(t *testing.T) {
 func buildGroupedResponses(lines []string, action string) map[string][]string {
 	groupedResponses := make(map[string][]string)
 	for _, line := range lines {
-		world := game.NewWorld(0, line)
+		world := game.NewWorld(line)
 		reaction := Act(game.InitGamePlay(), world, game.NewAction(action))
 		response := string(reaction.Response)
 		if _, ok := groupedResponses[response]; !ok {

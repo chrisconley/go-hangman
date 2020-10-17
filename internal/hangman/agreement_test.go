@@ -56,31 +56,31 @@ func TestGetActions(t *testing.T) {
 }
 
 func TestAct(t *testing.T) {
-	reaction := Act(game.InitGamePlay(), game.NewWorld(0, "abc"), game.NewAction("a"))
+	reaction := Act(game.InitGamePlay(), game.NewWorld("abc"), game.NewAction("a"))
 	test.AssertDeepEqual(reaction.Response, game.Response("a--"), t)
 	test.AssertDeepEqual(reaction.Reward, 1.0, t)
 
-	reaction = Act(game.InitGamePlay(), game.NewWorld(0, "abc"), game.NewAction("b"))
+	reaction = Act(game.InitGamePlay(), game.NewWorld("abc"), game.NewAction("b"))
 	test.AssertDeepEqual(reaction.Response, game.Response("-b-"), t)
 	test.AssertDeepEqual(reaction.Reward, 1.0, t)
 
-	reaction = Act(game.InitGamePlay(), game.NewWorld(0, "abc"), game.NewAction("c"))
+	reaction = Act(game.InitGamePlay(), game.NewWorld("abc"), game.NewAction("c"))
 	test.AssertDeepEqual(reaction.Response, game.Response("--c"), t)
 	test.AssertDeepEqual(reaction.Reward, 1.0, t)
 
-	reaction = Act(game.InitGamePlay(), game.NewWorld(0, "aaebaacdaa"), game.NewAction("a"))
+	reaction = Act(game.InitGamePlay(), game.NewWorld("aaebaacdaa"), game.NewAction("a"))
 	test.AssertDeepEqual(reaction.Response, game.Response("aa--aa--aa"), t)
 	test.AssertDeepEqual(reaction.Reward, 1.0, t)
 
-	reaction = Act(game.InitGamePlay(), game.NewWorld(0, "abc"), game.NewAction("abc"))
+	reaction = Act(game.InitGamePlay(), game.NewWorld("abc"), game.NewAction("abc"))
 	test.AssertDeepEqual(reaction.Response, game.Response("abc"), t)
 	test.AssertDeepEqual(reaction.Reward, 1.0, t)
 
-	reaction = Act(game.InitGamePlay(), game.NewWorld(0, "abc"), game.NewAction("x"))
+	reaction = Act(game.InitGamePlay(), game.NewWorld("abc"), game.NewAction("x"))
 	test.AssertDeepEqual(reaction.Response, game.Response("!"), t)
 	test.AssertDeepEqual(reaction.Reward, 0.0, t)
 
-	reaction = Act(game.InitGamePlay(), game.NewWorld(0, "abc"), game.NewAction("aaa"))
+	reaction = Act(game.InitGamePlay(), game.NewWorld("abc"), game.NewAction("aaa"))
 	test.AssertDeepEqual(reaction.Response, game.Response("!"), t)
 	test.AssertDeepEqual(reaction.Reward, 0.0, t)
 }
@@ -93,7 +93,7 @@ func BenchmarkActSmall(b *testing.B) {
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		Act(game.InitGamePlay(), game.NewWorld(0, world), game.NewAction("x"))
+		Act(game.InitGamePlay(), game.NewWorld(world), game.NewAction("x"))
 	}
 }
 
@@ -105,6 +105,6 @@ func BenchmarkActLarge(b *testing.B) {
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		Act(game.InitGamePlay(), game.NewWorld(0, world), game.NewAction("x"))
+		Act(game.InitGamePlay(), game.NewWorld(world), game.NewAction("x"))
 	}
 }

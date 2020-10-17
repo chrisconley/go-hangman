@@ -9,9 +9,12 @@ type Response string
 type Act func(gp GamePlay, w World, action Action) (reaction Reaction)
 type GetActions func(gp GamePlay, w PossibleWorlds, aa AvailableActions) []Action
 
-func NewWorld(index uint64, worldString string) World {
+type World struct {
+	Name string
+}
+
+func NewWorld(worldString string) World {
 	w := World{}
-	w.Index = index
 	w.Name = worldString
 	return w
 }
@@ -125,11 +128,6 @@ func BuildActionWorldHash(action Action, worldsHash uint64) uint64 {
 	worldsHash = fnv1a.AddBytes64(worldsHash, action.Bytes)
 	return worldsHash
 
-}
-
-type World struct {
-	Index uint64
-	Name  string
 }
 
 type Universe struct {
@@ -253,7 +251,7 @@ func InitUniverse(lines []string) Universe {
 	universe.WorldLength = len(lines[0])
 	pw := NewPossibleWorlds(universe.Size)
 	for index, name := range lines {
-		universe.Worlds[index] = World{Index: uint64(index), Name: name}
+		universe.Worlds[index] = NewWorld(name)
 		pw.Add(uint64(index))
 	}
 	pw.SetHash()

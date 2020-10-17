@@ -32,7 +32,8 @@ func GetActions(gameplay game.GamePlay, remainingWorlds game.PossibleWorlds, aa 
 
 func Act(gameplay game.GamePlay, world game.World, action game.Action) (r game.Reaction) {
 	if gameplay.PreviouslyActed(action) {
-		panic("This action is not allowed because it has already been used")
+		// panic("This action is not allowed because it has already been used")
+		return game.Reaction{Action: action, Response: game.Response("!"), Reward: 0.0}
 	}
 
 	actionLength := len(action)

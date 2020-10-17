@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/chrisconley/go-hangman/internal/game"
-	"github.com/chrisconley/go-hangman/internal/hangman"
+	"github.com/chrisconley/go-hangman/internal/mastermind"
 	"github.com/chrisconley/go-hangman/internal/play"
 	"github.com/chrisconley/go-hangman/internal/utils"
 	"github.com/pkg/profile"
@@ -14,7 +14,7 @@ func TryTry(motivation game.Motivation, lines []string) play.Stats {
 	// limit := 1000
 	limit := len(lines)
 	fmt.Printf("%+v | ", motivation)
-	games := play.PlayGames(hangman.Agreement, motivation, lines, limit)
+	games := play.PlayGames(mastermind.Agreement, motivation, lines, limit)
 	stats := play.CalculateStats(games)
 	// fmt.Printf("Pain: %f, %+v\n", stats.TotalPain, stats)
 	// return float64(stats.TotalPain)
@@ -24,8 +24,8 @@ func TryTry(motivation game.Motivation, lines []string) play.Stats {
 }
 
 func main() {
-	// lines := utils.ReadLinesFromFilePath("./fixtures/commercial-mastermind.txt")
-	lines := utils.ReadLinesFromFilePath("./fixtures/nine-letter-words.txt")
+	lines := utils.ReadLinesFromFilePath("./fixtures/commercial-mastermind.txt")
+	// lines := utils.ReadLinesFromFilePath("./fixtures/nine-letter-words.txt")
 	// lines = lines[:10000]
 	game.BUniverse = game.InitUniverse(lines)
 	trials := play.BuildTrials(0.0, 1.0, 0.5, 4)
@@ -66,7 +66,6 @@ func main() {
 	}
 
 	fmt.Printf("cache size: %d\n", game.TheCache.Size())
-	fmt.Printf("predictions size: %d", game.PredictionsCount)
 
 	fmt.Printf("Min Total Turns: %d, %+v\n", minTotalTurns, minTotalTurnsMotivation)
 	fmt.Printf("Min Total Pain: %f, %+v\n", minTotalPain, minTotalPainMotivation)

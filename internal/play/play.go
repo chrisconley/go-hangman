@@ -87,7 +87,7 @@ func PlayGames(agreement game.Agreement, motivation game.Motivation, lines []str
 
 func PlayGame(truth game.World, perspective game.Perspective) (game.GamePlay, game.World) {
 	possibleWorlds := game.BUniverse.PossibleWorlds
-	gameplay := game.GamePlay{} // Should this be on perspective?
+	gameplay := game.InitGamePlay() // Should this be on perspective?
 	reaction := game.Reaction{}
 	for true {
 		reaction, possibleWorlds = playTurn(gameplay, truth, perspective, possibleWorlds)

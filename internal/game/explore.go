@@ -15,10 +15,9 @@ func ExploreReactions(
 	// If we've already explored the first action,
 	// that means we've explored all actions already and can skip.
 	worldsHash := possibleWorlds.GetHash()
-	hash := BuildActionWorldHash(actions[0], worldsHash)
-	predictions := Predictions{PredictionsMap: PredictionsMap{lookup: make(map[uint64]uint32)}}
-	// if ok := TheCache.Exists(hash); !ok {
-	if _, ok := PredictionCache[hash]; !ok {
+	gameHash := fnv1a.AddUint64(worldsHash, gameplay.Hash)
+	if _, ok := PredictionCache[gameHash]; !ok {
+		predictions := Predictions{PredictionsMap: PredictionsMap{lookup: make(map[uint64]uint32)}}
 		// Only get Indices once to improve performance
 		worldIndices := possibleWorlds.Indices()
 		for _, action := range actions {
@@ -36,7 +35,6 @@ func ExploreReactions(
 			prediction.InversedMax = mth.FindInversedMax(counts.Total(), counts.All())
 			prediction.ActionMatchesAPossibleWorld = actionMatchesAPossibleWorld
 			predictions.AddPrediction(string(action), prediction)
-			PredictionCache[hash] = prediction
 			TheCache.Write(
 				hash,
 				responseWorlds,
@@ -45,14 +43,11 @@ func ExploreReactions(
 				actionMatchesAPossibleWorld,
 			)
 		}
-	} else {
-		for _, action := range actions {
-			hash := BuildActionWorldHash(action, worldsHash)
-			predictions.AddPrediction(string(action), PredictionCache[hash])
-		}
-
+		PredictionCache[gameHash] = predictions
+		return predictions
 	}
-	return predictions
+	return PredictionCache[gameHash]
+
 }
 
 func ExploreReactionsForAction(
@@ -186,33 +181,4 @@ func (m *PredictionsMap) findOrInitializeGroup(group uint64) uint32 {
 	return index
 }
 
-var PredictionsCount uint64
-var PredictionCache = make(map[uint64]Prediction)
-
-func BBuildPredictions(actions []Action, bpw PossibleWorlds) Predictions {
-	worldsHash := bpw.GetHash()
-	predictions := Predictions{PredictionsMap: PredictionsMap{lookup: make(map[uint64]uint32)}}
-	hash := BuildActionWorldHash(actions[0], worldsHash)
-	if _, ok := PredictionCache[hash]; !ok {
-		for _, action := range actions {
-			hash := BuildActionWorldHash(action, worldsHash)
-			PredictionsCount++
-			prediction := Prediction{Action: action}
-			counts := TheCache.GetCounts(hash)
-			rewards := TheCache.GetRewards(hash)
-			prediction.Reward = rewards.Total() / counts.Total()
-			prediction.Entropy = mth.CalcEntropy(counts.Total(), counts.All())
-			prediction.PartsCount = float64(len(counts.All()))
-			prediction.InversedMax = mth.FindInversedMax(counts.Total(), counts.All())
-			prediction.ActionMatchesAPossibleWorld = TheCache.GetActionMatches(hash)
-			predictions.AddPrediction(string(action), prediction)
-		}
-	} else {
-		for _, action := range actions {
-			hash := BuildActionWorldHash(action, worldsHash)
-			predictions.AddPrediction(string(action), PredictionCache[hash])
-		}
-	}
-	return predictions
-
-}
+var PredictionCache = make(map[uint64]Predictions)

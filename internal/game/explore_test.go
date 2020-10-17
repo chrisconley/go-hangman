@@ -1,7 +1,6 @@
 package game
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/chrisconley/go-hangman/test"
@@ -13,8 +12,7 @@ func TestBuildPredictions(t *testing.T) {
 	pw := BUniverse.PossibleWorlds
 	actions := []Action{"a", "b", "c"}
 
-	ExploreReactions(GamePlay{}, pw, actions, BuildTestAct(1.0))
-	actual := BBuildPredictions(actions, pw)
+	actual := ExploreReactions(GamePlay{}, pw, actions, BuildTestAct(1.0))
 
 	test.AssertAlmostEqual(actual.GetEntropy("a"), 0.9183, 4, t)
 	test.AssertAlmostEqual(actual.GetEntropy("b"), 0.0000, 4, t)
@@ -27,7 +25,6 @@ func TestBuildPredictions(t *testing.T) {
 	test.AssertAlmostEqual(actual.GetInversedMax("a"), 1.0000, 4, t)
 	test.AssertAlmostEqual(actual.GetInversedMax("b"), 0.0000, 4, t)
 	test.AssertAlmostEqual(actual.GetInversedMax("c"), 1.0000, 4, t)
-	fmt.Printf("%+v\n", actual)
 
 	test.AssertAlmostEqual(actual.GetPartsCount("a"), 2.0000, 4, t)
 	test.AssertAlmostEqual(actual.GetPartsCount("b"), 1.0000, 4, t)

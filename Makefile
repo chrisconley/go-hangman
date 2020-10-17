@@ -7,6 +7,3 @@ stest:
 
 vtest:
 	go clean -testcache && go test -v ./...
-
-build:
-	go build -o ./player ./cmd/player.go

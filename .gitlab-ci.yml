@@ -31,7 +31,7 @@ test:
 build:
   stage: build
   script:
-    - go build -race -ldflags "-extldflags '-static'" -o $CI_PROJECT_DIR/player ./cmd/player.go
+    - go build -race -ldflags "-extldflags '-static'" -o $CI_PROJECT_DIR/player ./cmd/player/main.go
   artifacts:
     paths:
       - player

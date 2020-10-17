@@ -23,7 +23,7 @@ func TryTry(motivation game.Motivation, lines []string) play.Stats {
 	return stats
 }
 
-func mainTODO() {
+func main() {
 	lines := utils.ReadLinesFromFilePath("./fixtures/commercial-mastermind.txt")
 	// lines := utils.ReadLinesFromFilePath("./fixtures/nine-letter-words.txt")
 	// lines = lines[:10000]

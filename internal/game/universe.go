@@ -10,13 +10,19 @@ type Act func(gp GamePlay, w World, action Action) (reaction Reaction)
 type GetActions func(gp GamePlay, w PossibleWorlds, aa AvailableActions) []Action
 
 type World struct {
-	Name string
+	Bytes []byte
+	Hash  uint64
 }
 
 func NewWorld(worldString string) World {
 	w := World{}
-	w.Name = worldString
+	w.Bytes = []byte(worldString)
+	w.Hash = fnv1a.HashBytes64(w.Bytes)
 	return w
+}
+
+func (w World) String() string {
+	return string(w.Bytes)
 }
 
 type Action struct {
@@ -281,9 +287,9 @@ func buildAvailableActions(universe Universe) AvailableActions {
 
 	keys := make(map[int32]bool)
 	for index, world := range universe.Worlds {
-		worldAction := NewAction(world.Name)
+		worldAction := NewAction(world.String())
 		aa.worldActions[index] = worldAction
-		for _, runeValue := range world.Name {
+		for _, runeValue := range world.String() {
 			if _, ok := keys[runeValue]; !ok {
 				keys[runeValue] = true
 				aa.actions = append(aa.actions, NewAction(string(runeValue)))

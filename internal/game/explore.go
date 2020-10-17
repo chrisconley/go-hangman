@@ -76,7 +76,7 @@ func ExploreReactionsForAction(
 		worlds.Add(worldIndex)
 		responseWorlds[responseHash] = worlds
 
-		if action.String() == world.Name {
+		if action.String() == world.String() {
 			actionMatchesPossibleWorld = true
 		}
 

@@ -19,7 +19,7 @@ func GetActions(gameplay game.GamePlay, remainingWorlds game.PossibleWorlds, aa 
 		worldActions := []game.Action{}
 		for _, index := range remainingWorlds.Indices() {
 			world := game.BUniverse.GetWorldByIndex(index)
-			worldAction := game.NewAction(world.Name)
+			worldAction := game.NewAction(world.String())
 			if !gameplay.PreviouslyActed(worldAction) {
 				worldActions = append(worldActions, worldAction)
 			}
@@ -37,11 +37,11 @@ func Act(gameplay game.GamePlay, world game.World, action game.Action) (r game.R
 	}
 
 	actionLength := action.Length
-	worldString := world.Name
+	worldString := world.String()
 	actionString := action.String()
 
 	if actionLength > 1 && actionString == worldString {
-		return game.Reaction{Action: action, Response: game.Response(world.Name), Reward: 1.0}
+		return game.Reaction{Action: action, Response: game.Response(world.String()), Reward: 1.0}
 	} else if actionLength > 1 && actionString != worldString {
 		return game.Reaction{Action: action, Response: game.Response("!"), Reward: 0.0}
 	} else {

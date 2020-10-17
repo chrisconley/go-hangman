@@ -33,7 +33,7 @@ func Act(gameplay game.GamePlay, world game.World, action game.Action) (r game.R
 		panic("This action is not allowed because it has already been used")
 	}
 
-	worldString := world.Name
+	worldString := world.String()
 	actionString := action.String()
 
 	responseBuffer := strings.Builder{}

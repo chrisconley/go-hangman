@@ -262,7 +262,7 @@ func buildGroupedResponses(lines []string, action string) map[string][]string {
 		if _, ok := groupedResponses[response]; !ok {
 			groupedResponses[response] = []string{}
 		}
-		groupedResponses[response] = append(groupedResponses[response], world.Name)
+		groupedResponses[response] = append(groupedResponses[response], world.String())
 	}
 
 	return groupedResponses

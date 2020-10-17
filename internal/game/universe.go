@@ -5,10 +5,16 @@ import (
 	"github.com/segmentio/fasthash/fnv1a"
 )
 
-type World string
 type Response string
 type Act func(gp GamePlay, w World, action Action) (reaction Reaction)
 type GetActions func(gp GamePlay, w PossibleWorlds, aa AvailableActions) []Action
+
+func NewWorld(index uint64, worldString string) World {
+	w := World{}
+	w.Index = index
+	w.Name = worldString
+	return w
+}
 
 type Action struct {
 	Bytes  []byte
@@ -121,13 +127,13 @@ func BuildActionWorldHash(action Action, worldsHash uint64) uint64 {
 
 }
 
-type BWorld struct {
+type World struct {
 	Index uint64
 	Name  string
 }
 
 type Universe struct {
-	Worlds         []BWorld
+	Worlds         []World
 	WorldLength    int
 	Actions        AvailableActions
 	PossibleWorlds PossibleWorlds
@@ -243,11 +249,11 @@ func (c *Cache) Size() int {
 func InitUniverse(lines []string) Universe {
 	universe := Universe{}
 	universe.Size = len(lines)
-	universe.Worlds = make([]BWorld, universe.Size)
+	universe.Worlds = make([]World, universe.Size)
 	universe.WorldLength = len(lines[0])
 	pw := NewPossibleWorlds(universe.Size)
 	for index, name := range lines {
-		universe.Worlds[index] = BWorld{Index: uint64(index), Name: name}
+		universe.Worlds[index] = World{Index: uint64(index), Name: name}
 		pw.Add(uint64(index))
 	}
 	pw.SetHash()
@@ -256,12 +262,11 @@ func InitUniverse(lines []string) Universe {
 	return universe
 }
 
-func (u *Universe) GetWorldByIndex(index uint64) BWorld {
+func (u *Universe) GetWorldByIndex(index uint64) World {
 	return u.Worlds[index]
 }
 
 type AvailableActions struct {
-	worlds       []World
 	actions      []Action
 	worldActions []Action
 	worldSize    int

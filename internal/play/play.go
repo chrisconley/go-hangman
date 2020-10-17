@@ -74,8 +74,7 @@ func PlayGames(agreement game.Agreement, motivation game.Motivation, lines []str
 			agreement,
 		)
 
-		btruth := game.BUniverse.GetWorldByIndex(j)
-		truth := game.World(btruth.Name)
+		truth := game.BUniverse.GetWorldByIndex(j)
 		gameplay, _ := PlayGame(truth, perspective)
 		// fmt.Printf("TRUTH: %s | ", truth)
 		// fmt.Printf("TURNS: %d\n", gameplay.TurnCount)
@@ -92,11 +91,11 @@ func PlayGame(truth game.World, perspective game.Perspective) (game.GamePlay, ga
 	for true {
 		reaction, possibleWorlds = playTurn(gameplay, truth, perspective, possibleWorlds)
 		gameplay.AddTurn(reaction)
-		if reaction.Action.String() == string(truth) {
+		if reaction.Action.String() == truth.Name {
 			break
 		}
 	}
-	return gameplay, game.World(reaction.Action.String())
+	return gameplay, truth
 }
 
 func playTurn(

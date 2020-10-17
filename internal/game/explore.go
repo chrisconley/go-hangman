@@ -64,7 +64,7 @@ func ExploreReactionsForAction(
 	actionMatchesPossibleWorld := false
 	for _, worldIndex := range possibleWorldIndices {
 		world := BUniverse.GetWorldByIndex(worldIndex)
-		reaction := act(gameplay, World(world.Name), action)
+		reaction := act(gameplay, world, action)
 		response := string(reaction.Response)
 		responseHash := fnv1a.HashString64(response)
 		if _, ok := responseWorlds[responseHash]; !ok {

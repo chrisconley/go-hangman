@@ -37,11 +37,11 @@ func Act(gameplay game.GamePlay, world game.World, action game.Action) (r game.R
 	}
 
 	actionLength := action.Length
-	worldString := string(world)
+	worldString := world.Name
 	actionString := action.String()
 
 	if actionLength > 1 && actionString == worldString {
-		return game.Reaction{Action: action, Response: game.Response(world), Reward: 1.0}
+		return game.Reaction{Action: action, Response: game.Response(world.Name), Reward: 1.0}
 	} else if actionLength > 1 && actionString != worldString {
 		return game.Reaction{Action: action, Response: game.Response("!"), Reward: 0.0}
 	} else {

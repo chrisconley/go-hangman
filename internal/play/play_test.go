@@ -12,7 +12,7 @@ import (
 )
 
 func TestAct(t *testing.T) {
-	truth := game.World("abc")
+	truth := game.NewWorld(0, "abc")
 	actual := Act(game.InitGamePlay(), game.NewAction("a"), game.BuildTestAct(0.222), truth)
 	test.AssertDeepEqual(
 		actual,
@@ -45,7 +45,7 @@ func TestPlayBHangman(t *testing.T) {
 			game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25},
 			hangman.Agreement,
 		)
-		truth := game.World(line)
+		truth := game.NewWorld(0, line)
 		_, actual := PlayGame(truth, perspective)
 		test.AssertDeepEqual(actual, truth, t)
 	}
@@ -66,7 +66,7 @@ func TestPlayMastermind(t *testing.T) {
 			mastermind.Agreement,
 		)
 
-		truth := game.World(line)
+		truth := game.NewWorld(0, line)
 		_, actual := PlayGame(truth, perspective)
 		test.AssertDeepEqual(actual, truth, t)
 	}
@@ -83,7 +83,7 @@ func TestIntegrationPlayKnuthMastermind(t *testing.T) {
 		mastermind.Agreement,
 	)
 
-	truth := game.World("CFCB")
+	truth := game.NewWorld(0, "CFCB")
 	gameplay, _ := PlayGame(truth, perspective)
 
 	test.AssertDeepEqual(gameplay.Reactions[0].Action, game.NewAction("AABB"), t)

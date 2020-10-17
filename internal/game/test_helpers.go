@@ -12,7 +12,7 @@ func BuildActions(strings ...string) []Action {
 
 func BuildTestAct(reward float64) func(GamePlay, World, Action) Reaction {
 	return func(gp GamePlay, w World, a Action) (r Reaction) {
-		if strings.Contains(string(w), a.String()) {
+		if strings.Contains(w.Name, a.String()) {
 			return Reaction{Action: a, Response: Response(a.String()), Reward: reward}
 		} else {
 			return Reaction{Action: a, Response: "!", Reward: 0.0}

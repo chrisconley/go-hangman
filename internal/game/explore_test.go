@@ -3,6 +3,8 @@ package game
 import (
 	"testing"
 
+	"github.com/segmentio/fasthash/fnv1a"
+
 	"github.com/chrisconley/go-hangman/test"
 )
 
@@ -52,10 +54,12 @@ func TestExploreReactionsForAction(t *testing.T) {
 
 	expected := NewPossibleWorlds(universeLength)
 	expected.Add(1)
-	test.AssertDeepEqual(responseWorlds["!"], expected, t)
+	responseHash := fnv1a.HashString64("!")
+	test.AssertDeepEqual(responseWorlds[responseHash], expected, t)
 
 	expected = NewPossibleWorlds(universeLength)
 	expected.Add(0)
 	expected.Add(2)
-	test.AssertDeepEqual(responseWorlds["c"], expected, t)
+	responseHash = fnv1a.HashString64("c")
+	test.AssertDeepEqual(responseWorlds[responseHash], expected, t)
 }

@@ -22,6 +22,17 @@ func TestDecide(t *testing.T) {
 	test.AssertDeepEqual(actual, predictions.Get("a"), t)
 }
 
+type sliceTest struct {
+	things []interface{}
+}
+
+// func TestSliceTest(t *testing.T) {
+// 	st := sliceTest{things: make([]interface{}, 2)}
+// 	st.things[0] = "a"
+// 	st.things[1] = 1
+// 	test.AssertDeepEqual(st.things, []string{"a"}, t)
+// }
+
 func TestDecideMostParts(t *testing.T) {
 	predictions := NewPredictions()
 	predictions.AddPrediction("a", Prediction{Action: "a", PartsCount: 1.0})

@@ -205,10 +205,10 @@ func (c *Cache) Write(
 		responseCache[response] = pwHash
 	}
 	theCacheMap.Set(hash, ActionCacheModel{
-		Worlds:        responseCache,
-		Counts:        counts,
-		Rewards:       rewards,
-		ActionMatches: actionMatchesAPossibleWorld,
+		Worlds: responseCache,
+		// Counts:        counts,
+		// Rewards:       rewards,
+		// ActionMatches: actionMatchesAPossibleWorld,
 	})
 }
 

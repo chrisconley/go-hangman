@@ -37,8 +37,8 @@ func Explore(gameplay game.GamePlay, agreement game.Agreement, possibleWorlds ga
 		possibleWorlds,
 		game.BUniverse.Actions,
 	)
-	game.ExploreReactions(gameplay, possibleWorlds, actions, agreement.Act)
-	predictions = game.BBuildPredictions(actions, possibleWorlds)
+	predictions = game.ExploreReactions(gameplay, possibleWorlds, actions, agreement.Act)
+	// predictions = game.BBuildPredictions(actions, possibleWorlds)
 	logPredictions(predictions)
 	return predictions
 }

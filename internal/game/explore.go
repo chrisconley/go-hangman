@@ -6,12 +6,19 @@ import (
 	"github.com/segmentio/fasthash/fnv1a"
 )
 
-func ExploreReactions(gameplay GamePlay, possibleWorlds PossibleWorlds, actions []Action, act Act) {
+func ExploreReactions(
+	gameplay GamePlay,
+	possibleWorlds PossibleWorlds,
+	actions []Action,
+	act Act,
+) Predictions {
 	// If we've already explored the first action,
 	// that means we've explored all actions already and can skip.
 	worldsHash := possibleWorlds.GetHash()
 	hash := BuildActionWorldHash(actions[0], worldsHash)
-	if ok := TheCache.Exists(hash); !ok {
+	predictions := Predictions{PredictionsMap: PredictionsMap{lookup: make(map[uint64]uint32)}}
+	// if ok := TheCache.Exists(hash); !ok {
+	if _, ok := PredictionCache[hash]; !ok {
 		// Only get Indices once to improve performance
 		worldIndices := possibleWorlds.Indices()
 		for _, action := range actions {
@@ -22,6 +29,14 @@ func ExploreReactions(gameplay GamePlay, possibleWorlds PossibleWorlds, actions 
 				action,
 				act,
 			)
+			prediction := Prediction{Action: action}
+			prediction.Reward = rewards.Total() / counts.Total()
+			prediction.Entropy = mth.CalcEntropy(counts.Total(), counts.All())
+			prediction.PartsCount = float64(len(counts.All()))
+			prediction.InversedMax = mth.FindInversedMax(counts.Total(), counts.All())
+			prediction.ActionMatchesAPossibleWorld = actionMatchesAPossibleWorld
+			predictions.AddPrediction(string(action), prediction)
+			PredictionCache[hash] = prediction
 			TheCache.Write(
 				hash,
 				responseWorlds,
@@ -30,7 +45,14 @@ func ExploreReactions(gameplay GamePlay, possibleWorlds PossibleWorlds, actions 
 				actionMatchesAPossibleWorld,
 			)
 		}
+	} else {
+		for _, action := range actions {
+			hash := BuildActionWorldHash(action, worldsHash)
+			predictions.AddPrediction(string(action), PredictionCache[hash])
+		}
+
 	}
+	return predictions
 }
 
 func ExploreReactionsForAction(
@@ -164,20 +186,33 @@ func (m *PredictionsMap) findOrInitializeGroup(group uint64) uint32 {
 	return index
 }
 
+var PredictionsCount uint64
+var PredictionCache = make(map[uint64]Prediction)
+
 func BBuildPredictions(actions []Action, bpw PossibleWorlds) Predictions {
-	predictions := Predictions{PredictionsMap: PredictionsMap{lookup: make(map[uint64]uint32)}}
 	worldsHash := bpw.GetHash()
-	for _, action := range actions {
-		hash := BuildActionWorldHash(action, worldsHash)
-		prediction := Prediction{Action: action}
-		counts := TheCache.GetCounts(hash)
-		rewards := TheCache.GetRewards(hash)
-		prediction.Reward = rewards.Total() / counts.Total()
-		prediction.Entropy = mth.CalcEntropy(counts.Total(), counts.All())
-		prediction.PartsCount = float64(len(counts.All()))
-		prediction.InversedMax = mth.FindInversedMax(counts.Total(), counts.All())
-		prediction.ActionMatchesAPossibleWorld = TheCache.GetActionMatches(hash)
-		predictions.AddPrediction(string(action), prediction)
+	predictions := Predictions{PredictionsMap: PredictionsMap{lookup: make(map[uint64]uint32)}}
+	hash := BuildActionWorldHash(actions[0], worldsHash)
+	if _, ok := PredictionCache[hash]; !ok {
+		for _, action := range actions {
+			hash := BuildActionWorldHash(action, worldsHash)
+			PredictionsCount++
+			prediction := Prediction{Action: action}
+			counts := TheCache.GetCounts(hash)
+			rewards := TheCache.GetRewards(hash)
+			prediction.Reward = rewards.Total() / counts.Total()
+			prediction.Entropy = mth.CalcEntropy(counts.Total(), counts.All())
+			prediction.PartsCount = float64(len(counts.All()))
+			prediction.InversedMax = mth.FindInversedMax(counts.Total(), counts.All())
+			prediction.ActionMatchesAPossibleWorld = TheCache.GetActionMatches(hash)
+			predictions.AddPrediction(string(action), prediction)
+		}
+	} else {
+		for _, action := range actions {
+			hash := BuildActionWorldHash(action, worldsHash)
+			predictions.AddPrediction(string(action), PredictionCache[hash])
+		}
 	}
 	return predictions
+
 }

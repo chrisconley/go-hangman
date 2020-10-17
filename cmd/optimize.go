@@ -65,7 +65,8 @@ func main() {
 		}
 	}
 
-	fmt.Printf("cache size: %d", game.TheCache.Size())
+	fmt.Printf("cache size: %d\n", game.TheCache.Size())
+	fmt.Printf("predictions size: %d", game.PredictionsCount)
 
 	fmt.Printf("Min Total Turns: %d, %+v\n", minTotalTurns, minTotalTurnsMotivation)
 	fmt.Printf("Min Total Pain: %f, %+v\n", minTotalPain, minTotalPainMotivation)

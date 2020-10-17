@@ -195,15 +195,15 @@ func (c *Cache) Write(
 	hash uint64,
 	responseWorlds map[string]PossibleWorlds,
 ) {
-	responseCache := make(map[string]uint64)
-	for response, possibleWorlds := range responseWorlds {
-		pwHash := possibleWorlds.SetHash()
-		if exists := thePWCache.Exists(pwHash); !exists {
-			thePWCache.Set(pwHash, possibleWorlds)
-		}
-		responseCache[response] = pwHash
-	}
 	if exists := theCacheMap.Exists(hash); !exists {
+		responseCache := make(map[string]uint64)
+		for response, possibleWorlds := range responseWorlds {
+			pwHash := possibleWorlds.SetHash()
+			if exists := thePWCache.Exists(pwHash); !exists {
+				thePWCache.Set(pwHash, possibleWorlds)
+			}
+			responseCache[response] = pwHash
+		}
 		theCacheMap.Set(hash, ActionCacheModel{
 			Worlds: responseCache,
 		})

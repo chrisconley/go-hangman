@@ -55,7 +55,7 @@ func (gp *GamePlay) PreviouslyActed(action Action) bool {
 }
 
 type PossibleWorlds struct {
-	Bits     *roaring64.Bitmap
+	Bits     roaring64.Bitmap
 	count    int
 	Capacity int
 	hash     uint64
@@ -89,7 +89,7 @@ func (pw *PossibleWorlds) Indices() []uint64 {
 func NewPossibleWorlds(length int) PossibleWorlds {
 	length64 := uint64(length)
 	pw := PossibleWorlds{}
-	pw.Bits = roaring64.BitmapOf(length64 + 1)
+	pw.Bits = *roaring64.BitmapOf(length64 + 1)
 	pw.count = 0
 	pw.Capacity = length
 	return pw

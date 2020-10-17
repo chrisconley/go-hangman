@@ -39,6 +39,10 @@ func (a Action) Equals(other Action) bool {
 	return a.Hash == other.Hash
 }
 
+func (a Action) MatchesWorld(world World) bool {
+	return a.Hash == world.Hash
+}
+
 func NewAction(actionString string) Action {
 	a := Action{}
 	a.Bytes = []byte(actionString)

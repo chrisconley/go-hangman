@@ -38,9 +38,6 @@ func ExploreReactions(
 			TheCache.Write(
 				hash,
 				responseWorlds,
-				counts,
-				rewards,
-				actionMatchesAPossibleWorld,
 			)
 		}
 		PredictionCache[gameHash] = predictions

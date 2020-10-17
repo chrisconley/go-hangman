@@ -2,7 +2,6 @@ package game
 
 import (
 	"github.com/RoaringBitmap/roaring/roaring64"
-	"github.com/chrisconley/go-hangman/internal/utils"
 	"github.com/segmentio/fasthash/fnv1a"
 )
 
@@ -130,25 +129,25 @@ type pwCache struct {
 }
 
 func (pwc *pwCache) Set(group uint64, value PossibleWorlds) {
-	index := pwc.findOrInitializeGroup(group)
+	index := pwc.initializeGroup(group)
 	pwc.values[index] = value
 }
 
 func (pwc *pwCache) Get(group uint64) PossibleWorlds {
-	index := pwc.findOrInitializeGroup(group)
+	index, _ := pwc.lookup[group]
 	return pwc.values[index]
 }
 
-func (pwc *pwCache) findOrInitializeGroup(group uint64) uint32 {
-	index, ok := pwc.lookup[group]
-	if !ok {
-		pwc.values = append(pwc.values, PossibleWorlds{})
-		pwc.size++
-		pwc.lookup[group] = pwc.size - 1
-		return pwc.size - 1
-	}
-	return index
+func (pwc *pwCache) Exists(group uint64) bool {
+	_, ok := pwc.lookup[group]
+	return ok
+}
 
+func (pwc *pwCache) initializeGroup(group uint64) uint32 {
+	pwc.values = append(pwc.values, PossibleWorlds{})
+	pwc.size++
+	pwc.lookup[group] = pwc.size - 1
+	return pwc.size - 1
 }
 
 type cacheMap struct {
@@ -158,12 +157,12 @@ type cacheMap struct {
 }
 
 func (m *cacheMap) Set(group uint64, value ActionCacheModel) {
-	index := m.findOrInitializeGroup(group)
+	index := m.initializeGroup(group)
 	m.values[index] = value
 }
 
 func (m *cacheMap) Get(group uint64) ActionCacheModel {
-	index := m.findOrInitializeGroup(group)
+	index, _ := m.lookup[group]
 	return m.values[index]
 }
 
@@ -176,22 +175,15 @@ func (m *cacheMap) Size() uint32 {
 	return m.size
 }
 
-func (m *cacheMap) findOrInitializeGroup(group uint64) uint32 {
-	index, ok := m.lookup[group]
-	if !ok {
-		m.values = append(m.values, ActionCacheModel{})
-		m.size++
-		m.lookup[group] = m.size - 1
-		return m.size - 1
-	}
-	return index
+func (m *cacheMap) initializeGroup(group uint64) uint32 {
+	m.values = append(m.values, ActionCacheModel{})
+	m.size++
+	m.lookup[group] = m.size - 1
+	return m.size - 1
 }
 
 type ActionCacheModel struct {
-	Worlds        map[string]uint64
-	Counts        utils.GroupedIncrementer
-	Rewards       utils.GroupedIncrementer
-	ActionMatches bool
+	Worlds map[string]uint64
 }
 
 func (c *Cache) GetNextWorlds(hash uint64, response string) PossibleWorlds {
@@ -202,38 +194,24 @@ func (c *Cache) GetNextWorlds(hash uint64, response string) PossibleWorlds {
 func (c *Cache) Write(
 	hash uint64,
 	responseWorlds map[string]PossibleWorlds,
-	counts utils.GroupedIncrementer,
-	rewards utils.GroupedIncrementer,
-	actionMatchesAPossibleWorld bool,
 ) {
 	responseCache := make(map[string]uint64)
 	for response, possibleWorlds := range responseWorlds {
 		pwHash := possibleWorlds.SetHash()
-		thePWCache.Set(pwHash, possibleWorlds)
+		if exists := thePWCache.Exists(pwHash); !exists {
+			thePWCache.Set(pwHash, possibleWorlds)
+		}
 		responseCache[response] = pwHash
 	}
-	theCacheMap.Set(hash, ActionCacheModel{
-		Worlds: responseCache,
-		// Counts:        counts,
-		// Rewards:       rewards,
-		// ActionMatches: actionMatchesAPossibleWorld,
-	})
+	if exists := theCacheMap.Exists(hash); !exists {
+		theCacheMap.Set(hash, ActionCacheModel{
+			Worlds: responseCache,
+		})
+	}
 }
 
 func (c *Cache) Exists(hash uint64) bool {
 	return theCacheMap.Exists(hash)
-}
-
-func (c *Cache) GetCounts(hash uint64) utils.GroupedIncrementer {
-	return theCacheMap.Get(hash).Counts
-}
-
-func (c *Cache) GetRewards(hash uint64) utils.GroupedIncrementer {
-	return theCacheMap.Get(hash).Rewards
-}
-
-func (c *Cache) GetActionMatches(hash uint64) bool {
-	return theCacheMap.Get(hash).ActionMatches
 }
 
 func (c *Cache) Size() int {

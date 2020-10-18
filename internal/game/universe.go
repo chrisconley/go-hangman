@@ -9,6 +9,11 @@ import (
 type Act func(gp GamePlay, w World, action Action) (reaction Reaction)
 type GetActions func(gp GamePlay, w PossibleWorlds, aa AvailableActions) []Action
 
+type HashedString interface {
+	String() string
+	Hash() uint64
+}
+
 type Response struct {
 	Bytes []byte
 	Hash  uint64
@@ -25,20 +30,28 @@ func (w Response) String() string {
 	return string(w.Bytes)
 }
 
-type World struct {
+type world struct {
 	Bytes []byte
-	Hash  uint64
+	hash  uint64
+}
+
+type World interface {
+	HashedString
 }
 
 func NewWorld(worldString string) World {
-	w := World{}
+	w := world{}
 	w.Bytes = []byte(worldString)
-	w.Hash = fnv1a.HashBytes64(w.Bytes)
+	w.hash = fnv1a.HashBytes64(w.Bytes)
 	return w
 }
 
-func (w World) String() string {
+func (w world) String() string {
 	return string(w.Bytes)
+}
+
+func (w world) Hash() uint64 {
+	return w.hash
 }
 
 type Action struct {
@@ -56,7 +69,7 @@ func (a Action) Equals(other Action) bool {
 }
 
 func (a Action) MatchesWorld(world World) bool {
-	return a.Hash == world.Hash
+	return a.Hash == world.Hash()
 }
 
 func NewAction(actionString string) Action {

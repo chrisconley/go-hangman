@@ -36,7 +36,7 @@ func Act(gameplay game.GamePlay, world game.World, action game.Action) (r game.R
 		return game.Reaction{Action: action, Response: game.NewResponse("!"), Reward: 0.0}
 	}
 
-	actionLength := action.Length
+	actionLength := action.Length()
 	worldString := world.String()
 	actionString := action.String()
 

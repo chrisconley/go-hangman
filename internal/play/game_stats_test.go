@@ -26,19 +26,19 @@ func TestCalculateStats(t *testing.T) {
 
 func TestCalculateStatsReward(t *testing.T) {
 	g1 := game.InitGamePlay()
-	g1.AddTurn(game.Reaction{Reward: 0.0})
-	g1.AddTurn(game.Reaction{Reward: 0.75})
+	g1.AddTurn(game.Reaction{Action: game.NewAction("a"), Reward: 0.0})
+	g1.AddTurn(game.Reaction{Action: game.NewAction("a"), Reward: 0.75})
 
 	g2 := game.InitGamePlay()
-	g2.AddTurn(game.Reaction{Reward: 1.0})
+	g2.AddTurn(game.Reaction{Action: game.NewAction("a"), Reward: 1.0})
 
 	g3 := game.InitGamePlay()
-	g3.AddTurn(game.Reaction{Reward: 0.0})
+	g3.AddTurn(game.Reaction{Action: game.NewAction("a"), Reward: 0.0})
 
 	g4 := game.InitGamePlay()
-	g4.AddTurn(game.Reaction{Reward: 0.0})
-	g4.AddTurn(game.Reaction{Reward: 0.333333})
-	g4.AddTurn(game.Reaction{Reward: 1.0})
+	g4.AddTurn(game.Reaction{Action: game.NewAction("a"), Reward: 0.0})
+	g4.AddTurn(game.Reaction{Action: game.NewAction("a"), Reward: 0.333333})
+	g4.AddTurn(game.Reaction{Action: game.NewAction("a"), Reward: 1.0})
 
 	games := []game.GamePlay{g1, g2, g3, g4}
 	stats := CalculateStats(games)

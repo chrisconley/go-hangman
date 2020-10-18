@@ -76,7 +76,7 @@ func ExploreReactionsForAction(
 		worlds.Add(worldIndex)
 		responseWorlds[responseHash] = worlds
 
-		if action.MatchesWorld(world) {
+		if action.Matches(world) {
 			actionMatchesPossibleWorld = true
 		}
 
@@ -178,5 +178,3 @@ func (m *PredictionsMap) findOrInitializeGroup(group uint64) uint32 {
 	}
 	return index
 }
-
-var PredictionCache = make(map[uint64]Predictions)

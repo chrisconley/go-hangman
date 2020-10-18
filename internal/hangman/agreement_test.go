@@ -39,7 +39,7 @@ func TestGetActions(t *testing.T) {
 		remainingWorlds.Add(uint64(index))
 	}
 	gp = game.InitGamePlay()
-	gp.AddTurn(game.Reaction{Action: game.NewAction("b")})
+	gp.AddTurn(game.NewReaction(game.NewAction("b"), "-", 0.0))
 	actions = GetActions(gp, remainingWorlds, aa)
 	test.AssertDeepEqual(actions, game.BuildActions("a", "c"), t)
 
@@ -50,7 +50,7 @@ func TestGetActions(t *testing.T) {
 		remainingWorlds.Add(uint64(index))
 	}
 	gp = game.InitGamePlay()
-	gp.AddTurn(game.Reaction{Action: game.NewAction("bb")})
+	gp.AddTurn(game.NewReaction(game.NewAction("bb"), "-", 0.0))
 	actions = GetActions(gp, remainingWorlds, aa)
 	test.AssertDeepEqual(actions, game.BuildActions("a", "b", "c", "aa"), t)
 }

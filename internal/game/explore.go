@@ -14,14 +14,15 @@ func ExploreReactions(
 ) Predictions {
 	// If we've already explored the first action,
 	// that means we've explored all actions already and can skip.
-	worldsHash := possibleWorlds.GetHash()
-	gameHash := fnv1a.AddUint64(worldsHash, gameplay.Hash)
+	// worldsHash := possibleWorlds.GetHash()
+	// gameHash := fnv1a.AddUint64(worldsHash, gameplay.Hash)
+	gameHash := gameplay.Hash
 	if _, ok := PredictionCache[gameHash]; !ok {
 		predictions := Predictions{PredictionsMap: PredictionsMap{lookup: make(map[uint64]uint32)}}
 		// Only get Indices once to improve performance
 		worldIndices := possibleWorlds.Indices()
 		for _, action := range actions {
-			hash := BuildActionWorldHash(action, worldsHash)
+			hash := BuildActionWorldHash(action, gameHash)
 			actionMatchesAPossibleWorld, counts, rewards, responseWorlds := ExploreReactionsForAction(
 				gameplay,
 				worldIndices,

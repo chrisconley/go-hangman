@@ -16,6 +16,14 @@ type Reaction struct {
 	Reward   float64
 }
 
+func NewReaction(action Action, responseString string, reward float64) Reaction {
+	return Reaction{
+		Action:   action,
+		Response: NewResponse(responseString),
+		Reward:   reward,
+	}
+}
+
 type GamePlay struct {
 	Reactions   []Reaction
 	TurnCount   int
@@ -35,7 +43,8 @@ func (gp *GamePlay) AddTurn(reaction Reaction) {
 	gp.TurnCount++
 	gp.TotalReward += reaction.Reward
 	gp.TotalPain += 1.0 - reaction.Reward
-	gp.Hash = fnv1a.AddBytes64(gp.Hash, reaction.Action.Bytes())
+	gp.Hash = fnv1a.AddUint64(gp.Hash, reaction.Action.Hash())
+	gp.Hash = fnv1a.AddUint64(gp.Hash, reaction.Response.Hash())
 }
 
 func (gp *GamePlay) PreviouslyActed(action Action) bool {

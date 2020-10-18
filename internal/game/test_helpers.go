@@ -13,9 +13,9 @@ func BuildActions(strings ...string) []Action {
 func BuildTestAct(reward float64) func(GamePlay, World, Action) Reaction {
 	return func(gp GamePlay, w World, a Action) (r Reaction) {
 		if strings.Contains(w.String(), a.String()) {
-			return Reaction{Action: a, Response: NewResponse(a.String()), Reward: reward}
+			return NewReaction(a, a.String(), reward)
 		} else {
-			return Reaction{Action: a, Response: NewResponse("!"), Reward: 0.0}
+			return NewReaction(a, "!", 0.0)
 		}
 	}
 }

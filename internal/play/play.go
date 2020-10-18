@@ -55,8 +55,8 @@ func Act(gameplay game.GamePlay, action game.Action, act game.Act, truth game.Wo
 	return reaction
 }
 
-func Observe(action game.Action, reaction game.Reaction, possibleWorlds game.PossibleWorlds) game.PossibleWorlds {
-	hash := game.BuildActionWorldHash(action, possibleWorlds.GetHash())
+func Observe(gameplay game.GamePlay, reaction game.Reaction, possibleWorlds game.PossibleWorlds) game.PossibleWorlds {
+	hash := game.BuildActionWorldHash(reaction.Action, gameplay.Hash)
 	response := reaction.Response.String()
 	return game.TheCache.GetNextWorlds(hash, response)
 }
@@ -110,7 +110,7 @@ func playTurn(
 	predictions := Explore(gameplay, perspective.Agreement, possibleWorlds)
 	action := Decide(predictions, perspective.Motivation)
 	reaction := Act(gameplay, action, perspective.Agreement.Act, truth)
-	possibleWorlds = Observe(action, reaction, possibleWorlds)
+	possibleWorlds = Observe(gameplay, reaction, possibleWorlds)
 	return reaction, possibleWorlds
 }
 

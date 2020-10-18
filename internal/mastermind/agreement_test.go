@@ -38,7 +38,7 @@ func TestGetActions(t *testing.T) {
 		remainingWorlds.Add(uint64(index))
 	}
 	gp = game.InitGamePlay()
-	gp.AddTurn(game.Reaction{Action: game.NewAction("aa")})
+	gp.AddTurn(game.NewReaction(game.NewAction("aa"), "-", 0.0))
 	actions = GetActions(gp, remainingWorlds, aa)
 	test.AssertDeepEqual(actions, game.BuildActions("bb"), t)
 }

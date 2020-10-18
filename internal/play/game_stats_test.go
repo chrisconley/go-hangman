@@ -34,17 +34,17 @@ func buildTestReaction(reward float64) game.Reaction {
 }
 
 func TestCalculateStatsReward(t *testing.T) {
-	g1 := game.InitGamePlay()
+	g1 := game.InitGamePlay(0.0)
 	g1.AddTurn(buildTestReaction(0.0))
 	g1.AddTurn(buildTestReaction(0.75))
 
-	g2 := game.InitGamePlay()
+	g2 := game.InitGamePlay(0.0)
 	g2.AddTurn(buildTestReaction(1.0))
 
-	g3 := game.InitGamePlay()
+	g3 := game.InitGamePlay(0.0)
 	g3.AddTurn(buildTestReaction(0.0))
 
-	g4 := game.InitGamePlay()
+	g4 := game.InitGamePlay(0.0)
 	g4.AddTurn(buildTestReaction(0.0))
 	g4.AddTurn(buildTestReaction(0.333333))
 	g4.AddTurn(buildTestReaction(1.0))

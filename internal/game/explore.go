@@ -12,10 +12,6 @@ func ExploreReactions(
 	actions []Action,
 	act Act,
 ) Predictions {
-	// If we've already explored the first action,
-	// that means we've explored all actions already and can skip.
-	// worldsHash := possibleWorlds.GetHash()
-	// gameHash := fnv1a.AddUint64(worldsHash, gameplay.Hash)
 	gameHash := gameplay.Hash
 	if _, ok := PredictionCache[gameHash]; !ok {
 		predictions := Predictions{PredictionsMap: PredictionsMap{lookup: make(map[uint64]uint32)}}

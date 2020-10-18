@@ -18,7 +18,7 @@ func TestBuildPredictions(t *testing.T) {
 		NewAction("c"),
 	}
 
-	actual := ExploreReactions(InitGamePlay(), pw, actions, BuildTestAct(1.0))
+	actual := ExploreReactions(InitGamePlay(0.0), pw, actions, BuildTestAct(1.0))
 
 	test.AssertAlmostEqual(actual.GetEntropy("a"), 0.9183, 4, t)
 	test.AssertAlmostEqual(actual.GetEntropy("b"), 0.0000, 4, t)
@@ -44,7 +44,7 @@ func TestExploreReactionsForAction(t *testing.T) {
 	pw := BUniverse.PossibleWorlds
 
 	_, counts, rewards, responseWorlds := ExploreReactionsForAction(
-		InitGamePlay(),
+		InitGamePlay(0.0),
 		pw.Indices(),
 		NewAction("c"),
 		BuildTestAct(0.222),

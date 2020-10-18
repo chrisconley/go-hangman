@@ -13,7 +13,7 @@ import (
 
 func TestAct(t *testing.T) {
 	truth := game.NewWorld("abc")
-	actual := Act(game.InitGamePlay(), game.NewAction("a"), game.BuildTestAct(0.222), truth)
+	actual := Act(game.InitGamePlay(0.0), game.NewAction("a"), game.BuildTestAct(0.222), truth)
 	test.AssertDeepEqual(
 		actual,
 		game.Reaction{

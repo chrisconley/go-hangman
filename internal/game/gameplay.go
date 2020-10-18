@@ -32,9 +32,10 @@ type GamePlay struct {
 	Hash        uint64
 }
 
-func InitGamePlay() GamePlay {
+func InitGamePlay(possibleWorldsId uint64) GamePlay {
 	gp := GamePlay{}
 	gp.Hash = fnv1a.Init64
+	gp.Hash = fnv1a.AddUint64(gp.Hash, possibleWorldsId)
 	return gp
 }
 

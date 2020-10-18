@@ -76,16 +76,22 @@ func (m *cacheMap) initializeGroup(group uint64) uint32 {
 
 type Cache struct{}
 
-func (c *Cache) GetNextWorlds(hash uint64, response string) PossibleWorlds {
-	responseHash := fnv1a.HashString64(response)
-	pwHash := theCacheMap.Get(hash).Worlds[responseHash]
+func (c *Cache) GetNextWorlds(gamePlayHash uint64, actionHash uint64, responseHash uint64) PossibleWorlds {
+	gameActionHash := BuildGameActionHash(gamePlayHash, actionHash)
+	pwHash := theCacheMap.Get(gameActionHash).Worlds[responseHash]
 	return thePWCache.Get(pwHash)
 }
 
+func BuildGameActionHash(gamePlayHash uint64, actionHash uint64) uint64 {
+	return fnv1a.AddUint64(gamePlayHash, actionHash)
+}
+
 func (c *Cache) Write(
-	hash uint64,
+	gamePlayHash uint64,
+	actionHash uint64,
 	responseWorlds map[uint64]PossibleWorlds,
 ) {
+	hash := BuildGameActionHash(gamePlayHash, actionHash)
 	if exists := theCacheMap.Exists(hash); !exists {
 		responseCache := make(map[uint64]uint64)
 		for responseHash, possibleWorlds := range responseWorlds {

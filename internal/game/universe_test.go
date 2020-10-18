@@ -20,26 +20,6 @@ func TestPossibleWorldsGetHash(t *testing.T) {
 	test.AssertDeepNotEqual(pw1.GetHash(), pw2.GetHash(), t)
 }
 
-func TestHashingConflicts(t *testing.T) {
-	pw1 := NewPossibleWorlds(25011)
-	pw1.Add(uint64(617))
-	pw1.Add(uint64(618))
-	pw1.SetHash()
-
-	pw2 := NewPossibleWorlds(25011)
-	pw2.Add(uint64(809))
-	pw2.Add(uint64(810))
-	pw2.SetHash()
-
-	action := NewAction("t")
-
-	test.AssertDeepNotEqual(
-		BuildActionWorldHash(action, pw1.GetHash()),
-		BuildActionWorldHash(action, pw2.GetHash()),
-		t,
-	)
-}
-
 func TestAvailableActions(t *testing.T) {
 	universe := InitUniverse([]string{"aa", "bb"})
 	actual := universe.Actions.AllActions()

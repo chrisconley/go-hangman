@@ -18,13 +18,13 @@ func ExploreReactions(
 		// Only get Indices once to improve performance
 		worldIndices := possibleWorlds.Indices()
 		for _, action := range actions {
-			hash := BuildActionWorldHash(action, gameHash)
 			actionMatchesAPossibleWorld, counts, rewards, responseWorlds := ExploreReactionsForAction(
 				gameplay,
 				worldIndices,
 				action,
 				act,
 			)
+
 			prediction := Prediction{Action: action}
 			prediction.Reward = rewards.Total() / counts.Total()
 			prediction.Entropy = mth.CalcEntropy(counts.Total(), counts.All())
@@ -32,8 +32,10 @@ func ExploreReactions(
 			prediction.InversedMax = mth.FindInversedMax(counts.Total(), counts.All())
 			prediction.ActionMatchesAPossibleWorld = actionMatchesAPossibleWorld
 			predictions.AddPrediction(action.String(), prediction)
+
 			TheCache.Write(
-				hash,
+				gameHash,
+				action.Hash(),
 				responseWorlds,
 			)
 		}

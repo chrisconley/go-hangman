@@ -46,12 +46,6 @@ func NewPossibleWorlds(length int) PossibleWorlds {
 	return pw
 }
 
-func BuildActionWorldHash(action Action, worldsHash uint64) uint64 {
-	worldsHash = fnv1a.AddBytes64(worldsHash, action.Bytes())
-	return worldsHash
-
-}
-
 type Universe struct {
 	Worlds         []World
 	WorldLength    int

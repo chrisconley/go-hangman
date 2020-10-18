@@ -5,9 +5,25 @@ import (
 	"github.com/segmentio/fasthash/fnv1a"
 )
 
-type Response string
+// type Response string
 type Act func(gp GamePlay, w World, action Action) (reaction Reaction)
 type GetActions func(gp GamePlay, w PossibleWorlds, aa AvailableActions) []Action
+
+type Response struct {
+	Bytes []byte
+	Hash  uint64
+}
+
+func NewResponse(responseString string) Response {
+	w := Response{}
+	w.Bytes = []byte(responseString)
+	w.Hash = fnv1a.HashBytes64(w.Bytes)
+	return w
+}
+
+func (w Response) String() string {
+	return string(w.Bytes)
+}
 
 type World struct {
 	Bytes []byte

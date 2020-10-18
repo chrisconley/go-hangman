@@ -57,31 +57,31 @@ func TestGetActions(t *testing.T) {
 
 func TestAct(t *testing.T) {
 	reaction := Act(game.InitGamePlay(), game.NewWorld("abc"), game.NewAction("a"))
-	test.AssertDeepEqual(reaction.Response, game.Response("a--"), t)
+	test.AssertDeepEqual(reaction.Response, game.NewResponse("a--"), t)
 	test.AssertDeepEqual(reaction.Reward, 1.0, t)
 
 	reaction = Act(game.InitGamePlay(), game.NewWorld("abc"), game.NewAction("b"))
-	test.AssertDeepEqual(reaction.Response, game.Response("-b-"), t)
+	test.AssertDeepEqual(reaction.Response, game.NewResponse("-b-"), t)
 	test.AssertDeepEqual(reaction.Reward, 1.0, t)
 
 	reaction = Act(game.InitGamePlay(), game.NewWorld("abc"), game.NewAction("c"))
-	test.AssertDeepEqual(reaction.Response, game.Response("--c"), t)
+	test.AssertDeepEqual(reaction.Response, game.NewResponse("--c"), t)
 	test.AssertDeepEqual(reaction.Reward, 1.0, t)
 
 	reaction = Act(game.InitGamePlay(), game.NewWorld("aaebaacdaa"), game.NewAction("a"))
-	test.AssertDeepEqual(reaction.Response, game.Response("aa--aa--aa"), t)
+	test.AssertDeepEqual(reaction.Response, game.NewResponse("aa--aa--aa"), t)
 	test.AssertDeepEqual(reaction.Reward, 1.0, t)
 
 	reaction = Act(game.InitGamePlay(), game.NewWorld("abc"), game.NewAction("abc"))
-	test.AssertDeepEqual(reaction.Response, game.Response("abc"), t)
+	test.AssertDeepEqual(reaction.Response, game.NewResponse("abc"), t)
 	test.AssertDeepEqual(reaction.Reward, 1.0, t)
 
 	reaction = Act(game.InitGamePlay(), game.NewWorld("abc"), game.NewAction("x"))
-	test.AssertDeepEqual(reaction.Response, game.Response("!"), t)
+	test.AssertDeepEqual(reaction.Response, game.NewResponse("!"), t)
 	test.AssertDeepEqual(reaction.Reward, 0.0, t)
 
 	reaction = Act(game.InitGamePlay(), game.NewWorld("abc"), game.NewAction("aaa"))
-	test.AssertDeepEqual(reaction.Response, game.Response("!"), t)
+	test.AssertDeepEqual(reaction.Response, game.NewResponse("!"), t)
 	test.AssertDeepEqual(reaction.Reward, 0.0, t)
 }
 

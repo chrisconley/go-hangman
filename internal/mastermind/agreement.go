@@ -78,7 +78,7 @@ func Act(gameplay game.GamePlay, world game.World, action game.Action) (r game.R
 	if response == "" {
 		response = "!"
 	}
-	return game.Reaction{Action: action, Response: game.Response(response), Reward: reward}
+	return game.Reaction{Action: action, Response: game.NewResponse(response), Reward: reward}
 }
 
 var Agreement = game.Agreement{

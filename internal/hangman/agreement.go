@@ -33,7 +33,7 @@ func GetActions(gameplay game.GamePlay, remainingWorlds game.PossibleWorlds, aa 
 func Act(gameplay game.GamePlay, world game.World, action game.Action) (r game.Reaction) {
 	if gameplay.PreviouslyActed(action) {
 		// panic("This action is not allowed because it has already been used")
-		return game.Reaction{Action: action, Response: game.Response("!"), Reward: 0.0}
+		return game.Reaction{Action: action, Response: game.NewResponse("!"), Reward: 0.0}
 	}
 
 	actionLength := action.Length
@@ -41,15 +41,15 @@ func Act(gameplay game.GamePlay, world game.World, action game.Action) (r game.R
 	actionString := action.String()
 
 	if actionLength > 1 && actionString == worldString {
-		return game.Reaction{Action: action, Response: game.Response(world.String()), Reward: 1.0}
+		return game.Reaction{Action: action, Response: game.NewResponse(world.String()), Reward: 1.0}
 	} else if actionLength > 1 && actionString != worldString {
-		return game.Reaction{Action: action, Response: game.Response("!"), Reward: 0.0}
+		return game.Reaction{Action: action, Response: game.NewResponse("!"), Reward: 0.0}
 	} else {
 		hasMatch, replacement := replaceNonMatches(actionString, "-", worldString)
 		if hasMatch {
-			return game.Reaction{Action: action, Response: game.Response(replacement), Reward: 1.0}
+			return game.Reaction{Action: action, Response: game.NewResponse(replacement), Reward: 1.0}
 		} else {
-			return game.Reaction{Action: action, Response: game.Response("!"), Reward: 0.0}
+			return game.Reaction{Action: action, Response: game.NewResponse("!"), Reward: 0.0}
 		}
 
 	}

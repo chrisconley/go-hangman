@@ -2,13 +2,40 @@ package game
 
 import "github.com/segmentio/fasthash/fnv1a"
 
-var PredictionCache = make(map[uint64]Predictions)
+var PredictionCache = predictionCache{lookup: make(map[uint64]uint32)}
 
-var TheCache = Cache{}
+var TheCache = Cache{
+	CacheMap: cacheMap{lookup: make(map[uint64]uint64, 1000000)},
+	PWCache:  pwCache{lookup: make(map[uint64]uint32)},
+}
 
-var theCacheMap = cacheMap{lookup: make(map[uint64]uint64, 1000000)}
+type predictionCache struct {
+	values []Predictions
+	size   uint32
+	lookup map[uint64]uint32
+}
 
-var thePWCache = pwCache{lookup: make(map[uint64]uint32)}
+func (pc *predictionCache) Set(group uint64, value Predictions) {
+	index := pc.initializeGroup(group)
+	pc.values[index] = value
+}
+
+func (pc *predictionCache) Get(group uint64) Predictions {
+	index, _ := pc.lookup[group]
+	return pc.values[index]
+}
+
+func (pc *predictionCache) Exists(group uint64) bool {
+	_, ok := pc.lookup[group]
+	return ok
+}
+
+func (pc *predictionCache) initializeGroup(group uint64) uint32 {
+	pc.values = append(pc.values, Predictions{})
+	pc.size++
+	pc.lookup[group] = pc.size - 1
+	return pc.size - 1
+}
 
 type pwCache struct {
 	values []PossibleWorlds
@@ -21,12 +48,12 @@ func (pwc *pwCache) Set(group uint64, value PossibleWorlds) {
 	pwc.values[index] = value
 }
 
-func (pwc *pwCache) Get(group uint64) PossibleWorlds {
+func (pwc pwCache) Get(group uint64) PossibleWorlds {
 	index, _ := pwc.lookup[group]
 	return pwc.values[index]
 }
 
-func (pwc *pwCache) Exists(group uint64) bool {
+func (pwc pwCache) Exists(group uint64) bool {
 	_, ok := pwc.lookup[group]
 	return ok
 }
@@ -37,14 +64,6 @@ func (pwc *pwCache) initializeGroup(group uint64) uint32 {
 	pwc.lookup[group] = pwc.size - 1
 	return pwc.size - 1
 }
-
-type Hash interface{}
-type hash uint64
-
-type GameActionHash interface {
-	Hash
-}
-type gameActionHash hash
 
 type cacheMap struct {
 	size   uint32
@@ -57,27 +76,30 @@ func (m *cacheMap) Set(group, responseHash, value uint64) {
 	m.lookup[hash] = value
 }
 
-func (m *cacheMap) Get(group, responseHash uint64) uint64 {
+func (m cacheMap) Get(group, responseHash uint64) uint64 {
 	hash := fnv1a.AddUint64(group, responseHash)
 	return m.lookup[hash]
 }
 
-func (m *cacheMap) Exists(group, responseHash uint64) bool {
+func (m cacheMap) Exists(group, responseHash uint64) bool {
 	hash := fnv1a.AddUint64(group, responseHash)
 	_, ok := m.lookup[hash]
 	return ok
 }
 
-func (m *cacheMap) Size() uint32 {
+func (m cacheMap) Size() uint32 {
 	return m.size
 }
 
-type Cache struct{}
+type Cache struct {
+	CacheMap cacheMap
+	PWCache  pwCache
+}
 
-func (c *Cache) GetNextWorlds(gamePlayHash uint64, actionHash uint64, responseHash uint64) PossibleWorlds {
+func (c Cache) GetNextWorlds(gamePlayHash uint64, actionHash uint64, responseHash uint64) PossibleWorlds {
 	gameActionHash := BuildGameActionHash(gamePlayHash, actionHash)
-	pwHash := theCacheMap.Get(gameActionHash, responseHash)
-	return thePWCache.Get(pwHash)
+	pwHash := c.CacheMap.Get(gameActionHash, responseHash)
+	return c.PWCache.Get(pwHash)
 }
 
 func BuildGameActionHash(gamePlayHash uint64, actionHash uint64) uint64 {
@@ -90,23 +112,23 @@ func (c *Cache) Write(
 	responseWorlds map[uint64]PossibleWorlds,
 ) {
 	hash := BuildGameActionHash(gamePlayHash, actionHash)
-	if exists := theCacheMap.Exists(hash, hash); !exists {
+	if exists := c.CacheMap.Exists(hash, hash); !exists {
 		for responseHash, possibleWorlds := range responseWorlds {
 			pwHash := possibleWorlds.SetHash()
-			if exists := thePWCache.Exists(pwHash); !exists {
-				thePWCache.Set(pwHash, possibleWorlds)
+			if exists := c.PWCache.Exists(pwHash); !exists {
+				c.PWCache.Set(pwHash, possibleWorlds)
 			}
-			theCacheMap.Set(hash, responseHash, pwHash)
+			c.CacheMap.Set(hash, responseHash, pwHash)
 		}
 		// Hack to cache the fact that we've cached responses for this gameAction hash before
-		theCacheMap.Set(hash, hash, 0)
+		c.CacheMap.Set(hash, hash, 0)
 	}
 }
 
-func (c *Cache) Exists(group, responseHash uint64) bool {
-	return theCacheMap.Exists(group, responseHash)
+func (c Cache) Exists(group, responseHash uint64) bool {
+	return c.CacheMap.Exists(group, responseHash)
 }
 
-func (c *Cache) Size() int {
-	return int(theCacheMap.Size())
+func (c Cache) Size() int {
+	return int(c.CacheMap.Size())
 }

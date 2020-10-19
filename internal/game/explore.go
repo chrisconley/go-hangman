@@ -13,7 +13,7 @@ func ExploreReactions(
 	act Act,
 ) Predictions {
 	gameHash := gameplay.Hash
-	if _, ok := PredictionCache[gameHash]; !ok {
+	if ok := PredictionCache.Exists(gameHash); !ok {
 		predictions := Predictions{PredictionsMap: PredictionsMap{lookup: make(map[uint64]uint32)}}
 		// Only get Indices once to improve performance
 		worldIndices := possibleWorlds.Indices()
@@ -39,10 +39,10 @@ func ExploreReactions(
 				responseWorlds,
 			)
 		}
-		PredictionCache[gameHash] = predictions
+		PredictionCache.Set(gameHash, predictions)
 		return predictions
 	}
-	return PredictionCache[gameHash]
+	return PredictionCache.Get(gameHash)
 
 }
 

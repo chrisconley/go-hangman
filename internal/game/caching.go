@@ -6,7 +6,7 @@ var PredictionCache = make(map[uint64]Predictions)
 
 var TheCache = Cache{}
 
-var theCacheMap = cacheMap{lookup: make(map[GameActionHash]uint32)}
+var theCacheMap = cacheMap{lookup: make(map[GameActionHash]map[uint64]uint64)}
 
 var thePWCache = pwCache{lookup: make(map[uint64]uint32)}
 
@@ -46,24 +46,19 @@ type GameActionHash interface {
 }
 type gameActionHash hash
 
-type ActionCacheModel struct {
-	Worlds map[uint64]uint64
-}
-
 type cacheMap struct {
-	values []ActionCacheModel
 	size   uint32
-	lookup map[GameActionHash]uint32
+	lookup map[GameActionHash]map[uint64]uint64
 }
 
-func (m *cacheMap) Set(group GameActionHash, value ActionCacheModel) {
-	index := m.initializeGroup(group)
-	m.values[index] = value
+func (m *cacheMap) Set(group GameActionHash, value map[uint64]uint64) {
+	m.size++
+	m.lookup[group] = value
 }
 
-func (m *cacheMap) Get(group GameActionHash) ActionCacheModel {
-	index, _ := m.lookup[group]
-	return m.values[index]
+func (m *cacheMap) Get(group GameActionHash) map[uint64]uint64 {
+	responses := m.lookup[group]
+	return responses
 }
 
 func (m *cacheMap) Exists(group GameActionHash) bool {
@@ -75,18 +70,11 @@ func (m *cacheMap) Size() uint32 {
 	return m.size
 }
 
-func (m *cacheMap) initializeGroup(group GameActionHash) uint32 {
-	m.values = append(m.values, ActionCacheModel{})
-	m.size++
-	m.lookup[group] = m.size - 1
-	return m.size - 1
-}
-
 type Cache struct{}
 
 func (c *Cache) GetNextWorlds(gamePlayHash uint64, actionHash uint64, responseHash uint64) PossibleWorlds {
 	gameActionHash := BuildGameActionHash(gamePlayHash, actionHash)
-	pwHash := theCacheMap.Get(gameActionHash).Worlds[responseHash]
+	pwHash := theCacheMap.Get(gameActionHash)[responseHash]
 	return thePWCache.Get(pwHash)
 }
 
@@ -109,9 +97,7 @@ func (c *Cache) Write(
 			}
 			responseCache[responseHash] = pwHash
 		}
-		theCacheMap.Set(hash, ActionCacheModel{
-			Worlds: responseCache,
-		})
+		theCacheMap.Set(hash, responseCache)
 	}
 }
 

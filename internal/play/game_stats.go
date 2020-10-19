@@ -11,12 +11,14 @@ type Stats struct {
 	AverageReward float64
 	TotalPain     float64
 	AveragePain   float64
+	TurnCounts    []int
 }
 
 func CalculateStats(games []game.GamePlay) Stats {
 	stats := Stats{}
 	stats.GameCount = len(games)
 	for _, gameplay := range games {
+		stats.TurnCounts = append(stats.TurnCounts, gameplay.TurnCount)
 		stats.TotalTurns = stats.TotalTurns + gameplay.TurnCount
 		stats.TotalReward += gameplay.TotalReward
 		stats.TotalPain += gameplay.TotalPain

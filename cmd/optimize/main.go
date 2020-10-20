@@ -31,12 +31,12 @@ func TryTry(motivation game.Motivation, lines []string) play.Stats {
 }
 
 func main() {
-	lines := utils.ReadLinesFromFilePath("./fixtures/mastermind-ABCDEFG-4.txt")
-	// lines := utils.ReadLinesFromFilePath("./fixtures/commercial-mastermind.txt")
+	// lines := utils.ReadLinesFromFilePath("./fixtures/mastermind-ABCDEFG-4.txt")
+	lines := utils.ReadLinesFromFilePath("./fixtures/commercial-mastermind.txt")
 	// lines := utils.ReadLinesFromFilePath("./fixtures/nine-letter-words.txt")
 	// lines = lines[:10000]
 	game.BUniverse = game.InitUniverse(lines)
-	trials := play.BuildTrials(0.0, 1.0, 0.05, 3)
+	trials := play.BuildTrials(0.0, 1.0, 0.5, 4)
 	fmt.Println("Number of trials: ", len(trials))
 	// defer profile.Start(
 	// 	// profile.memprofile,
@@ -56,7 +56,7 @@ func main() {
 			}
 		}
 		motivation := game.Motivation{
-			Reward:    0.0,
+			Reward:    trial[3],
 			Entropy:   trial[0],
 			MiniMax:   trial[1],
 			MostParts: trial[2],

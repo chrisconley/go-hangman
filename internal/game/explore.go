@@ -1,6 +1,10 @@
 package game
 
 import (
+	"bytes"
+	"encoding/binary"
+	"fmt"
+
 	"github.com/chrisconley/go-hangman/internal/mth"
 	"github.com/chrisconley/go-hangman/internal/utils"
 	"github.com/segmentio/fasthash/fnv1a"
@@ -83,10 +87,6 @@ func ExploreReactionsForAction(
 	return actionMatchesPossibleWorld, counts, rewards, responseWorlds
 }
 
-type Predictions struct {
-	PredictionsMap PredictionsMap
-}
-
 type Prediction struct {
 	Action                      Action
 	Reward                      float64
@@ -94,6 +94,48 @@ type Prediction struct {
 	InversedMax                 float64
 	PartsCount                  float64
 	ActionMatchesAPossibleWorld bool
+}
+
+func (p Prediction) ToBytes() []byte {
+	buffer := bytes.Buffer{}
+	binary.Write(&buffer, binary.LittleEndian, p.Reward)
+	binary.Write(&buffer, binary.LittleEndian, p.Entropy)
+	binary.Write(&buffer, binary.LittleEndian, p.InversedMax)
+	binary.Write(&buffer, binary.LittleEndian, p.PartsCount)
+	binary.Write(&buffer, binary.LittleEndian, p.ActionMatchesAPossibleWorld)
+
+	buffer.Write(p.Action.Bytes())
+	return buffer.Bytes()
+}
+
+func NewPredictionFromBytes(data []byte) Prediction {
+	buffer := bytes.NewBuffer(data[:33])
+	var reward float64
+	var entropy float64
+	var inversedMax float64
+	var partsCount float64
+	var actionMatches bool
+	binary.Read(buffer, binary.LittleEndian, &reward)
+	binary.Read(buffer, binary.LittleEndian, &entropy)
+	binary.Read(buffer, binary.LittleEndian, &inversedMax)
+	binary.Read(buffer, binary.LittleEndian, &partsCount)
+	binary.Read(buffer, binary.LittleEndian, &actionMatches)
+
+	action := NewActionFromBytes(data[33:])
+
+	return Prediction{
+		Action:                      action,
+		Reward:                      reward,
+		Entropy:                     entropy,
+		InversedMax:                 inversedMax,
+		PartsCount:                  partsCount,
+		ActionMatchesAPossibleWorld: actionMatches,
+	}
+
+}
+
+type Predictions struct {
+	PredictionsMap PredictionsMap
 }
 
 func (p Predictions) Get(action string) Prediction {
@@ -136,9 +178,48 @@ func (p *Predictions) Size() int {
 	return int(p.PredictionsMap.Size())
 }
 
+func (p *Predictions) ToBytes() []byte {
+	buffer := bytes.Buffer{}
+	var dataLength uint32
+
+	binary.Write(&buffer, binary.LittleEndian, uint32(p.Size()))
+	for _, prediction := range p.PredictionsMap.Values {
+		data := prediction.ToBytes()
+		dataLength = uint32(len(data))
+		fmt.Println("Writing predictionDataLength: ", dataLength)
+		binary.Write(&buffer, binary.LittleEndian, dataLength)
+		buffer.Write(prediction.ToBytes())
+	}
+	return buffer.Bytes()
+}
+
 func NewPredictions() Predictions {
 	p := Predictions{}
 	p.PredictionsMap = PredictionsMap{lookup: make(map[uint64]uint32)}
+
+	return p
+}
+
+func NewPredictionsFromBytes(data []byte) Predictions {
+	p := NewPredictions()
+	pointer := 0
+	int32Size := 4
+	var size uint32
+	var predictionDataLength uint32
+
+	size = binary.LittleEndian.Uint32(data[pointer : pointer+int32Size])
+	pointer += int32Size
+
+	for i := 0; i < int(size); i++ {
+		predictionDataLength = binary.LittleEndian.Uint32(data[pointer : pointer+int32Size])
+		pointer += int32Size
+
+		predictionData := data[pointer : pointer+int(predictionDataLength)]
+		pointer += int(predictionDataLength)
+
+		prediction := NewPredictionFromBytes(predictionData)
+		p.AddPrediction(prediction.Action.String(), prediction)
+	}
 	return p
 }
 

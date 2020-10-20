@@ -26,6 +26,16 @@ func TestAction(t *testing.T) {
 	test.AssertDeepEqual(action.Matches(NewAction("h")), false, t)
 }
 
+func TestActionMarshalling(t *testing.T) {
+	action := NewActionFromBytes([]byte("hi"))
+	test.AssertDeepEqual(action.String(), "hi", t)
+	test.AssertDeepEqual(action.Length(), 2, t)
+	test.AssertDeepEqual(action.Bytes(), []byte("hi"), t)
+	test.AssertDeepEqual(action.Hash(), uint64(628919584683901914), t)
+	test.AssertDeepEqual(action.Matches(NewAction("hi")), true, t)
+	test.AssertDeepEqual(action.Matches(NewAction("h")), false, t)
+}
+
 func TestResponse(t *testing.T) {
 	response := NewResponse("hi")
 	test.AssertDeepEqual(response.String(), "hi", t)

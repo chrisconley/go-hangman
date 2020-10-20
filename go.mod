@@ -2,6 +2,7 @@ module github.com/chrisconley/go-hangman
 
 require (
 	github.com/RoaringBitmap/roaring v0.5.1
+	github.com/coocood/freecache v1.1.1
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/mitchellh/hashstructure v1.0.0
 	github.com/pkg/profile v1.5.1-0.20200612102858-3704c8d23324

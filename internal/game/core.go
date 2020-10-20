@@ -22,6 +22,14 @@ func NewAction(actionString string) Action {
 	return newHashedString(actionString)
 }
 
+func NewActionFromBytes(actionBytes []byte) Action {
+	hs := hashedString{}
+	hs.bytes = actionBytes
+	hs.hash = fnv1a.HashBytes64(actionBytes)
+	hs.length = len(actionBytes)
+	return hs
+}
+
 type Response interface {
 	HashedString
 }

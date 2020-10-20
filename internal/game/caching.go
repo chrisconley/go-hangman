@@ -1,12 +1,15 @@
 package game
 
-import "github.com/segmentio/fasthash/fnv1a"
+import (
+	"github.com/coocood/freecache"
+	"github.com/segmentio/fasthash/fnv1a"
+)
 
 var PredictionCache = predictionCache{lookup: make(map[uint64]uint32)}
 
 var TheCache = Cache{
-	CacheMap: cacheMap{lookup: make(map[uint64]uint64, 1000000)},
-	PWCache:  pwCache{lookup: make(map[uint64]uint32)},
+	CacheMap: cacheMap{lookup: make(map[uint64]uint64)},
+	PWCache:  pwCache{},
 }
 
 type predictionCache struct {
@@ -37,32 +40,30 @@ func (pc *predictionCache) initializeGroup(group uint64) uint32 {
 	return pc.size - 1
 }
 
+var cacheSize = 100 * 1024 * 1024
+var theFreeCache = freecache.NewCache(cacheSize)
+
 type pwCache struct {
-	values []PossibleWorlds
-	size   uint32
-	lookup map[uint64]uint32
 }
 
 func (pwc *pwCache) Set(group uint64, value PossibleWorlds) {
-	index := pwc.initializeGroup(group)
-	pwc.values[index] = value
+	err := theFreeCache.SetInt(int64(group), value.ToBytes(), 0)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (pwc pwCache) Get(group uint64) PossibleWorlds {
-	index, _ := pwc.lookup[group]
-	return pwc.values[index]
+	data, err := theFreeCache.GetInt(int64(group))
+	if err != nil {
+		panic(err)
+	}
+	return PossibleWorldsFromBytes(data)
 }
 
 func (pwc pwCache) Exists(group uint64) bool {
-	_, ok := pwc.lookup[group]
-	return ok
-}
-
-func (pwc *pwCache) initializeGroup(group uint64) uint32 {
-	pwc.values = append(pwc.values, PossibleWorlds{})
-	pwc.size++
-	pwc.lookup[group] = pwc.size - 1
-	return pwc.size - 1
+	_, err := theFreeCache.GetInt(int64(group))
+	return err == nil
 }
 
 type cacheMap struct {

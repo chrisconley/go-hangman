@@ -67,3 +67,54 @@ func TestExploreReactionsForAction(t *testing.T) {
 	responseHash = fnv1a.HashString64("c")
 	test.AssertDeepEqual(responseWorlds[responseHash], expected, t)
 }
+
+func TestPredictionMarshalling(t *testing.T) {
+	p1 := Prediction{
+		Action:                      NewAction("a"),
+		Reward:                      0.12,
+		Entropy:                     0.345,
+		InversedMax:                 0.56,
+		PartsCount:                  12.0,
+		ActionMatchesAPossibleWorld: true,
+	}
+
+	p1Bytes := p1.ToBytes()
+
+	p2 := NewPredictionFromBytes(p1Bytes)
+
+	test.AssertDeepEqual(p1.Action, p2.Action, t)
+	test.AssertAlmostEqual(p1.Reward, p2.Reward, 4, t)
+	test.AssertAlmostEqual(p1.Entropy, p2.Entropy, 4, t)
+	test.AssertAlmostEqual(p1.InversedMax, p2.InversedMax, 4, t)
+	test.AssertAlmostEqual(p1.PartsCount, p2.PartsCount, 4, t)
+	test.AssertDeepEqual(
+		p1.ActionMatchesAPossibleWorld,
+		p2.ActionMatchesAPossibleWorld,
+		t,
+	)
+
+}
+
+func TestPredictionsMarshalling(t *testing.T) {
+	prediction1 := Prediction{
+		Action: NewAction("a"),
+		Reward: 0.12,
+	}
+	prediction2 := Prediction{
+		Action: NewAction("b"),
+		Reward: 0.34,
+	}
+
+	p1 := NewPredictions()
+	p1.AddPrediction("a", prediction1)
+	p1.AddPrediction("b", prediction2)
+
+	p1Bytes := p1.ToBytes()
+
+	p2 := NewPredictionsFromBytes(p1Bytes)
+
+	test.AssertDeepEqual(p2.Size(), 2, t)
+	test.AssertDeepEqual(p2.Get("a").Action, NewAction("a"), t)
+	test.AssertDeepEqual(p2.Get("b").Action, NewAction("b"), t)
+
+}

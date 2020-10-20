@@ -38,3 +38,10 @@ aws ec2 run-instances \
 ```
  rsync -avt --exclude=".git" --exclude="__pycache__" ubuntu@$ip:/home/ubuntu/mastermind-results.json ./
  ```
+
+
+
+ 4x7 timing
+ 17 min: 71 lines (14s/line)
+ 19 min: 83 lines (14.73s/line, 10s/line in last two minutes)
+ 41 min: 217 lines (11.33s/line, 9.85s/line in last 22 minutes)

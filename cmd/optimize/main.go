@@ -36,7 +36,7 @@ func main() {
 	// lines := utils.ReadLinesFromFilePath("./fixtures/nine-letter-words.txt")
 	// lines = lines[:10000]
 	game.BUniverse = game.InitUniverse(lines)
-	trials := play.BuildTrials(0.0, 1.0, 0.05, 4)
+	trials := play.BuildTrials(0.0, 1.0, 0.05, 3)
 	fmt.Println("Number of trials: ", len(trials))
 	// defer profile.Start(
 	// 	// profile.memprofile,
@@ -56,7 +56,7 @@ func main() {
 			}
 		}
 		motivation := game.Motivation{
-			Reward:    trial[3],
+			Reward:    0.0,
 			Entropy:   trial[0],
 			MiniMax:   trial[1],
 			MostParts: trial[2],

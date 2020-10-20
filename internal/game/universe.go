@@ -1,6 +1,9 @@
 package game
 
 import (
+	"bytes"
+	"encoding/binary"
+
 	"github.com/RoaringBitmap/roaring/roaring64"
 	"github.com/segmentio/fasthash/fnv1a"
 )
@@ -35,6 +38,36 @@ func (pw *PossibleWorlds) Len() int {
 func (pw *PossibleWorlds) Indices() []uint64 {
 	nums := pw.Bits.ToArray()
 	return nums[:len(nums)-1]
+}
+
+func (pw *PossibleWorlds) ToBytes() []byte {
+	buffer := bytes.Buffer{}
+	binary.Write(&buffer, binary.LittleEndian, pw.GetHash())
+	binary.Write(&buffer, binary.LittleEndian, uint32(pw.Capacity))
+	binary.Write(&buffer, binary.LittleEndian, uint32(pw.count))
+	roaringBytes, _ := pw.Bits.ToBytes()
+	buffer.Write(roaringBytes)
+	return buffer.Bytes()
+}
+
+func PossibleWorldsFromBytes(data []byte) PossibleWorlds {
+	buffer := bytes.NewBuffer(data[:16])
+	var hash uint64
+	var capacity uint32
+	var count uint32
+	binary.Read(buffer, binary.LittleEndian, &hash)
+	binary.Read(buffer, binary.LittleEndian, &capacity)
+	binary.Read(buffer, binary.LittleEndian, &count)
+
+	bitmap := *roaring64.BitmapOf(uint64(capacity) + 1)
+	bitmap.UnmarshalBinary(data[16:])
+
+	return PossibleWorlds{
+		hash:     hash,
+		Capacity: int(capacity),
+		count:    int(count),
+		Bits:     bitmap,
+	}
 }
 
 func NewPossibleWorlds(length int) PossibleWorlds {

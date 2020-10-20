@@ -7,19 +7,6 @@ import (
 	"github.com/chrisconley/go-hangman/test"
 )
 
-func TestPossibleWorldsGetHash(t *testing.T) {
-	pw1 := NewPossibleWorlds(100)
-	pw1.Add(1)
-	pw1.Add(99)
-	pw1.SetHash()
-
-	pw2 := NewPossibleWorlds(100)
-	pw2.Add(2)
-	pw2.Add(98)
-	pw2.SetHash()
-	test.AssertDeepNotEqual(pw1.GetHash(), pw2.GetHash(), t)
-}
-
 func TestAvailableActions(t *testing.T) {
 	universe := InitUniverse([]string{"aa", "bb"})
 	actual := universe.Actions.AllActions()
@@ -92,5 +79,36 @@ func TestPossibleWorldsLen(t *testing.T) {
 	pw.Add(5)
 	pw.Add(6)
 	test.AssertDeepEqual(pw.Len(), 3, t)
+
+}
+
+func TestPossibleWorldsGetHash(t *testing.T) {
+	pw1 := NewPossibleWorlds(100)
+	pw1.Add(1)
+	pw1.Add(99)
+	pw1.SetHash()
+
+	pw2 := NewPossibleWorlds(100)
+	pw2.Add(2)
+	pw2.Add(98)
+	pw2.SetHash()
+	test.AssertDeepNotEqual(pw1.GetHash(), pw2.GetHash(), t)
+}
+
+func TestPossibleWorldsMarshalling(t *testing.T) {
+	pw1 := NewPossibleWorlds(100)
+	pw1.Add(1)
+	pw1.Add(99)
+	pw1.SetHash()
+
+	pw1Bytes := pw1.ToBytes()
+	fmt.Println("bytes length", len(pw1Bytes))
+
+	pw2 := PossibleWorldsFromBytes(pw1Bytes)
+
+	test.AssertDeepEqual(pw1.Bits.ToArray(), pw2.Bits.ToArray(), t)
+	test.AssertDeepEqual(pw1.Len(), pw2.Len(), t)
+	test.AssertDeepEqual(pw1.Capacity, pw2.Capacity, t)
+	test.AssertDeepEqual(pw1.GetHash(), pw2.GetHash(), t)
 
 }

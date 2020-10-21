@@ -10,7 +10,6 @@ import (
 	"github.com/chrisconley/go-hangman/internal/mastermind"
 	"github.com/chrisconley/go-hangman/internal/play"
 	"github.com/chrisconley/go-hangman/internal/utils"
-	"github.com/pkg/profile"
 )
 
 type optimizationResults struct {
@@ -20,7 +19,7 @@ type optimizationResults struct {
 
 func TryTry(motivation game.Motivation, lines []string, c chan optimizationResults, wg *sync.WaitGroup) {
 	// limit := 1000
-	fmt.Printf("STARTING: %+v\n", motivation)
+	// fmt.Printf("STARTING: %+v\n", motivation)
 	limit := len(lines)
 	games := play.PlayGames(mastermind.Agreement, motivation, lines, limit)
 	stats := play.CalculateStats(games)
@@ -51,17 +50,17 @@ func main() {
 	// lines := utils.ReadLinesFromFilePath("./fixtures/nine-letter-words.txt")
 	// lines = lines[:10000]
 	game.BUniverse = game.InitUniverse(lines)
-	trials := play.BuildTrials(0.0, 1.0, 0.1, 4)
+	trials := play.BuildTrials(0.0, 1.0, 0.05, 4)
 	fmt.Println("Number of trials: ", len(trials))
-	defer profile.Start(
-		// profile.memprofile,
-		// profile.memprofilerate(4096*10),
-		profile.ProfilePath("/tmp/mem.pprof"),
-	).Stop()
+	// defer profile.Start(
+	// 	// profile.memprofile,
+	// 	// profile.memprofilerate(4096*10),
+	// 	profile.ProfilePath("/tmp/mem.pprof"),
+	// ).Stop()
 
 	var wg sync.WaitGroup
-	// limit := len(trials)
-	limit := 4
+	limit := len(trials)
+	// limit := 4
 	trialResult := make(chan optimizationResults)
 	statsOutput := make(chan []optimizationResults)
 	maxGoroutines := runtime.NumCPU()

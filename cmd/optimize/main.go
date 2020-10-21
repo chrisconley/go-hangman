@@ -8,6 +8,7 @@ import (
 	"github.com/chrisconley/go-hangman/internal/mastermind"
 	"github.com/chrisconley/go-hangman/internal/play"
 	"github.com/chrisconley/go-hangman/internal/utils"
+	"github.com/pkg/profile"
 )
 
 type optimizationResults struct {
@@ -38,18 +39,18 @@ func main() {
 	game.BUniverse = game.InitUniverse(lines)
 	trials := play.BuildTrials(0.0, 1.0, 0.5, 4)
 	fmt.Println("Number of trials: ", len(trials))
-	// defer profile.Start(
-	// 	// profile.memprofile,
-	// 	// profile.memprofilerate(4096*10),
-	// 	profile.ProfilePath("/tmp/mem.pprof"),
-	// ).Stop()
+	defer profile.Start(
+		// profile.memprofile,
+		// profile.memprofilerate(4096*10),
+		profile.ProfilePath("/tmp/mem.pprof"),
+	).Stop()
 
 	minTotalTurnsMotivation := game.Motivation{}
 	minTotalTurns := 1000000
 
 	minTotalPainMotivation := game.Motivation{}
 	minTotalPain := 1000000.0
-	for _, trial := range trials {
+	for _, trial := range trials[:3] {
 		for index, value := range trial {
 			if value < 0.0 {
 				trial[index] = 0.0

@@ -5,7 +5,7 @@ import (
 	"github.com/segmentio/fasthash/fnv1a"
 )
 
-var PredictionCache = predictionCache{lookup: make(map[uint64]uint32)}
+var PredictionCache = predictionCache{}
 
 var TheCache = Cache{
 	CacheMap: cacheMap{lookup: make(map[uint64]uint64)},
@@ -13,34 +13,29 @@ var TheCache = Cache{
 }
 
 type predictionCache struct {
-	values []Predictions
-	size   uint32
-	lookup map[uint64]uint32
 }
 
 func (pc *predictionCache) Set(group uint64, value Predictions) {
-	index := pc.initializeGroup(group)
-	pc.values[index] = value
+	err := theFreeCache.SetInt(int64(group), value.ToBytes(), 0)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (pc *predictionCache) Get(group uint64) Predictions {
-	index, _ := pc.lookup[group]
-	return pc.values[index]
+	data, err := theFreeCache.GetInt(int64(group))
+	if err != nil {
+		panic(err)
+	}
+	return NewPredictionsFromBytes(data)
 }
 
 func (pc *predictionCache) Exists(group uint64) bool {
-	_, ok := pc.lookup[group]
-	return ok
+	_, err := theFreeCache.GetInt(int64(group))
+	return err == nil
 }
 
-func (pc *predictionCache) initializeGroup(group uint64) uint32 {
-	pc.values = append(pc.values, Predictions{})
-	pc.size++
-	pc.lookup[group] = pc.size - 1
-	return pc.size - 1
-}
-
-var cacheSize = 100 * 1024 * 1024
+var cacheSize = 1000 * 1024 * 1024
 var theFreeCache = freecache.NewCache(cacheSize)
 
 type pwCache struct {

@@ -3,7 +3,6 @@ package game
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 
 	"github.com/chrisconley/go-hangman/internal/mth"
 	"github.com/chrisconley/go-hangman/internal/utils"
@@ -186,7 +185,6 @@ func (p *Predictions) ToBytes() []byte {
 	for _, prediction := range p.PredictionsMap.Values {
 		data := prediction.ToBytes()
 		dataLength = uint32(len(data))
-		fmt.Println("Writing predictionDataLength: ", dataLength)
 		binary.Write(&buffer, binary.LittleEndian, dataLength)
 		buffer.Write(prediction.ToBytes())
 	}

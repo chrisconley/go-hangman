@@ -1,9 +1,17 @@
 package game
 
 import (
+	"encoding/binary"
+
 	"github.com/coocood/freecache"
 	"github.com/segmentio/fasthash/fnv1a"
 )
+
+var cacheSize = 1000 * 1024 * 1024
+var cacheExpireSeconds = 0
+var theFreeCache = freecache.NewCache(cacheSize)
+
+var thePredictionsFreeCache = freecache.NewCache(cacheSize)
 
 var PredictionCache = predictionCache{}
 
@@ -16,14 +24,17 @@ type predictionCache struct {
 }
 
 func (pc *predictionCache) Set(group uint64, value Predictions) {
-	err := theFreeCache.SetInt(int64(group), value.ToBytes(), 0)
+	bKey := Uint64ToBytes(group)
+	err := thePredictionsFreeCache.Set(bKey, value.ToBytes(), cacheExpireSeconds)
 	if err != nil {
 		panic(err)
 	}
 }
 
 func (pc *predictionCache) Get(group uint64) Predictions {
-	data, err := theFreeCache.GetInt(int64(group))
+	bKey := Uint64ToBytes(group)
+	thePredictionsFreeCache.Touch(bKey, cacheExpireSeconds)
+	data, err := thePredictionsFreeCache.Get(bKey)
 	if err != nil {
 		panic(err)
 	}
@@ -31,25 +42,26 @@ func (pc *predictionCache) Get(group uint64) Predictions {
 }
 
 func (pc *predictionCache) Exists(group uint64) bool {
-	_, err := theFreeCache.GetInt(int64(group))
+	bKey := Uint64ToBytes(group)
+	err := thePredictionsFreeCache.Touch(bKey, cacheExpireSeconds)
 	return err == nil
 }
-
-var cacheSize = 1000 * 1024 * 1024
-var theFreeCache = freecache.NewCache(cacheSize)
 
 type pwCache struct {
 }
 
 func (pwc *pwCache) Set(group uint64, value PossibleWorlds) {
-	err := theFreeCache.SetInt(int64(group), value.ToBytes(), 0)
+	bKey := Uint64ToBytes(group)
+	err := theFreeCache.Set(bKey, value.ToBytes(), cacheExpireSeconds)
 	if err != nil {
 		panic(err)
 	}
 }
 
 func (pwc pwCache) Get(group uint64) PossibleWorlds {
-	data, err := theFreeCache.GetInt(int64(group))
+	bKey := Uint64ToBytes(group)
+	theFreeCache.Touch(bKey, cacheExpireSeconds)
+	data, err := theFreeCache.Get(bKey)
 	if err != nil {
 		panic(err)
 	}
@@ -57,8 +69,19 @@ func (pwc pwCache) Get(group uint64) PossibleWorlds {
 }
 
 func (pwc pwCache) Exists(group uint64) bool {
-	_, err := theFreeCache.GetInt(int64(group))
+	bKey := Uint64ToBytes(group)
+	err := thePredictionsFreeCache.Touch(bKey, cacheExpireSeconds)
 	return err == nil
+}
+
+func Uint64ToBytes(ui uint64) []byte {
+	var data [8]byte
+	binary.LittleEndian.PutUint64(data[:], ui)
+	return data[:]
+}
+
+func BytesToUint64(data []byte) (ui uint64) {
+	return binary.LittleEndian.Uint64(data[:])
 }
 
 type cacheMap struct {
@@ -67,20 +90,30 @@ type cacheMap struct {
 }
 
 func (m *cacheMap) Set(group, responseHash, value uint64) {
-	m.size++
 	hash := fnv1a.AddUint64(group, responseHash)
-	m.lookup[hash] = value
+	bKey := Uint64ToBytes(hash)
+	err := theFreeCache.Set(bKey, Uint64ToBytes(value), cacheExpireSeconds)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (m cacheMap) Get(group, responseHash uint64) uint64 {
 	hash := fnv1a.AddUint64(group, responseHash)
-	return m.lookup[hash]
+	bKey := Uint64ToBytes(hash)
+	theFreeCache.Touch(bKey, cacheExpireSeconds)
+	data, err := theFreeCache.Get(bKey)
+	if err != nil {
+		panic(err)
+	}
+	return BytesToUint64(data)
 }
 
 func (m cacheMap) Exists(group, responseHash uint64) bool {
 	hash := fnv1a.AddUint64(group, responseHash)
-	_, ok := m.lookup[hash]
-	return ok
+	bKey := Uint64ToBytes(hash)
+	err := theFreeCache.Touch(bKey, cacheExpireSeconds)
+	return err == nil
 }
 
 func (m cacheMap) Size() uint32 {

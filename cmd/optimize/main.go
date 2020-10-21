@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"runtime"
 	"sync"
 
 	"github.com/chrisconley/go-hangman/internal/game"
@@ -17,8 +18,9 @@ type optimizationResults struct {
 	GameStats  play.Stats
 }
 
-func TryTry(motivation game.Motivation, lines []string, c chan optimizationResults) {
+func TryTry(motivation game.Motivation, lines []string, c chan optimizationResults, wg *sync.WaitGroup) {
 	// limit := 1000
+	fmt.Printf("STARTING: %+v\n", motivation)
 	limit := len(lines)
 	games := play.PlayGames(mastermind.Agreement, motivation, lines, limit)
 	stats := play.CalculateStats(games)
@@ -30,6 +32,7 @@ func TryTry(motivation game.Motivation, lines []string, c chan optimizationResul
 	}
 	fmt.Println(string(js))
 
+	wg.Done()
 	c <- results
 }
 
@@ -48,7 +51,7 @@ func main() {
 	// lines := utils.ReadLinesFromFilePath("./fixtures/nine-letter-words.txt")
 	// lines = lines[:10000]
 	game.BUniverse = game.InitUniverse(lines)
-	trials := play.BuildTrials(0.0, 1.0, 0.5, 4)
+	trials := play.BuildTrials(0.0, 1.0, 0.1, 4)
 	fmt.Println("Number of trials: ", len(trials))
 	defer profile.Start(
 		// profile.memprofile,
@@ -57,11 +60,14 @@ func main() {
 	).Stop()
 
 	var wg sync.WaitGroup
-	limit := len(trials)
+	// limit := len(trials)
+	limit := 4
 	trialResult := make(chan optimizationResults)
 	statsOutput := make(chan []optimizationResults)
+	maxGoroutines := runtime.NumCPU()
+	guard := make(chan struct{}, maxGoroutines)
 	go handleResults(trialResult, statsOutput, &wg)
-	for trialIndex, trial := range trials[:limit] {
+	for _, trial := range trials[:limit] {
 		for index, value := range trial {
 			if value < 0.0 {
 				trial[index] = 0.0
@@ -73,12 +79,12 @@ func main() {
 			MiniMax:   trial[1],
 			MostParts: trial[2],
 		}
-		wg.Add(1)
-		if trialIndex == 0 {
-			TryTry(motivation, lines, trialResult)
-		} else {
-			go TryTry(motivation, lines, trialResult)
-		}
+		wg.Add(2)
+		guard <- struct{}{}
+		go func() {
+			TryTry(motivation, lines, trialResult, &wg)
+			<-guard
+		}()
 	}
 	wg.Wait()
 	close(trialResult)

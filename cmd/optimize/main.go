@@ -57,11 +57,11 @@ func main() {
 	).Stop()
 
 	var wg sync.WaitGroup
-	limit := 3
+	limit := len(trials)
 	trialResult := make(chan optimizationResults)
 	statsOutput := make(chan []optimizationResults)
 	go handleResults(trialResult, statsOutput, &wg)
-	for _, trial := range trials[:limit] {
+	for trialIndex, trial := range trials[:limit] {
 		for index, value := range trial {
 			if value < 0.0 {
 				trial[index] = 0.0
@@ -74,7 +74,11 @@ func main() {
 			MostParts: trial[2],
 		}
 		wg.Add(1)
-		go TryTry(motivation, lines, trialResult)
+		if trialIndex == 0 {
+			TryTry(motivation, lines, trialResult)
+		} else {
+			go TryTry(motivation, lines, trialResult)
+		}
 	}
 	wg.Wait()
 	close(trialResult)

@@ -22,23 +22,33 @@ func TestCalculateStats(t *testing.T) {
 	test.AssertDeepEqual(stats.TotalTurns, 29, t)
 	test.AssertAlmostEqual(stats.AverageTurns, 4.8333, 4, t)
 	test.AssertDeepEqual(stats.MaxTurns, 11, t)
+	test.AssertDeepEqual(stats.TurnCounts, []int{1, 2, 3, 5, 11, 7}, t)
+}
+
+func buildTestReaction(reward float64) game.Reaction {
+	return game.NewReaction(
+		game.NewAction("a"),
+		"!",
+		reward,
+	)
+
 }
 
 func TestCalculateStatsReward(t *testing.T) {
-	g1 := game.GamePlay{}
-	g1.AddTurn(game.Reaction{Reward: 0.0})
-	g1.AddTurn(game.Reaction{Reward: 0.75})
+	g1 := game.InitGamePlay(0.0)
+	g1.AddTurn(buildTestReaction(0.0))
+	g1.AddTurn(buildTestReaction(0.75))
 
-	g2 := game.GamePlay{}
-	g2.AddTurn(game.Reaction{Reward: 1.0})
+	g2 := game.InitGamePlay(0.0)
+	g2.AddTurn(buildTestReaction(1.0))
 
-	g3 := game.GamePlay{}
-	g3.AddTurn(game.Reaction{Reward: 0.0})
+	g3 := game.InitGamePlay(0.0)
+	g3.AddTurn(buildTestReaction(0.0))
 
-	g4 := game.GamePlay{}
-	g4.AddTurn(game.Reaction{Reward: 0.0})
-	g4.AddTurn(game.Reaction{Reward: 0.333333})
-	g4.AddTurn(game.Reaction{Reward: 1.0})
+	g4 := game.InitGamePlay(0.0)
+	g4.AddTurn(buildTestReaction(0.0))
+	g4.AddTurn(buildTestReaction(0.333333))
+	g4.AddTurn(buildTestReaction(1.0))
 
 	games := []game.GamePlay{g1, g2, g3, g4}
 	stats := CalculateStats(games)

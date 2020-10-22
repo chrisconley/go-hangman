@@ -19,7 +19,7 @@ func GetActions(gameplay game.GamePlay, remainingWorlds game.PossibleWorlds, aa 
 		worldActions := []game.Action{}
 		for _, index := range remainingWorlds.Indices() {
 			world := game.BUniverse.GetWorldByIndex(index)
-			worldAction := game.Action(world.Name)
+			worldAction := game.NewAction(world.String())
 			if !gameplay.PreviouslyActed(worldAction) {
 				worldActions = append(worldActions, worldAction)
 			}
@@ -32,23 +32,24 @@ func GetActions(gameplay game.GamePlay, remainingWorlds game.PossibleWorlds, aa 
 
 func Act(gameplay game.GamePlay, world game.World, action game.Action) (r game.Reaction) {
 	if gameplay.PreviouslyActed(action) {
-		panic("This action is not allowed because it has already been used")
+		// panic("This action is not allowed because it has already been used")
+		return game.NewReaction(action, "!", 0.0)
 	}
 
-	actionLength := len(action)
-	worldString := string(world)
-	actionString := string(action)
+	actionLength := action.Length()
+	worldString := world.String()
+	actionString := action.String()
 
 	if actionLength > 1 && actionString == worldString {
-		return game.Reaction{Action: action, Response: game.Response(world), Reward: 1.0}
+		return game.NewReaction(action, worldString, 1.0)
 	} else if actionLength > 1 && actionString != worldString {
-		return game.Reaction{Action: action, Response: game.Response("!"), Reward: 0.0}
+		return game.NewReaction(action, "!", 0.0)
 	} else {
 		hasMatch, replacement := replaceNonMatches(actionString, "-", worldString)
 		if hasMatch {
-			return game.Reaction{Action: action, Response: game.Response(replacement), Reward: 1.0}
+			return game.NewReaction(action, replacement, 1.0)
 		} else {
-			return game.Reaction{Action: action, Response: game.Response("!"), Reward: 0.0}
+			return game.NewReaction(action, "!", 0.0)
 		}
 
 	}

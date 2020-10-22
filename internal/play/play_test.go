@@ -12,11 +12,15 @@ import (
 )
 
 func TestAct(t *testing.T) {
-	truth := game.World("abc")
-	actual := Act(game.GamePlay{}, game.Action("a"), game.BuildTestAct(0.222), truth)
+	truth := game.NewWorld("abc")
+	actual := Act(game.InitGamePlay(0.0), game.NewAction("a"), game.BuildTestAct(0.222), truth)
 	test.AssertDeepEqual(
 		actual,
-		game.Reaction{Action: "a", Response: "a", Reward: 0.222},
+		game.Reaction{
+			Action:   game.NewAction("a"),
+			Response: game.NewResponse("a"),
+			Reward:   0.222,
+		},
 		t,
 	)
 }
@@ -45,7 +49,7 @@ func TestPlayBHangman(t *testing.T) {
 			game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25},
 			hangman.Agreement,
 		)
-		truth := game.World(line)
+		truth := game.NewWorld(line)
 		_, actual := PlayGame(truth, perspective)
 		test.AssertDeepEqual(actual, truth, t)
 	}
@@ -66,7 +70,7 @@ func TestPlayMastermind(t *testing.T) {
 			mastermind.Agreement,
 		)
 
-		truth := game.World(line)
+		truth := game.NewWorld(line)
 		_, actual := PlayGame(truth, perspective)
 		test.AssertDeepEqual(actual, truth, t)
 	}
@@ -83,20 +87,20 @@ func TestIntegrationPlayKnuthMastermind(t *testing.T) {
 		mastermind.Agreement,
 	)
 
-	truth := game.World("CFCB")
+	truth := game.NewWorld("CFCB")
 	gameplay, _ := PlayGame(truth, perspective)
 
-	test.AssertDeepEqual(gameplay.Reactions[0].Action, game.Action("AABB"), t)
-	test.AssertDeepEqual(gameplay.Reactions[0].Response, game.Response("B"), t)
+	test.AssertDeepEqual(gameplay.Reactions[0].Action, game.NewAction("AABB"), t)
+	test.AssertDeepEqual(gameplay.Reactions[0].Response, game.NewResponse("B"), t)
 
-	test.AssertDeepEqual(gameplay.Reactions[1].Action, game.Action("ACDD"), t)
-	test.AssertDeepEqual(gameplay.Reactions[1].Response, game.Response("W"), t)
+	test.AssertDeepEqual(gameplay.Reactions[1].Action, game.NewAction("ACDD"), t)
+	test.AssertDeepEqual(gameplay.Reactions[1].Response, game.NewResponse("W"), t)
 
-	test.AssertDeepEqual(gameplay.Reactions[2].Action, game.Action("CEBF"), t)
-	test.AssertDeepEqual(gameplay.Reactions[2].Response, game.Response("BWW"), t)
+	test.AssertDeepEqual(gameplay.Reactions[2].Action, game.NewAction("CEBF"), t)
+	test.AssertDeepEqual(gameplay.Reactions[2].Response, game.NewResponse("BWW"), t)
 
-	test.AssertDeepEqual(gameplay.Reactions[3].Action, game.Action("ADFB"), t)
-	test.AssertDeepEqual(gameplay.Reactions[3].Response, game.Response("BW"), t)
+	test.AssertDeepEqual(gameplay.Reactions[3].Action, game.NewAction("ADFB"), t)
+	test.AssertDeepEqual(gameplay.Reactions[3].Response, game.NewResponse("BW"), t)
 }
 
 func TestIntegrationVerifyMiniMaxMastermind(t *testing.T) {

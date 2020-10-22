@@ -33,8 +33,8 @@ func Act(gameplay game.GamePlay, world game.World, action game.Action) (r game.R
 		panic("This action is not allowed because it has already been used")
 	}
 
-	worldString := string(world)
-	actionString := string(action)
+	worldString := world.String()
+	actionString := action.String()
 
 	responseBuffer := strings.Builder{}
 	reward := 0.0
@@ -78,7 +78,7 @@ func Act(gameplay game.GamePlay, world game.World, action game.Action) (r game.R
 	if response == "" {
 		response = "!"
 	}
-	return game.Reaction{Action: action, Response: game.Response(response), Reward: reward}
+	return game.NewReaction(action, response, reward)
 }
 
 var Agreement = game.Agreement{

@@ -1,53 +1,15 @@
 package game
 
 import (
+	"bytes"
+	"encoding/binary"
+
 	"github.com/RoaringBitmap/roaring/roaring64"
-	"github.com/chrisconley/go-hangman/internal/utils"
 	"github.com/segmentio/fasthash/fnv1a"
 )
 
-type World string
-type Action string
-type Response string
-type Act func(gp GamePlay, w World, action Action) (reaction Reaction)
-type GetActions func(gp GamePlay, w PossibleWorlds, aa AvailableActions) []Action
-
-type Agreement struct {
-	GetActions GetActions
-	Act        Act
-}
-
-type Reaction struct {
-	Action   Action
-	Response Response
-	Reward   float64
-}
-
-type GamePlay struct {
-	Reactions   []Reaction
-	TurnCount   int
-	TotalReward float64
-	TotalPain   float64
-}
-
-func (gp *GamePlay) AddTurn(reaction Reaction) {
-	gp.Reactions = append(gp.Reactions, reaction)
-	gp.TurnCount++
-	gp.TotalReward += reaction.Reward
-	gp.TotalPain += 1.0 - reaction.Reward
-}
-
-func (gp *GamePlay) PreviouslyActed(action Action) bool {
-	for _, reaction := range gp.Reactions {
-		if reaction.Action == action {
-			return true
-		}
-	}
-	return false
-}
-
 type PossibleWorlds struct {
-	Bits     *roaring64.Bitmap
+	Bits     roaring64.Bitmap
 	count    int
 	Capacity int
 	hash     uint64
@@ -78,28 +40,47 @@ func (pw *PossibleWorlds) Indices() []uint64 {
 	return nums[:len(nums)-1]
 }
 
+func (pw *PossibleWorlds) ToBytes() []byte {
+	buffer := bytes.Buffer{}
+	binary.Write(&buffer, binary.LittleEndian, pw.GetHash())
+	binary.Write(&buffer, binary.LittleEndian, uint32(pw.Capacity))
+	binary.Write(&buffer, binary.LittleEndian, uint32(pw.count))
+	roaringBytes, _ := pw.Bits.ToBytes()
+	buffer.Write(roaringBytes)
+	return buffer.Bytes()
+}
+
+func PossibleWorldsFromBytes(data []byte) PossibleWorlds {
+	buffer := bytes.NewBuffer(data[:16])
+	var hash uint64
+	var capacity uint32
+	var count uint32
+	binary.Read(buffer, binary.LittleEndian, &hash)
+	binary.Read(buffer, binary.LittleEndian, &capacity)
+	binary.Read(buffer, binary.LittleEndian, &count)
+
+	bitmap := *roaring64.BitmapOf(uint64(capacity) + 1)
+	bitmap.UnmarshalBinary(data[16:])
+
+	return PossibleWorlds{
+		hash:     hash,
+		Capacity: int(capacity),
+		count:    int(count),
+		Bits:     bitmap,
+	}
+}
+
 func NewPossibleWorlds(length int) PossibleWorlds {
 	length64 := uint64(length)
 	pw := PossibleWorlds{}
-	pw.Bits = roaring64.BitmapOf(length64 + 1)
+	pw.Bits = *roaring64.BitmapOf(length64 + 1)
 	pw.count = 0
 	pw.Capacity = length
 	return pw
 }
 
-func BuildActionWorldHash(action Action, worldsHash uint64) uint64 {
-	worldsHash = fnv1a.AddString64(worldsHash, string(action))
-	return worldsHash
-
-}
-
-type BWorld struct {
-	Index uint64
-	Name  string
-}
-
 type Universe struct {
-	Worlds         []BWorld
+	Worlds         []World
 	WorldLength    int
 	Actions        AvailableActions
 	PossibleWorlds PossibleWorlds
@@ -108,74 +89,14 @@ type Universe struct {
 
 var BUniverse = Universe{}
 
-type Cache struct{}
-
-var TheCache = Cache{}
-var possibleWorldsCache = make(map[uint64]PossibleWorlds)
-var theCache = make(map[uint64]ActionCacheModel)
-
-type ActionCacheModel struct {
-	Worlds        map[string]uint64
-	Counts        utils.GroupedIncrementer
-	Rewards       utils.GroupedIncrementer
-	ActionMatches bool
-}
-
-func (c *Cache) GetNextWorlds(hash uint64, response string) PossibleWorlds {
-	pwHash := theCache[hash].Worlds[response]
-	return possibleWorldsCache[pwHash]
-}
-
-func (c *Cache) Write(
-	hash uint64,
-	responseWorlds map[string]PossibleWorlds,
-	counts utils.GroupedIncrementer,
-	rewards utils.GroupedIncrementer,
-	actionMatchesAPossibleWorld bool,
-) {
-	responseCache := make(map[string]uint64)
-	for response, possibleWorlds := range responseWorlds {
-		pwHash := possibleWorlds.SetHash()
-		possibleWorldsCache[pwHash] = possibleWorlds
-		responseCache[response] = pwHash
-	}
-	theCache[hash] = ActionCacheModel{
-		Worlds:        responseCache,
-		Counts:        counts,
-		Rewards:       rewards,
-		ActionMatches: actionMatchesAPossibleWorld,
-	}
-}
-
-func (c *Cache) Exists(hash uint64) bool {
-	_, ok := theCache[hash]
-	return ok
-}
-
-func (c *Cache) GetCounts(hash uint64) utils.GroupedIncrementer {
-	return theCache[hash].Counts
-}
-
-func (c *Cache) GetRewards(hash uint64) utils.GroupedIncrementer {
-	return theCache[hash].Rewards
-}
-
-func (c *Cache) GetActionMatches(hash uint64) bool {
-	return theCache[hash].ActionMatches
-}
-
-func (c *Cache) Size() int {
-	return len(theCache)
-}
-
 func InitUniverse(lines []string) Universe {
 	universe := Universe{}
 	universe.Size = len(lines)
-	universe.Worlds = make([]BWorld, universe.Size)
+	universe.Worlds = make([]World, universe.Size)
 	universe.WorldLength = len(lines[0])
 	pw := NewPossibleWorlds(universe.Size)
 	for index, name := range lines {
-		universe.Worlds[index] = BWorld{Index: uint64(index), Name: name}
+		universe.Worlds[index] = NewWorld(name)
 		pw.Add(uint64(index))
 	}
 	pw.SetHash()
@@ -184,19 +105,16 @@ func InitUniverse(lines []string) Universe {
 	return universe
 }
 
-func (u *Universe) GetWorldByIndex(index uint64) BWorld {
+func (u *Universe) GetWorldByIndex(index uint64) World {
 	return u.Worlds[index]
 }
 
 type AvailableActions struct {
-	worlds       []World
 	actions      []Action
 	worldActions []Action
 	worldSize    int
 }
 
-// TODO: Just move this to universe creation then the performance shouldn't matter
-// because it'll get called once instead of every new game with NewPerspective
 func buildAvailableActions(universe Universe) AvailableActions {
 	aa := AvailableActions{
 		actions:      []Action{},
@@ -206,12 +124,12 @@ func buildAvailableActions(universe Universe) AvailableActions {
 
 	keys := make(map[int32]bool)
 	for index, world := range universe.Worlds {
-		worldAction := Action(world.Name)
+		worldAction := NewAction(world.String())
 		aa.worldActions[index] = worldAction
-		for _, runeValue := range world.Name {
+		for _, runeValue := range world.String() {
 			if _, ok := keys[runeValue]; !ok {
 				keys[runeValue] = true
-				aa.actions = append(aa.actions, Action(runeValue))
+				aa.actions = append(aa.actions, NewAction(string(runeValue)))
 			}
 		}
 	}

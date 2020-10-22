@@ -10,7 +10,7 @@ import (
 
 func logPredictions(predictions game.Predictions) {
 	if os.Getenv("DEBUGPREDICTIONS") != "" {
-		for _, prediction := range predictions {
+		for _, prediction := range predictions.PredictionsMap.Values {
 			fmt.Printf("PREDICTION: %+v\n", prediction)
 		}
 	}
@@ -37,8 +37,8 @@ func Explore(gameplay game.GamePlay, agreement game.Agreement, possibleWorlds ga
 		possibleWorlds,
 		game.BUniverse.Actions,
 	)
-	game.ExploreReactions(gameplay, possibleWorlds, actions, agreement.Act)
-	predictions = game.BBuildPredictions(actions, possibleWorlds)
+	predictions = game.ExploreReactions(gameplay, possibleWorlds, actions, agreement.Act)
+	// predictions = game.BBuildPredictions(actions, possibleWorlds)
 	logPredictions(predictions)
 	return predictions
 }
@@ -55,10 +55,16 @@ func Act(gameplay game.GamePlay, action game.Action, act game.Act, truth game.Wo
 	return reaction
 }
 
-func Observe(action game.Action, reaction game.Reaction, possibleWorlds game.PossibleWorlds) game.PossibleWorlds {
-	hash := game.BuildActionWorldHash(action, possibleWorlds.GetHash())
-	response := string(reaction.Response)
-	return game.TheCache.GetNextWorlds(hash, response)
+func Observe(gameplay game.GamePlay, reaction game.Reaction, act game.Act, possibleWorlds game.PossibleWorlds) game.PossibleWorlds {
+	npw := game.NewPossibleWorlds(game.BUniverse.Size)
+	for _, worldIndex := range possibleWorlds.Indices() {
+		world := game.BUniverse.GetWorldByIndex(worldIndex)
+		testReaction := act(gameplay, world, reaction.Action)
+		if testReaction.Response.Matches(reaction.Response) {
+			npw.Add(worldIndex)
+		}
+	}
+	return npw
 }
 
 // ###########################
@@ -74,8 +80,7 @@ func PlayGames(agreement game.Agreement, motivation game.Motivation, lines []str
 			agreement,
 		)
 
-		btruth := game.BUniverse.GetWorldByIndex(j)
-		truth := game.World(btruth.Name)
+		truth := game.BUniverse.GetWorldByIndex(j)
 		gameplay, _ := PlayGame(truth, perspective)
 		// fmt.Printf("TRUTH: %s | ", truth)
 		// fmt.Printf("TURNS: %d\n", gameplay.TurnCount)
@@ -87,16 +92,16 @@ func PlayGames(agreement game.Agreement, motivation game.Motivation, lines []str
 
 func PlayGame(truth game.World, perspective game.Perspective) (game.GamePlay, game.World) {
 	possibleWorlds := game.BUniverse.PossibleWorlds
-	gameplay := game.GamePlay{} // Should this be on perspective?
+	gameplay := game.InitGamePlay(possibleWorlds.GetHash()) // Should this be on perspective?
 	reaction := game.Reaction{}
 	for true {
 		reaction, possibleWorlds = playTurn(gameplay, truth, perspective, possibleWorlds)
 		gameplay.AddTurn(reaction)
-		if string(reaction.Action) == string(truth) {
+		if reaction.Action.Matches(truth) {
 			break
 		}
 	}
-	return gameplay, game.World(reaction.Action)
+	return gameplay, truth
 }
 
 func playTurn(
@@ -111,7 +116,7 @@ func playTurn(
 	predictions := Explore(gameplay, perspective.Agreement, possibleWorlds)
 	action := Decide(predictions, perspective.Motivation)
 	reaction := Act(gameplay, action, perspective.Agreement.Act, truth)
-	possibleWorlds = Observe(action, reaction, possibleWorlds)
+	possibleWorlds = Observe(gameplay, reaction, perspective.Agreement.Act, possibleWorlds)
 	return reaction, possibleWorlds
 }
 

@@ -7,17 +7,13 @@ import (
 	"github.com/allegro/bigcache"
 )
 
-var cacheSize = 1000 * 1024 * 1024
-var cacheExpireSeconds = 0
-
-// var theFreeCache = freecache.NewCache(cacheSize)
-// var thePredictionsFreeCache = freecache.NewCache(cacheSize)
 var bigCacheConfig = bigcache.Config{
 	// number of shards (must be a power of 2)
 	Shards: 1024,
 
 	// time after which entry can be evicted
-	LifeWindow: 10 * time.Hour,
+	// LifeWindow: 10 * time.Hour,
+	LifeWindow: 10 * time.Second,
 
 	// Interval between removing expired entries (clean up).
 	// If set to <= 0 then no action is performed.
@@ -25,10 +21,10 @@ var bigCacheConfig = bigcache.Config{
 	CleanWindow: 0,
 
 	// rps * lifeWindow, used only in initial memory allocation
-	MaxEntriesInWindow: 100 * 10 * 60,
+	MaxEntriesInWindow: 10 * 10 * 60,
 
 	// max entry size in bytes, used only in initial memory allocation
-	MaxEntrySize: 10000,
+	MaxEntrySize: 50,
 
 	// prints information about additional memory allocation
 	Verbose: false,
@@ -36,7 +32,7 @@ var bigCacheConfig = bigcache.Config{
 	// cache will not allocate more memory than this limit, value in MB
 	// if value is reached then the oldest entries can be overridden for the new ones
 	// 0 value means no size limit
-	HardMaxCacheSize: 0,
+	HardMaxCacheSize: 1000,
 
 	// callback fired when the oldest entry is removed because of its expiration time or no space left
 	// for the new entry, or because delete was called. A bitmask representing the reason will be returned.
@@ -54,15 +50,18 @@ var thePredictionsFreeCache, _ = bigcache.NewBigCache(bigCacheConfig)
 var PredictionCache = predictionCache{}
 
 type predictionCache struct {
+	size uint64
 }
 
 func (pc *predictionCache) Set(group uint64, value Predictions) {
 	bKey := Uint64ToBytes(group)
 	// err := thePredictionsFreeCache.Set(bKey, value.ToBytes(), cacheExpireSeconds)
+	// fmt.Printf("Prediction bytes len: %d\n", len(value.ToBytes()))
 	err := thePredictionsFreeCache.Set(string(bKey), value.ToBytes())
 	if err != nil {
 		panic(err)
 	}
+	pc.size++
 }
 
 func (pc *predictionCache) Get(group uint64) Predictions {
@@ -80,6 +79,14 @@ func (pc *predictionCache) Exists(group uint64) bool {
 	// err := thePredictionsFreeCache.Touch(bKey, cacheExpireSeconds)
 	_, err := thePredictionsFreeCache.Get(string(bKey))
 	return err == nil
+}
+
+func (pc *predictionCache) Stats() bigcache.Stats {
+	return thePredictionsFreeCache.Stats()
+}
+
+func (pc *predictionCache) Size() uint64 {
+	return pc.size
 }
 
 func Uint64ToBytes(ui uint64) []byte {

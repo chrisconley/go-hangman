@@ -21,7 +21,7 @@ func ExploreReactions(
 		// Only get Indices once to improve performance
 		worldIndices := possibleWorlds.Indices()
 		for _, action := range actions {
-			actionMatchesAPossibleWorld, counts, rewards, responseWorlds := ExploreReactionsForAction(
+			actionMatchesAPossibleWorld, counts, rewards, _ := ExploreReactionsForAction(
 				gameplay,
 				worldIndices,
 				action,
@@ -36,11 +36,6 @@ func ExploreReactions(
 			prediction.ActionMatchesAPossibleWorld = actionMatchesAPossibleWorld
 			predictions.AddPrediction(action.String(), prediction)
 
-			TheCache.Write(
-				gameHash,
-				action.Hash(),
-				responseWorlds,
-			)
 		}
 		PredictionCache.Set(gameHash, predictions)
 		return predictions

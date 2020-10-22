@@ -201,8 +201,9 @@ func (c *Cache) Write(
 	}
 }
 
-func (c Cache) Exists(group, responseHash uint64) bool {
-	return c.CacheMap.Exists(group, responseHash)
+func (c Cache) Exists(gamePlayHash uint64, actionHash uint64, responseHash uint64) bool {
+	hash := BuildGameActionHash(gamePlayHash, actionHash)
+	return c.CacheMap.Exists(hash, responseHash)
 }
 
 func (c Cache) Size() int {

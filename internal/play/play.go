@@ -55,12 +55,32 @@ func Act(gameplay game.GamePlay, action game.Action, act game.Act, truth game.Wo
 	return reaction
 }
 
-func Observe(gameplay game.GamePlay, reaction game.Reaction) game.PossibleWorlds {
-	return game.TheCache.GetNextWorlds(
-		gameplay.Hash,
-		reaction.Action.Hash(),
-		reaction.Response.Hash(),
-	)
+func Observe(gameplay game.GamePlay, reaction game.Reaction, act game.Act, possibleWorlds game.PossibleWorlds) game.PossibleWorlds {
+	gamePlayHash := gameplay.Hash
+	actionHash := reaction.Action.Hash()
+	responseHash := reaction.Response.Hash()
+	if game.TheCache.Exists(gamePlayHash, actionHash, responseHash) {
+		// fmt.Println("CACHE HIT")
+		return game.TheCache.GetNextWorlds(gamePlayHash, actionHash, responseHash)
+	} else {
+		npw := game.NewPossibleWorlds(game.BUniverse.Size)
+		for _, worldIndex := range possibleWorlds.Indices() {
+			world := game.BUniverse.GetWorldByIndex(worldIndex)
+			testReaction := act(gameplay, world, reaction.Action)
+			if testReaction.Response.Matches(reaction.Response) {
+				npw.Add(worldIndex)
+			}
+		}
+		responseWorlds := make(map[uint64]game.PossibleWorlds)
+		responseWorlds[responseHash] = npw
+		game.TheCache.Write(
+			gamePlayHash,
+			actionHash,
+			responseWorlds,
+		)
+		return npw
+
+	}
 }
 
 // ###########################
@@ -78,8 +98,8 @@ func PlayGames(agreement game.Agreement, motivation game.Motivation, lines []str
 
 		truth := game.BUniverse.GetWorldByIndex(j)
 		gameplay, _ := PlayGame(truth, perspective)
-		// fmt.Printf("TRUTH: %s | ", truth)
-		// fmt.Printf("TURNS: %d\n", gameplay.TurnCount)
+		fmt.Printf("TRUTH: %s | ", truth)
+		fmt.Printf("TURNS: %d\n", gameplay.TurnCount)
 		games = append(games, gameplay)
 	}
 
@@ -112,7 +132,7 @@ func playTurn(
 	predictions := Explore(gameplay, perspective.Agreement, possibleWorlds)
 	action := Decide(predictions, perspective.Motivation)
 	reaction := Act(gameplay, action, perspective.Agreement.Act, truth)
-	possibleWorlds = Observe(gameplay, reaction)
+	possibleWorlds = Observe(gameplay, reaction, perspective.Agreement.Act, possibleWorlds)
 	return reaction, possibleWorlds
 }
 

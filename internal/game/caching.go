@@ -64,21 +64,15 @@ func (pc *predictionCache) Set(group uint64, value Predictions) {
 	pc.size++
 }
 
-func (pc *predictionCache) Get(group uint64) Predictions {
+func (pc *predictionCache) Get(group uint64) (predictions Predictions, err error) {
 	bKey := Uint64ToBytes(group)
-	// thePredictionsFreeCache.Touch(bKey, cacheExpireSeconds)
 	data, err := thePredictionsFreeCache.Get(string(bKey))
 	if err != nil {
-		panic(err)
+		predictions = NewPredictions()
+	} else {
+		predictions = NewPredictionsFromBytes(data)
 	}
-	return NewPredictionsFromBytes(data)
-}
-
-func (pc *predictionCache) Exists(group uint64) bool {
-	bKey := Uint64ToBytes(group)
-	// err := thePredictionsFreeCache.Touch(bKey, cacheExpireSeconds)
-	_, err := thePredictionsFreeCache.Get(string(bKey))
-	return err == nil
+	return predictions, err
 }
 
 func (pc *predictionCache) Stats() bigcache.Stats {

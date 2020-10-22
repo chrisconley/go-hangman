@@ -98,8 +98,8 @@ func PlayGames(agreement game.Agreement, motivation game.Motivation, lines []str
 
 		truth := game.BUniverse.GetWorldByIndex(j)
 		gameplay, _ := PlayGame(truth, perspective)
-		fmt.Printf("TRUTH: %s | ", truth)
-		fmt.Printf("TURNS: %d\n", gameplay.TurnCount)
+		// fmt.Printf("TRUTH: %s | ", truth)
+		// fmt.Printf("TURNS: %d\n", gameplay.TurnCount)
 		games = append(games, gameplay)
 	}
 

@@ -2,14 +2,18 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
+	"os"
 	"runtime"
 	"sync"
 
 	"github.com/chrisconley/go-hangman/internal/game"
+	"github.com/chrisconley/go-hangman/internal/hangman"
 	"github.com/chrisconley/go-hangman/internal/mastermind"
 	"github.com/chrisconley/go-hangman/internal/play"
 	"github.com/chrisconley/go-hangman/internal/utils"
+	"github.com/pkg/profile"
 )
 
 type optimizationResults struct {
@@ -17,11 +21,9 @@ type optimizationResults struct {
 	GameStats  play.Stats
 }
 
-func TryTry(motivation game.Motivation, lines []string, c chan optimizationResults, wg *sync.WaitGroup) {
-	// limit := 1000
-	// fmt.Printf("STARTING: %+v\n", motivation)
+func TryTry(motivation game.Motivation, agreement game.Agreement, lines []string, c chan optimizationResults, wg *sync.WaitGroup) {
 	limit := len(lines)
-	games := play.PlayGames(mastermind.Agreement, motivation, lines, limit)
+	games := play.PlayGames(agreement, motivation, lines, limit)
 	stats := play.CalculateStats(games)
 
 	results := optimizationResults{Motivation: motivation, GameStats: stats}
@@ -45,28 +47,58 @@ func handleResults(input chan optimizationResults, output chan []optimizationRes
 }
 
 func main() {
-	// lines := utils.ReadLinesFromFilePath("./fixtures/mastermind-ABCDEFG-4.txt")
-	lines := utils.ReadLinesFromFilePath("./fixtures/commercial-mastermind.txt")
-	// lines := utils.ReadLinesFromFilePath("./fixtures/nine-letter-words.txt")
-	// lines = lines[:10000]
+	lines, err := utils.ReadLinesFromStdin()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(2)
+	}
+	limit := flag.Int("limit", -1, "Number of trials to run. Defaults to all generated")
+	gameString := flag.String("game", "none", "What game to play. Valid games: hangman, mastermind. Required")
+	trialStepSize := flag.Float64("trial.stepSize", 0.5, "What step size to take when building brute force trials")
+	profiling := flag.String("profiling", "off", "Set 'mem' or 'cpu' profiling. Defaults to off.")
+	profilingProfilePath := flag.String("profiling.profilePath", "/tmp/profiling", "Path where profile should be written")
+	flag.Parse()
+
+	agreement := hangman.Agreement
+	if *gameString == "hangman" {
+		agreement = hangman.Agreement
+	} else if *gameString == "mastermind" {
+		agreement = mastermind.Agreement
+	} else {
+		panic("A game must be specified.")
+	}
+
+	if *profiling == "cpu" {
+		defer profile.Start(
+			profile.ProfilePath(*profilingProfilePath),
+		).Stop()
+
+	} else if *profiling == "mem" {
+		defer profile.Start(
+			profile.MemProfile,
+			profile.MemProfileRate(4096*10),
+			profile.ProfilePath(*profilingProfilePath),
+		).Stop()
+	}
+
 	game.BUniverse = game.InitUniverse(lines)
-	trials := play.BuildTrials(0.0, 1.0, 0.05, 4)
-	fmt.Println("Number of trials: ", len(trials))
-	// defer profile.Start(
-	// 	// profile.memprofile,
-	// 	// profile.memprofilerate(4096*10),
-	// 	profile.ProfilePath("/tmp/mem.pprof"),
-	// ).Stop()
+	trials := play.BuildTrials(0.0, 1.0, *trialStepSize, 4)
+	trialLimit := 0
+	if *limit == -1 {
+		trialLimit = len(trials)
+	} else {
+		trialLimit = *limit
+	}
+	fmt.Println("Number of trials generated: ", len(trials))
+	fmt.Println("Trials to be conducted: ", trialLimit)
 
 	var wg sync.WaitGroup
-	limit := len(trials)
-	// limit := 4
 	trialResult := make(chan optimizationResults)
 	statsOutput := make(chan []optimizationResults)
 	maxGoroutines := runtime.NumCPU()
 	guard := make(chan struct{}, maxGoroutines)
 	go handleResults(trialResult, statsOutput, &wg)
-	for _, trial := range trials[:limit] {
+	for _, trial := range trials[:trialLimit] {
 		for index, value := range trial {
 			if value < 0.0 {
 				trial[index] = 0.0
@@ -81,7 +113,7 @@ func main() {
 		wg.Add(2)
 		guard <- struct{}{}
 		go func() {
-			TryTry(motivation, lines, trialResult, &wg)
+			TryTry(motivation, agreement, lines, trialResult, &wg)
 			<-guard
 		}()
 	}

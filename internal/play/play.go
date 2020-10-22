@@ -56,31 +56,15 @@ func Act(gameplay game.GamePlay, action game.Action, act game.Act, truth game.Wo
 }
 
 func Observe(gameplay game.GamePlay, reaction game.Reaction, act game.Act, possibleWorlds game.PossibleWorlds) game.PossibleWorlds {
-	gamePlayHash := gameplay.Hash
-	actionHash := reaction.Action.Hash()
-	responseHash := reaction.Response.Hash()
-	if game.TheCache.Exists(gamePlayHash, actionHash, responseHash) {
-		// fmt.Println("CACHE HIT")
-		return game.TheCache.GetNextWorlds(gamePlayHash, actionHash, responseHash)
-	} else {
-		npw := game.NewPossibleWorlds(game.BUniverse.Size)
-		for _, worldIndex := range possibleWorlds.Indices() {
-			world := game.BUniverse.GetWorldByIndex(worldIndex)
-			testReaction := act(gameplay, world, reaction.Action)
-			if testReaction.Response.Matches(reaction.Response) {
-				npw.Add(worldIndex)
-			}
+	npw := game.NewPossibleWorlds(game.BUniverse.Size)
+	for _, worldIndex := range possibleWorlds.Indices() {
+		world := game.BUniverse.GetWorldByIndex(worldIndex)
+		testReaction := act(gameplay, world, reaction.Action)
+		if testReaction.Response.Matches(reaction.Response) {
+			npw.Add(worldIndex)
 		}
-		responseWorlds := make(map[uint64]game.PossibleWorlds)
-		responseWorlds[responseHash] = npw
-		game.TheCache.Write(
-			gamePlayHash,
-			actionHash,
-			responseWorlds,
-		)
-		return npw
-
 	}
+	return npw
 }
 
 // ###########################

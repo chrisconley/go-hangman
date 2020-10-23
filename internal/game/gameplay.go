@@ -1,6 +1,11 @@
 package game
 
-import "github.com/segmentio/fasthash/fnv1a"
+import (
+	"bytes"
+	"encoding/binary"
+
+	"github.com/segmentio/fasthash/fnv1a"
+)
 
 type Act func(gp GamePlay, w World, action Action) (reaction Reaction)
 type GetActions func(gp GamePlay, w PossibleWorlds, aa AvailableActions) []Action
@@ -22,6 +27,18 @@ func NewReaction(action Action, responseString string, reward float64) Reaction 
 		Response: NewResponse(responseString),
 		Reward:   reward,
 	}
+}
+
+func NewReactionFromBytes(action Action, reactionBytes []byte) Reaction {
+	reward := BytesToFloat64(reactionBytes[:8])
+	return NewReaction(action, string(reactionBytes[8:]), reward)
+}
+
+func (r Reaction) ToBytes() []byte {
+	buffer := bytes.Buffer{}
+	binary.Write(&buffer, binary.LittleEndian, Float64ToBytes(r.Reward))
+	buffer.Write([]byte(r.Response.String()))
+	return buffer.Bytes()
 }
 
 type GamePlay struct {

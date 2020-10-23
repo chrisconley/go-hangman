@@ -2,6 +2,7 @@ package game
 
 import (
 	"encoding/binary"
+	"math"
 	"time"
 
 	"github.com/allegro/bigcache"
@@ -12,8 +13,8 @@ var bigCacheConfig = bigcache.Config{
 	Shards: 1024,
 
 	// time after which entry can be evicted
-	// LifeWindow: 10 * time.Hour,
-	LifeWindow: 10 * time.Second,
+	LifeWindow: 10 * time.Hour,
+	// LifeWindow: 60 * time.Second,
 
 	// Interval between removing expired entries (clean up).
 	// If set to <= 0 then no action is performed.
@@ -21,10 +22,10 @@ var bigCacheConfig = bigcache.Config{
 	CleanWindow: 0,
 
 	// rps * lifeWindow, used only in initial memory allocation
-	MaxEntriesInWindow: 10 * 10 * 60,
+	MaxEntriesInWindow: 100 * 10 * 60,
 
 	// max entry size in bytes, used only in initial memory allocation
-	MaxEntrySize: 50,
+	MaxEntrySize: 100,
 
 	// prints information about additional memory allocation
 	Verbose: false,
@@ -32,7 +33,7 @@ var bigCacheConfig = bigcache.Config{
 	// cache will not allocate more memory than this limit, value in MB
 	// if value is reached then the oldest entries can be overridden for the new ones
 	// 0 value means no size limit
-	HardMaxCacheSize: 1000,
+	HardMaxCacheSize: 2000,
 
 	// callback fired when the oldest entry is removed because of its expiration time or no space left
 	// for the new entry, or because delete was called. A bitmask representing the reason will be returned.
@@ -46,7 +47,9 @@ var bigCacheConfig = bigcache.Config{
 	OnRemoveWithReason: nil,
 }
 var thePredictionsFreeCache, _ = bigcache.NewBigCache(bigCacheConfig)
+var theReactionCache, _ = bigcache.NewBigCache(bigCacheConfig)
 
+var ReactionCache = reactionCache{}
 var PredictionCache = predictionCache{}
 
 type predictionCache struct {
@@ -83,6 +86,40 @@ func (pc *predictionCache) Size() uint64 {
 	return pc.size
 }
 
+type reactionCache struct {
+	size uint64
+}
+
+func (pc *reactionCache) Set(group uint64, value Reaction) {
+	bKey := Uint64ToBytes(group)
+	// err := theReactionFreeCache.Set(bKey, value.ToBytes(), cacheExpireSeconds)
+	// fmt.Printf("Prediction bytes len: %d\n", len(value.ToBytes()))
+	err := theReactionCache.Set(string(bKey), value.ToBytes())
+	if err != nil {
+		panic(err)
+	}
+	pc.size++
+}
+
+func (pc *reactionCache) Get(action Action, group uint64) (reaction Reaction, err error) {
+	bKey := Uint64ToBytes(group)
+	data, err := theReactionCache.Get(string(bKey))
+	if err != nil {
+		reaction = NewReaction(action, "", 0.0)
+	} else {
+		reaction = NewReactionFromBytes(action, data)
+	}
+	return reaction, err
+}
+
+func (pc *reactionCache) Stats() bigcache.Stats {
+	return theReactionCache.Stats()
+}
+
+func (pc *reactionCache) Size() uint64 {
+	return pc.size
+}
+
 func Uint64ToBytes(ui uint64) []byte {
 	var data [8]byte
 	binary.LittleEndian.PutUint64(data[:], ui)
@@ -91,4 +128,12 @@ func Uint64ToBytes(ui uint64) []byte {
 
 func BytesToUint64(data []byte) (ui uint64) {
 	return binary.LittleEndian.Uint64(data[:])
+}
+
+func Float64ToBytes(f float64) []byte {
+	return Uint64ToBytes(math.Float64bits(f))
+}
+
+func BytesToFloat64(data []byte) float64 {
+	return math.Float64frombits(BytesToUint64(data[:]))
 }

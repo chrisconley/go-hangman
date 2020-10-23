@@ -17,6 +17,7 @@ import (
 	"github.com/chrisconley/go-hangman/internal/game"
 	"github.com/chrisconley/go-hangman/internal/hangman"
 	"github.com/chrisconley/go-hangman/internal/mastermind"
+	"github.com/pkg/profile"
 
 	"github.com/chrisconley/go-hangman/internal/play"
 	"github.com/chrisconley/go-hangman/internal/utils"
@@ -34,6 +35,8 @@ func main() {
 	reward := flag.Float64("motivation.reward", 0.0, "How much weight to put into Reward.")
 	entropy := flag.Float64("motivation.entropy", 0.0, "How much weight to put into Entropy.")
 	minimax := flag.Float64("motivation.minimax", 0.0, "How much weight to put into MiniMax.")
+	profiling := flag.String("profiling", "off", "Set 'mem' or 'cpu' profiling. Defaults to off.")
+	profilingProfilePath := flag.String("profiling.profilePath", "/tmp/profiling", "Path where profile should be written")
 	flag.Parse()
 
 	if *reward+*entropy+*minimax != 1.0 {
@@ -50,6 +53,19 @@ func main() {
 		panic("A game must be specified.")
 	}
 
+	if *profiling == "cpu" {
+		defer profile.Start(
+			profile.ProfilePath(*profilingProfilePath),
+		).Stop()
+
+	} else if *profiling == "mem" {
+		defer profile.Start(
+			profile.MemProfile,
+			profile.MemProfileRate(4096*10),
+			profile.ProfilePath(*profilingProfilePath),
+		).Stop()
+	}
+
 	motivation := game.Motivation{Reward: *reward, Entropy: *entropy, MiniMax: *minimax}
 
 	games := play.PlayGames(agreement, motivation, lines, *limit)
@@ -57,4 +73,8 @@ func main() {
 
 	b, err := json.Marshal(stats)
 	fmt.Printf("GameStats: %s\n", string(b))
+	fmt.Printf("PredictionCache stats: %+v\n", game.PredictionCache.Stats())
+	fmt.Printf("PredictionCache size: %+v\n", game.PredictionCache.Size())
+	fmt.Printf("ReactionCache stats: %+v\n", game.ReactionCache.Stats())
+	fmt.Printf("ReactionCache size: %+v\n", game.ReactionCache.Size())
 }

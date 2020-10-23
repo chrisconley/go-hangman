@@ -40,6 +40,14 @@ func NewResponse(responseString string) Response {
 	return newHashedString(responseString)
 }
 
+func NewResponseFromBytes(responseBytes []byte) Action {
+	hs := hashedString{}
+	hs.bytes = responseBytes
+	hs.hash = fnv1a.HashBytes64(responseBytes)
+	hs.length = len(responseBytes)
+	return hs
+}
+
 type HashedString interface {
 	String() string
 	Hash() uint64

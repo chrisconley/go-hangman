@@ -3,6 +3,8 @@ package mastermind
 import (
 	"strings"
 
+	"github.com/segmentio/fasthash/fnv1a"
+
 	"github.com/chrisconley/go-hangman/internal/game"
 )
 
@@ -29,56 +31,67 @@ func Act(gameplay game.GamePlay, world game.World, action game.Action) (r game.R
 	//     for the first "6" in the guess
 	// This results in a response of 'WWW'.
 
-	if gameplay.PreviouslyActed(action) {
-		panic("This action is not allowed because it has already been used")
-	}
+	hash := fnv1a.AddUint64(gameplay.Hash, world.Hash())
+	hash = fnv1a.AddUint64(hash, action.Hash())
+	reaction, err := game.ReactionCache.Get(action, hash)
 
-	worldString := world.String()
-	actionString := action.String()
+	if err != nil {
 
-	responseBuffer := strings.Builder{}
-	reward := 0.0
-	totalPossibleReward := float64(len(worldString))
-
-	remainingActionCharacters := strings.Builder{}
-	remainingWorldCharacters := make(map[byte]int)
-
-	// First, we're going to look for "B" responses (guesses in the correction position)
-	for i := range actionString {
-		if worldString[i] == actionString[i] {
-			// If the character in position i is the same in both
-			// Add a "B" to the response and record reward
-			responseBuffer.WriteString("B")
-			reward += 1 / totalPossibleReward
-		} else {
-			// Otherwise, save the character to check for "W" matches
-			// and increase the count of the world character
-			remainingActionCharacters.WriteByte(actionString[i])
-			remainingWorldCharacters[worldString[i]]++
+		if gameplay.PreviouslyActed(action) {
+			panic("This action is not allowed because it has already been used")
 		}
-	}
 
-	// Now iterate through the action characters that were not already used for a "B" match
-	for _, char := range remainingActionCharacters.String() {
-		character := byte(char)
-		// Look up the action character to see if there are any matching
-		// world characters left
-		if remainingWorldCharacters[character] > 0 {
-			// If there are, record the "W" response and reward
-			responseBuffer.WriteString("W")
-			reward += 0.5 / totalPossibleReward
-			// Reduce the count to record that that world character has been used
-			// so we don't double count it in a future iteration
-			remainingWorldCharacters[character]--
+		worldString := world.String()
+		actionString := action.String()
 
+		responseBuffer := strings.Builder{}
+		reward := 0.0
+		totalPossibleReward := float64(len(worldString))
+
+		remainingActionCharacters := strings.Builder{}
+		remainingWorldCharacters := make(map[byte]int)
+
+		// First, we're going to look for "B" responses (guesses in the correction position)
+		for i := range actionString {
+			if worldString[i] == actionString[i] {
+				// If the character in position i is the same in both
+				// Add a "B" to the response and record reward
+				responseBuffer.WriteString("B")
+				reward += 1 / totalPossibleReward
+			} else {
+				// Otherwise, save the character to check for "W" matches
+				// and increase the count of the world character
+				remainingActionCharacters.WriteByte(actionString[i])
+				remainingWorldCharacters[worldString[i]]++
+			}
 		}
+
+		// Now iterate through the action characters that were not already used for a "B" match
+		for _, char := range remainingActionCharacters.String() {
+			character := byte(char)
+			// Look up the action character to see if there are any matching
+			// world characters left
+			if remainingWorldCharacters[character] > 0 {
+				// If there are, record the "W" response and reward
+				responseBuffer.WriteString("W")
+				reward += 0.5 / totalPossibleReward
+				// Reduce the count to record that that world character has been used
+				// so we don't double count it in a future iteration
+				remainingWorldCharacters[character]--
+
+			}
+		}
+
+		response := responseBuffer.String()
+		if response == "" {
+			response = "!"
+		}
+		reaction := game.NewReaction(action, response, reward)
+		game.ReactionCache.Set(hash, reaction)
+		return reaction
 	}
 
-	response := responseBuffer.String()
-	if response == "" {
-		response = "!"
-	}
-	return game.NewReaction(action, response, reward)
+	return reaction
 }
 
 var Agreement = game.Agreement{

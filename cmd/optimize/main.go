@@ -98,6 +98,16 @@ func main() {
 	maxGoroutines := runtime.NumCPU()
 	guard := make(chan struct{}, maxGoroutines)
 	go handleResults(trialResult, statsOutput, &wg)
+
+	// prime the cache
+	motivation := game.Motivation{
+		Reward:    trials[0][3],
+		Entropy:   trials[0][0],
+		MiniMax:   trials[0][1],
+		MostParts: trials[0][2],
+	}
+	play.PlayGames(agreement, motivation, lines, 1)
+	fmt.Println("Finished priming cache")
 	for _, trial := range trials[:trialLimit] {
 		for index, value := range trial {
 			if value < 0.0 {
@@ -140,8 +150,10 @@ func main() {
 
 	}
 
-	fmt.Printf("Cache stats: %+v\n", game.PredictionCache.Stats())
-	fmt.Printf("Cache size: %+v\n", game.PredictionCache.Size())
+	fmt.Printf("PredictionCache stats: %+v\n", game.PredictionCache.Stats())
+	fmt.Printf("PredictionCache size: %+v\n", game.PredictionCache.Size())
+	fmt.Printf("ReactionCache stats: %+v\n", game.ReactionCache.Stats())
+	fmt.Printf("ReactionCache size: %+v\n", game.ReactionCache.Size())
 	fmt.Printf("Min Total Turns: %d, %+v\n", minTotalTurns, minTotalTurnsMotivation)
 	fmt.Printf("Min Total Pain: %f, %+v\n", minTotalPain, minTotalPainMotivation)
 

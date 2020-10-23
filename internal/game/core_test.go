@@ -36,6 +36,15 @@ func TestActionMarshalling(t *testing.T) {
 	test.AssertDeepEqual(action.Matches(NewAction("h")), false, t)
 }
 
+func TestReactionMarshalling(t *testing.T) {
+	action := NewAction("a")
+	reaction := NewReaction(action, "-a-", 0.56)
+	reaction2 := NewReactionFromBytes(action, reaction.ToBytes())
+	test.AssertDeepEqual(reaction2.Action.String(), "a", t)
+	test.AssertDeepEqual(reaction2.Response.String(), "-a-", t)
+	test.AssertAlmostEqual(reaction2.Reward, 0.56, 2, t)
+}
+
 func TestResponse(t *testing.T) {
 	response := NewResponse("hi")
 	test.AssertDeepEqual(response.String(), "hi", t)

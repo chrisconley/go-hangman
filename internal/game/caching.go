@@ -25,7 +25,7 @@ var bigCacheConfig = bigcache.Config{
 	MaxEntriesInWindow: 100 * 10 * 60,
 
 	// max entry size in bytes, used only in initial memory allocation
-	MaxEntrySize: 100,
+	MaxEntrySize: 500,
 
 	// prints information about additional memory allocation
 	Verbose: false,
@@ -33,7 +33,7 @@ var bigCacheConfig = bigcache.Config{
 	// cache will not allocate more memory than this limit, value in MB
 	// if value is reached then the oldest entries can be overridden for the new ones
 	// 0 value means no size limit
-	HardMaxCacheSize: 2000,
+	HardMaxCacheSize: 4000,
 
 	// callback fired when the oldest entry is removed because of its expiration time or no space left
 	// for the new entry, or because delete was called. A bitmask representing the reason will be returned.

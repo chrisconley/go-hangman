@@ -43,6 +43,59 @@ func TestGetActions(t *testing.T) {
 	test.AssertDeepEqual(actions, game.BuildActions("bb"), t)
 }
 
+func TestGetActionsUniqueness(t *testing.T) {
+	lines := utils.ReadLinesFromFilePath("../../fixtures/commercial-mastermind.txt")
+	game.BUniverse = game.InitUniverse(lines)
+	gp := game.InitGamePlay(game.BUniverse.PossibleWorlds.GetHash())
+	actions := GetActions(gp, game.BUniverse.PossibleWorlds, game.BUniverse.Actions)
+	expected := []game.Action{
+		game.NewAction("AAAA"),
+		game.NewAction("AAAB"),
+		game.NewAction("AABB"),
+		game.NewAction("ABBC"),
+		game.NewAction("ABCD"),
+	}
+	test.AssertDeepEqual(actions, expected, t)
+}
+
+func TestGetActionsUniquenessAfterFirstGuess(t *testing.T) {
+	lines := utils.ReadLinesFromFilePath("../../fixtures/mastermind-ABCDEFG-4.txt")
+	game.BUniverse = game.InitUniverse(lines)
+	gp := game.InitGamePlay(game.BUniverse.PossibleWorlds.GetHash())
+	gp.AddTurn(game.NewReaction(game.NewAction("ABCD"), "WWWW", 0.0))
+	actions := GetActions(gp, game.BUniverse.PossibleWorlds, game.BUniverse.Actions)
+	actionsMap := make(map[string]int8)
+	for _, action := range actions {
+		actionsMap[action.String()] = 1
+	}
+	_, ok := actionsMap["ABCE"]
+	test.AssertDeepEqual(true, ok, t)
+	_, ok = actionsMap["ABCF"]
+	test.AssertDeepEqual(false, ok, t)
+	_, ok = actionsMap["ABCG"]
+	test.AssertDeepEqual(false, ok, t)
+
+	_, ok = actionsMap["ABEE"]
+	test.AssertDeepEqual(true, ok, t)
+	_, ok = actionsMap["ABFF"]
+	test.AssertDeepEqual(false, ok, t)
+	_, ok = actionsMap["ABGG"]
+	test.AssertDeepEqual(false, ok, t)
+
+	_, ok = actionsMap["ABEF"]
+	test.AssertDeepEqual(true, ok, t)
+	_, ok = actionsMap["ABEG"]
+	test.AssertDeepEqual(false, ok, t)
+	_, ok = actionsMap["ABFE"]
+	test.AssertDeepEqual(false, ok, t)
+	_, ok = actionsMap["ABFG"]
+	test.AssertDeepEqual(false, ok, t)
+	_, ok = actionsMap["ABGE"]
+	test.AssertDeepEqual(false, ok, t)
+	_, ok = actionsMap["ABGF"]
+	test.AssertDeepEqual(false, ok, t)
+}
+
 func TestActRewards(t *testing.T) {
 	reaction := Act(game.InitGamePlay(0.0), game.NewWorld("1122"), game.NewAction("1313"))
 	test.AssertDeepEqual(reaction.Response, game.NewResponse("BW"), t)

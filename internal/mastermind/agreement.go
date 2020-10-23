@@ -1,6 +1,7 @@
 package mastermind
 
 import (
+	"sort"
 	"strings"
 
 	"github.com/chrisconley/go-hangman/internal/game"
@@ -29,14 +30,16 @@ func GetActions(gameplay game.GamePlay, remainingWorlds game.PossibleWorlds, aa 
 
 	builtActionStrings := make(map[string]int8)
 	for _, worldAction := range aa.WorldActions() {
-		builtActionString := ""
 		assignedFreeColors := make(map[string]string)
 		assignedIndex := 0
+		symActionColorTypes := []string{}
+		mappedFreeColors := []string{}
+
 		for _, b := range worldAction.Bytes() {
 			char := string(b)
 			// fmt.Println(freeColors[char])
 			if _, ok := freeColors[char]; !ok {
-				builtActionString = builtActionString + char
+				symActionColorTypes = append(symActionColorTypes, "c")
 			} else {
 				assignedFreeColor, ok := assignedFreeColors[char]
 				if !ok {
@@ -44,11 +47,24 @@ func GetActions(gameplay game.GamePlay, remainingWorlds game.PossibleWorlds, aa 
 					assignedFreeColors[char] = assignedFreeColor
 					assignedIndex++
 				}
-				builtActionString = builtActionString + assignedFreeColor
+				symActionColorTypes = append(symActionColorTypes, "f")
+				mappedFreeColors = append(mappedFreeColors, assignedFreeColor)
 			}
 
 		}
-		builtActionStrings[builtActionString] = 1
+		sort.Strings(mappedFreeColors)
+		builtActionBytes := []byte{}
+		freeColorIndex := 0
+		for index, colorType := range symActionColorTypes {
+			if colorType == "c" {
+				builtActionBytes = append(builtActionBytes, worldAction.Bytes()[index])
+			} else if colorType == "f" {
+				builtActionBytes = append(builtActionBytes, mappedFreeColors[freeColorIndex][0])
+				freeColorIndex++
+			}
+		}
+
+		builtActionStrings[string(builtActionBytes)] = 1
 	}
 	actions := []game.Action{}
 	for actionString, _ := range builtActionStrings {

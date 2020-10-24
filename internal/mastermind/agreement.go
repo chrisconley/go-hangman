@@ -13,9 +13,9 @@ type kv struct {
 }
 
 func GetActions(gameplay game.GamePlay, remainingWorlds game.PossibleWorlds, aa game.AvailableActions) []game.Action {
-	allColors := []string{}
-	for _, action := range aa.Actions() {
-		allColors = append(allColors, action.String())
+	allColors := make([]string, len(aa.Actions()))
+	for index, action := range aa.Actions() {
+		allColors[index] = action.String()
 	}
 	usedColors := make(map[string]int8)
 	for _, reaction := range gameplay.Reactions {
@@ -25,26 +25,28 @@ func GetActions(gameplay game.GamePlay, remainingWorlds game.PossibleWorlds, aa 
 		}
 	}
 	freeColors := make(map[string]int8)
-	freeColorsSlice := []string{}
+	freeColorsSlice := make([]string, (len(allColors) - len(usedColors)))
+	freeColorIndex := 0
 	for _, color := range allColors {
 		if _, ok := usedColors[color]; !ok {
 			freeColors[color] = 1
-			freeColorsSlice = append(freeColorsSlice, color)
+			freeColorsSlice[freeColorIndex] = color
+			freeColorIndex++
 		}
 	}
 
 	builtActionStrings := make(map[string]int8)
 	for _, worldAction := range aa.WorldActions() {
-		symActionColorTypes := []string{}
+		symActionColorTypes := make([]string, worldAction.Length())
 		freeColorCounts := make(map[string]int)
 
-		for _, b := range worldAction.Bytes() {
+		for index, b := range worldAction.Bytes() {
 			char := string(b)
 			if _, ok := freeColors[char]; !ok {
-				symActionColorTypes = append(symActionColorTypes, "c")
+				symActionColorTypes[index] = "c"
 			} else {
 				freeColorCounts[char]++
-				symActionColorTypes = append(symActionColorTypes, "f")
+				symActionColorTypes[index] = "f"
 			}
 
 		}
@@ -64,13 +66,13 @@ func GetActions(gameplay game.GamePlay, remainingWorlds game.PossibleWorlds, aa 
 			}
 		}
 
-		builtActionBytes := []byte{}
+		builtActionBytes := make([]byte, worldAction.Length())
 		freeColorIndex := 0
 		for index, colorType := range symActionColorTypes {
 			if colorType == "c" {
-				builtActionBytes = append(builtActionBytes, worldAction.Bytes()[index])
+				builtActionBytes[index] = worldAction.Bytes()[index]
 			} else if colorType == "f" {
-				builtActionBytes = append(builtActionBytes, freeColorsToAssign[freeColorIndex][0])
+				builtActionBytes[index] = freeColorsToAssign[freeColorIndex][0]
 				freeColorIndex++
 			}
 		}

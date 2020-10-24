@@ -7,6 +7,11 @@ import (
 	"github.com/chrisconley/go-hangman/internal/game"
 )
 
+type kv struct {
+	Key   string
+	Value int
+}
+
 func GetActions(gameplay game.GamePlay, remainingWorlds game.PossibleWorlds, aa game.AvailableActions) []game.Action {
 	allColors := []string{}
 	for _, action := range aa.Actions() {
@@ -30,36 +35,42 @@ func GetActions(gameplay game.GamePlay, remainingWorlds game.PossibleWorlds, aa 
 
 	builtActionStrings := make(map[string]int8)
 	for _, worldAction := range aa.WorldActions() {
-		assignedFreeColors := make(map[string]string)
-		assignedIndex := 0
 		symActionColorTypes := []string{}
-		mappedFreeColors := []string{}
+		freeColorCounts := make(map[string]int)
 
 		for _, b := range worldAction.Bytes() {
 			char := string(b)
-			// fmt.Println(freeColors[char])
 			if _, ok := freeColors[char]; !ok {
 				symActionColorTypes = append(symActionColorTypes, "c")
 			} else {
-				assignedFreeColor, ok := assignedFreeColors[char]
-				if !ok {
-					assignedFreeColor = freeColorsSlice[assignedIndex]
-					assignedFreeColors[char] = assignedFreeColor
-					assignedIndex++
-				}
+				freeColorCounts[char]++
 				symActionColorTypes = append(symActionColorTypes, "f")
-				mappedFreeColors = append(mappedFreeColors, assignedFreeColor)
 			}
 
 		}
-		sort.Strings(mappedFreeColors)
+		sortedCounts := []kv{}
+		for k, v := range freeColorCounts {
+			sortedCounts = append(sortedCounts, kv{k, v})
+		}
+
+		sort.Slice(sortedCounts, func(i, j int) bool {
+			return sortedCounts[i].Value > sortedCounts[j].Value
+		})
+
+		freeColorsToAssign := []string{}
+		for index, kv := range sortedCounts {
+			for j := 0; j < kv.Value; j++ {
+				freeColorsToAssign = append(freeColorsToAssign, freeColorsSlice[index])
+			}
+		}
+
 		builtActionBytes := []byte{}
 		freeColorIndex := 0
 		for index, colorType := range symActionColorTypes {
 			if colorType == "c" {
 				builtActionBytes = append(builtActionBytes, worldAction.Bytes()[index])
 			} else if colorType == "f" {
-				builtActionBytes = append(builtActionBytes, mappedFreeColors[freeColorIndex][0])
+				builtActionBytes = append(builtActionBytes, freeColorsToAssign[freeColorIndex][0])
 				freeColorIndex++
 			}
 		}

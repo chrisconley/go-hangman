@@ -35,13 +35,14 @@ func main() {
 	reward := flag.Float64("motivation.reward", 0.0, "How much weight to put into Reward.")
 	entropy := flag.Float64("motivation.entropy", 0.0, "How much weight to put into Entropy.")
 	minimax := flag.Float64("motivation.minimax", 0.0, "How much weight to put into MiniMax.")
+	mostparts := flag.Float64("motivation.mostparts", 0.0, "How much weight to put into MiniMax.")
 	profiling := flag.String("profiling", "off", "Set 'mem' or 'cpu' profiling. Defaults to off.")
 	profilingProfilePath := flag.String("profiling.profilePath", "/tmp/profiling", "Path where profile should be written")
 	flag.Parse()
 
-	if *reward+*entropy+*minimax != 1.0 {
-		fmt.Printf("%f %f %f", *reward, *entropy, *minimax)
-		panic("Reward + Entropy + Minimax must equal 1.0. All params default to 0.0")
+	if *reward+*entropy+*minimax+*mostparts != 1.0 {
+		fmt.Printf("%f %f %f %f", *reward, *entropy, *minimax, *mostparts)
+		panic("Reward + Entropy + Minimax + Mostparts must equal 1.0. All params default to 0.0")
 	}
 
 	agreement := hangman.Agreement
@@ -66,7 +67,12 @@ func main() {
 		).Stop()
 	}
 
-	motivation := game.Motivation{Reward: *reward, Entropy: *entropy, MiniMax: *minimax}
+	motivation := game.Motivation{
+		Reward:    *reward,
+		Entropy:   *entropy,
+		MiniMax:   *minimax,
+		MostParts: *mostparts,
+	}
 
 	games := play.PlayGames(agreement, motivation, lines, *limit)
 	stats := play.CalculateStats(games)

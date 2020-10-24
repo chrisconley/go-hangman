@@ -1,6 +1,7 @@
 package mastermind
 
 import (
+	"sort"
 	"testing"
 
 	"github.com/chrisconley/go-hangman/internal/game"
@@ -9,17 +10,20 @@ import (
 )
 
 func TestGetActions(t *testing.T) {
-	universe := game.InitUniverse([]string{"aa", "bb"})
+	universe := game.InitUniverse([]string{"aa", "ab", "bb"})
 	aa := universe.Actions
 
 	remainingWorlds := game.NewPossibleWorlds(2)
-	lines := []string{"aa", "bb"}
+	lines := []string{"aa", "ab", "bb"}
 	for index := range lines {
 		remainingWorlds.Add(uint64(index))
 	}
 	gp := game.InitGamePlay(0.0)
 	actions := GetActions(gp, remainingWorlds, aa)
-	test.AssertDeepEqual(actions, game.BuildActions("aa", "bb"), t)
+	sort.Slice(actions, func(i, j int) bool {
+		return actions[i].String() < actions[j].String()
+	})
+	test.AssertDeepEqual(actions, game.BuildActions("aa", "ab"), t)
 
 	// Still return worlds that are not in remaining possible worlds
 	remainingWorlds = game.NewPossibleWorlds(1)
@@ -29,7 +33,10 @@ func TestGetActions(t *testing.T) {
 	}
 	gp = game.InitGamePlay(0.0)
 	actions = GetActions(gp, remainingWorlds, aa)
-	test.AssertDeepEqual(actions, game.BuildActions("aa", "bb"), t)
+	sort.Slice(actions, func(i, j int) bool {
+		return actions[i].String() < actions[j].String()
+	})
+	test.AssertDeepEqual(actions, game.BuildActions("aa", "ab"), t)
 
 	// Don't return worlds that have already been used
 	remainingWorlds = game.NewPossibleWorlds(1)
@@ -40,7 +47,10 @@ func TestGetActions(t *testing.T) {
 	gp = game.InitGamePlay(0.0)
 	gp.AddTurn(game.NewReaction(game.NewAction("aa"), "-", 0.0))
 	actions = GetActions(gp, remainingWorlds, aa)
-	test.AssertDeepEqual(actions, game.BuildActions("bb"), t)
+	sort.Slice(actions, func(i, j int) bool {
+		return actions[i].String() < actions[j].String()
+	})
+	test.AssertDeepEqual(actions, game.BuildActions("ab", "bb"), t)
 }
 
 func TestGetActionsUniqueness(t *testing.T) {
@@ -48,11 +58,14 @@ func TestGetActionsUniqueness(t *testing.T) {
 	game.BUniverse = game.InitUniverse(lines)
 	gp := game.InitGamePlay(game.BUniverse.PossibleWorlds.GetHash())
 	actions := GetActions(gp, game.BUniverse.PossibleWorlds, game.BUniverse.Actions)
+	sort.Slice(actions, func(i, j int) bool {
+		return actions[i].String() < actions[j].String()
+	})
 	expected := []game.Action{
 		game.NewAction("AAAA"),
 		game.NewAction("AAAB"),
 		game.NewAction("AABB"),
-		game.NewAction("ABBC"),
+		game.NewAction("AABC"),
 		game.NewAction("ABCD"),
 	}
 	test.AssertDeepEqual(actions, expected, t)

@@ -82,7 +82,7 @@ func main() {
 	}
 
 	game.BUniverse = game.InitUniverse(lines)
-	trials := play.BuildTrials(0.0, 1.0, *trialStepSize, 4)
+	trials := play.BuildTrials(0.0, 1.0, *trialStepSize, 3)
 	trialLimit := 0
 	if *limit == -1 {
 		trialLimit = len(trials)
@@ -99,15 +99,6 @@ func main() {
 	guard := make(chan struct{}, maxGoroutines)
 	go handleResults(trialResult, statsOutput, &wg)
 
-	// prime the cache
-	motivation := game.Motivation{
-		Reward:    trials[0][3],
-		Entropy:   trials[0][0],
-		MiniMax:   trials[0][1],
-		MostParts: trials[0][2],
-	}
-	play.PlayGames(agreement, motivation, lines, 1)
-	fmt.Println("Finished priming cache")
 	for _, trial := range trials[:trialLimit] {
 		for index, value := range trial {
 			if value < 0.0 {
@@ -115,7 +106,7 @@ func main() {
 			}
 		}
 		motivation := game.Motivation{
-			Reward:    trial[3],
+			// Reward:    trial[3],
 			Entropy:   trial[0],
 			MiniMax:   trial[1],
 			MostParts: trial[2],

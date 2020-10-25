@@ -26,7 +26,7 @@ cd go-hangman/
 ```
 aws ec2 run-instances \
   --image-id <ami-id> \
-  --instance-type m5.4xlarge \
+  --instance-type r5.8xlarge \
   --subnet-id <subnet-id> \
   --key-name <key-pair> \
   --iam-instance-profile Name=<instance-profile>

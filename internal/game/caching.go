@@ -2,6 +2,7 @@ package game
 
 import (
 	"encoding/binary"
+	"fmt"
 	"math"
 	"time"
 
@@ -10,19 +11,20 @@ import (
 
 var bigCacheConfig = bigcache.Config{
 	// number of shards (must be a power of 2)
-	Shards: 1024,
+	Shards: 16,
 
 	// time after which entry can be evicted
-	LifeWindow: 10 * time.Hour,
-	// LifeWindow: 60 * time.Second,
+	// LifeWindow: 10 * time.Hour,
+	LifeWindow: 5 * time.Minute,
 
 	// Interval between removing expired entries (clean up).
 	// If set to <= 0 then no action is performed.
 	// Setting to < 1 second is counterproductive — bigcache has a one second resolution.
-	CleanWindow: 0,
+	CleanWindow: 10 * time.Second,
 
-	// rps * lifeWindow, used only in initial memory allocation
-	MaxEntriesInWindow: 100 * 10 * 60,
+	// Max number of entries in life window. Used only to calculate initial size for cache shards.
+	// When proper value is set then additional memory allocation does not occur.
+	MaxEntriesInWindow: 1000,
 
 	// max entry size in bytes, used only in initial memory allocation
 	MaxEntrySize: 500,
@@ -33,7 +35,7 @@ var bigCacheConfig = bigcache.Config{
 	// cache will not allocate more memory than this limit, value in MB
 	// if value is reached then the oldest entries can be overridden for the new ones
 	// 0 value means no size limit
-	HardMaxCacheSize: 4000,
+	HardMaxCacheSize: 1000,
 
 	// callback fired when the oldest entry is removed because of its expiration time or no space left
 	// for the new entry, or because delete was called. A bitmask representing the reason will be returned.
@@ -62,6 +64,7 @@ func (pc *predictionCache) Set(group uint64, value Predictions) {
 	// fmt.Printf("Prediction bytes len: %d\n", len(value.ToBytes()))
 	err := thePredictionsFreeCache.Set(string(bKey), value.ToBytes())
 	if err != nil {
+		fmt.Println(value.PredictionsMap.Size(), len(value.ToBytes()))
 		panic(err)
 	}
 	pc.size++

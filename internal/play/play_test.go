@@ -1,6 +1,7 @@
 package play
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/chrisconley/go-hangman/internal/game"
@@ -27,6 +28,72 @@ func TestAct(t *testing.T) {
 
 func TestObserve(t *testing.T) {
 	t.Skip("TODO: Fix test setup")
+}
+
+func TestPlayMastermindSymmetry(t *testing.T) {
+	lines := []string{
+		"AA", "AB", "AC", "AD",
+		"BA", "BB", "BC", "BD",
+		"CA", "CB", "CC", "CD",
+		"DA", "DB", "DC", "DD",
+	}
+	game.BUniverse = game.InitUniverse(lines)
+	agreement := mastermind.Agreement
+	// perspective := game.NewPerspective(
+	// 	game.Motivation{Reward: 0.5, Entropy: 0.25, Time: 0.25},
+	// 	agreement,
+	// )
+	possibleWorlds := game.BUniverse.PossibleWorlds
+	gameplay := game.InitGamePlay(possibleWorlds.GetHash())
+	predictions := Explore(gameplay, agreement, possibleWorlds)
+	possibleResponses := []string{"BB", "B", "WW", "W", "!"}
+	newPredictions := getNewPredictions(
+		predictions,
+		possibleResponses,
+		gameplay,
+		mastermind.Act,
+		mastermind.Agreement,
+		possibleWorlds,
+	)
+	for actionString, predictionsSlice := range newPredictions {
+		for _, predictions := range predictionsSlice {
+			fmt.Printf("%s %+v\n", actionString, predictions.PredictionsMap.Values)
+		}
+	}
+	test.AssertDeepEqual(newPredictions, []game.Prediction{}, t)
+}
+
+func getNewPredictions(
+	predictions game.Predictions,
+	possibleResponses []string,
+	gameplay game.GamePlay,
+	act game.Act,
+	agreement game.Agreement,
+	possibleWorlds game.PossibleWorlds,
+) map[string][]game.Predictions {
+	newPredictions := map[string][]game.Predictions{}
+	values := predictions.PredictionsMap.Values
+	for _, prediction := range values {
+		action := prediction.Action
+		for _, responseString := range possibleResponses {
+			npw := Observe(
+				gameplay,
+				game.NewReaction(action, responseString, 0.0),
+				act,
+				possibleWorlds,
+			)
+			fmt.Println(npw.Len())
+			fmt.Println(Explore(gameplay, agreement, npw))
+			newPredictions[action.String()] = append(
+				newPredictions[action.String()],
+				Explore(gameplay, agreement, npw),
+			)
+
+		}
+
+	}
+	return newPredictions
+
 }
 
 func TestPlayBHangman(t *testing.T) {

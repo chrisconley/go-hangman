@@ -17,6 +17,7 @@ import (
 	"github.com/chrisconley/go-hangman/internal/game"
 	"github.com/chrisconley/go-hangman/internal/hangman"
 	"github.com/chrisconley/go-hangman/internal/mastermind"
+	"github.com/coocood/freecache"
 	"github.com/pkg/profile"
 
 	"github.com/chrisconley/go-hangman/internal/play"
@@ -38,7 +39,10 @@ func main() {
 	mostparts := flag.Float64("motivation.mostparts", 0.0, "How much weight to put into MiniMax.")
 	profiling := flag.String("profiling", "off", "Set 'mem' or 'cpu' profiling. Defaults to off.")
 	profilingProfilePath := flag.String("profiling.profilePath", "/tmp/profiling", "Path where profile should be written")
+	cacheSize := flag.Int("cacheSize", 1000, "Cache size in MB. Defaults to 1000MB (1GB).")
 	flag.Parse()
+
+	game.ThePredictionsFreeCache = freecache.NewCache(*cacheSize * 1024 * 1024)
 
 	if *reward+*entropy+*minimax+*mostparts != 1.0 {
 		fmt.Printf("%f %f %f %f", *reward, *entropy, *minimax, *mostparts)
@@ -81,6 +85,4 @@ func main() {
 	fmt.Printf("GameStats: %s\n", string(b))
 	fmt.Printf("PredictionCache stats: %+v\n", game.PredictionCache.Stats())
 	fmt.Printf("PredictionCache size: %+v\n", game.PredictionCache.Size())
-	fmt.Printf("ReactionCache stats: %+v\n", game.ReactionCache.Stats())
-	fmt.Printf("ReactionCache size: %+v\n", game.ReactionCache.Size())
 }

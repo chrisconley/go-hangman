@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"time"
 
 	"github.com/chrisconley/go-hangman/internal/game"
 )
@@ -25,6 +26,14 @@ func logDecision(decision game.Prediction) {
 func logReaction(reaction game.Reaction) {
 	if os.Getenv("DEBUGPREDICTIONS") != "" {
 		fmt.Printf("REACTION: %+v\n", reaction)
+	}
+}
+
+func logProgress(gameIndex uint64, truth game.World) {
+	if gameIndex%100 == 0 && os.Getenv("LOGPROGRESS") != "" {
+		fmt.Printf("%s | ", time.Now().Format("2006.01.02 15:04:05"))
+		fmt.Printf("GAME #: %d | ", gameIndex)
+		fmt.Printf("TRUTH: %s \n", truth)
 	}
 }
 
@@ -82,8 +91,7 @@ func PlayGames(agreement game.Agreement, motivation game.Motivation, lines []str
 
 		truth := game.BUniverse.GetWorldByIndex(j)
 		gameplay, _ := PlayGame(truth, perspective)
-		// fmt.Printf("TRUTH: %s | ", truth)
-		// fmt.Printf("TURNS: %d\n", gameplay.TurnCount)
+		logProgress(j+1, truth)
 		games = append(games, gameplay)
 	}
 

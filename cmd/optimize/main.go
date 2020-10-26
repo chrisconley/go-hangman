@@ -8,6 +8,8 @@ import (
 	"runtime"
 	"sync"
 
+	"github.com/coocood/freecache"
+
 	"github.com/chrisconley/go-hangman/internal/game"
 	"github.com/chrisconley/go-hangman/internal/hangman"
 	"github.com/chrisconley/go-hangman/internal/mastermind"
@@ -57,7 +59,11 @@ func main() {
 	trialStepSize := flag.Float64("trial.stepSize", 0.5, "What step size to take when building brute force trials")
 	profiling := flag.String("profiling", "off", "Set 'mem' or 'cpu' profiling. Defaults to off.")
 	profilingProfilePath := flag.String("profiling.profilePath", "/tmp/profiling", "Path where profile should be written")
+	cacheSize := flag.Int("cacheSize", 1000, "Cache size in MB. Defaults to 1000MB (1GB).")
 	flag.Parse()
+
+	fmt.Println("Cache Size in MB: ", *cacheSize)
+	game.ThePredictionsFreeCache = freecache.NewCache(*cacheSize * 1024 * 1024)
 
 	agreement := hangman.Agreement
 	if *gameString == "hangman" {
@@ -70,9 +76,7 @@ func main() {
 
 	if *profiling == "cpu" {
 		defer profile.Start(
-			profile.ProfilePath(*profilingProfilePath),
-		).Stop()
-
+			profile.ProfilePath(*profilingProfilePath)).Stop()
 	} else if *profiling == "mem" {
 		defer profile.Start(
 			profile.MemProfile,
@@ -82,7 +86,7 @@ func main() {
 	}
 
 	game.BUniverse = game.InitUniverse(lines)
-	trials := play.BuildTrials(0.0, 1.0, *trialStepSize, 3)
+	trials := play.BuildTrials(0.0, 1.0, *trialStepSize, 4)
 	trialLimit := 0
 	if *limit == -1 {
 		trialLimit = len(trials)
@@ -106,7 +110,7 @@ func main() {
 			}
 		}
 		motivation := game.Motivation{
-			// Reward:    trial[3],
+			Reward:    trial[3],
 			Entropy:   trial[0],
 			MiniMax:   trial[1],
 			MostParts: trial[2],
@@ -127,6 +131,9 @@ func main() {
 
 	minTotalPainMotivation := game.Motivation{}
 	minTotalPain := 1000000.0
+
+	minTotalPainRewardRatioMotivation := game.Motivation{}
+	minTotalPainRewardRatio := 1000000.0
 	for _, result := range allResults {
 		stats := result.GameStats
 		motivation := result.Motivation
@@ -138,14 +145,17 @@ func main() {
 			minTotalPain = stats.TotalPain
 			minTotalPainMotivation = motivation
 		}
+		if stats.TotalPain/stats.TotalReward < minTotalPainRewardRatio {
+			minTotalPainRewardRatio = stats.TotalPain / stats.TotalReward
+			minTotalPainRewardRatioMotivation = motivation
+		}
 
 	}
 
 	fmt.Printf("PredictionCache stats: %+v\n", game.PredictionCache.Stats())
 	fmt.Printf("PredictionCache size: %+v\n", game.PredictionCache.Size())
-	fmt.Printf("ReactionCache stats: %+v\n", game.ReactionCache.Stats())
-	fmt.Printf("ReactionCache size: %+v\n", game.ReactionCache.Size())
 	fmt.Printf("Min Total Turns: %d, %+v\n", minTotalTurns, minTotalTurnsMotivation)
 	fmt.Printf("Min Total Pain: %f, %+v\n", minTotalPain, minTotalPainMotivation)
+	fmt.Printf("Min Total Pain/Reward Ratio: %f, %+v\n", minTotalPainRewardRatio, minTotalPainRewardRatioMotivation)
 
 }

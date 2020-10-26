@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"runtime/debug"
 	"sync"
 
 	"github.com/coocood/freecache"
@@ -64,6 +65,7 @@ func main() {
 
 	fmt.Println("Cache Size in MB: ", *cacheSize)
 	game.ThePredictionsFreeCache = freecache.NewCache(*cacheSize * 1024 * 1024)
+	debug.SetGCPercent(20)
 
 	agreement := hangman.Agreement
 	if *gameString == "hangman" {

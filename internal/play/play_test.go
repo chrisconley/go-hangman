@@ -2,6 +2,7 @@ package play
 
 import (
 	"fmt"
+	"sort"
 	"testing"
 
 	"github.com/chrisconley/go-hangman/internal/game"
@@ -28,6 +29,128 @@ func TestAct(t *testing.T) {
 
 func TestObserve(t *testing.T) {
 	t.Skip("TODO: Fix test setup")
+}
+
+type ResponseCounts struct {
+	counts map[string]utils.GroupedIncrementer
+}
+
+func NewResponseCounts(
+	gameplay game.GamePlay,
+	remainingWorlds []game.World,
+	actions []game.Action,
+	act game.Act,
+) ResponseCounts {
+	rc := ResponseCounts{}
+	rc.counts = make(map[string]utils.GroupedIncrementer, len(actions))
+	for _, action := range actions {
+		for _, world := range remainingWorlds {
+			reaction := act(gameplay, world, action)
+			actionString := action.String()
+			responseString := reaction.Response.String()
+			if _, ok := rc.counts[actionString]; !ok {
+				rc.counts[actionString] = utils.NewGroupedIncrementer()
+			}
+			c := rc.counts[actionString]
+			c.Increment(responseString, 1.0)
+			rc.counts[actionString] = c
+		}
+	}
+	return rc
+}
+
+func (rc ResponseCounts) Values() map[string]utils.GroupedIncrementer {
+	return rc.counts
+}
+
+func (rc ResponseCounts) Get(actionString string) utils.GroupedIncrementer {
+	return rc.counts[actionString]
+}
+
+func (rc *ResponseCounts) Set(actionString string, gi utils.GroupedIncrementer) {
+	rc.counts[actionString] = gi
+}
+
+type GroupedCounter struct {
+	counts  utils.GroupedIncrementer
+	Actions []string
+}
+
+func (rc ResponseCounts) GroupByCountHash(groups []string) map[uint64]GroupedCounter {
+	groupedCounter := map[uint64]GroupedCounter{}
+	for actionString, groupedIncrementer := range rc.counts {
+		hash := groupedIncrementer.GetHash(groups)
+		counter := groupedCounter[hash]
+		counter.counts = groupedIncrementer
+		counter.Actions = append(counter.Actions, actionString)
+		groupedCounter[hash] = counter
+	}
+	return groupedCounter
+}
+
+type PotentialSymmetries struct {
+	GroupedActions [][]string
+	ResponseCounts ResponseCounts
+}
+
+func findPotentialSymmetries(
+	possibleResponses []string,
+	possibleWorlds game.PossibleWorlds,
+	reaction game.Reaction,
+) PotentialSymmetries {
+	return PotentialSymmetries{}
+}
+func TestPlayMastermindSymmetry2(t *testing.T) {
+	lines := []string{
+		"AA", "AB", "AC", "AD",
+		"BA", "BB", "BC", "BD",
+		"CA", "CB", "CC", "CD",
+		"DA", "DB", "DC", "DD",
+	}
+	possibleResponses := []string{"!", "W", "WW", "B", "BB"}
+	game.BUniverse = game.InitUniverse(lines)
+	worldActions := game.BUniverse.Actions.WorldActions()
+	turn1PossibleWorlds := game.BUniverse.PossibleWorlds
+	gameplay := game.InitGamePlay(turn1PossibleWorlds.GetHash())
+	reaction := game.NewReaction(game.NewAction("AB"), "B", 0.0)
+	turn2PossibleWorlds := Observe(gameplay, reaction, mastermind.Act, turn1PossibleWorlds)
+	turn2Worlds := game.PossibleWorldsToWorlds(turn2PossibleWorlds)
+
+	// potentialSymmetries := findPotentialSymmetries(
+	// 	possibleResponses,
+	// 	turn2PossibleWorlds,
+	// 	reaction,
+	// )
+	// gameplay.AddTurn(reaction)
+	fmt.Printf("Len: %d | %+v\n", turn2PossibleWorlds.Len(), turn2Worlds)
+	responseCounts := NewResponseCounts(
+		gameplay,
+		turn2Worlds,
+		worldActions,
+		mastermind.Act,
+	)
+
+	for _, worldAction := range worldActions {
+		counts := responseCounts.Get(worldAction.String())
+		fmt.Printf("%s: ", worldAction)
+		for _, response := range possibleResponses {
+			fmt.Printf("%s: %.0f ", response, counts.Get(response))
+
+		}
+		responseCounts.Set(worldAction.String(), counts)
+		fmt.Printf("\n")
+	}
+	groupedActions := [][]string{}
+	for _, groupedCounter := range responseCounts.GroupByCountHash(possibleResponses) {
+		sort.Strings(groupedCounter.Actions)
+		groupedActions = append(groupedActions, groupedCounter.Actions)
+
+	}
+	sort.Slice(groupedActions, func(i, j int) bool {
+		return groupedActions[i][0] < groupedActions[j][0]
+	})
+	fmt.Printf("%+v\n", groupedActions)
+	test.AssertDeepEqual(2, 1, t)
 }
 
 func TestPlayMastermindSymmetry(t *testing.T) {

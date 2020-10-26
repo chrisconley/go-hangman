@@ -37,6 +37,17 @@ func (gi *GroupedIncrementer) All() []float64 {
 	return gi.values
 }
 
+func (gi *GroupedIncrementer) GetHash(groups []string) uint64 {
+	hash := fnv1a.Init64
+	for _, group := range groups {
+		index := gi.findOrInitializeGroup(group)
+		count := gi.values[index]
+		hash = fnv1a.AddString64(hash, group)
+		hash = fnv1a.AddUint64(hash, uint64(count))
+	}
+	return hash
+}
+
 func (gi *GroupedIncrementer) findOrInitializeGroup(group string) uint16 {
 	hash := fnv1a.Init64
 	hash = fnv1a.AddString64(hash, group)

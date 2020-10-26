@@ -13,6 +13,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime/debug"
 
 	"github.com/chrisconley/go-hangman/internal/game"
 	"github.com/chrisconley/go-hangman/internal/hangman"
@@ -43,6 +44,7 @@ func main() {
 	flag.Parse()
 
 	game.ThePredictionsFreeCache = freecache.NewCache(*cacheSize * 1024 * 1024)
+	debug.SetGCPercent(20)
 
 	if *reward+*entropy+*minimax+*mostparts != 1.0 {
 		fmt.Printf("%f %f %f %f", *reward, *entropy, *minimax, *mostparts)

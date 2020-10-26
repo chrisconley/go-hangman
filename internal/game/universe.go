@@ -79,6 +79,14 @@ func NewPossibleWorlds(length int) PossibleWorlds {
 	return pw
 }
 
+func PossibleWorldsToWorlds(pw PossibleWorlds) []World {
+	worlds := make([]World, pw.Len())
+	for i, worldIndex := range pw.Indices() {
+		worlds[i] = BUniverse.GetWorldByIndex(worldIndex)
+	}
+	return worlds
+}
+
 type Universe struct {
 	Worlds         []World
 	WorldLength    int

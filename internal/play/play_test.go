@@ -32,7 +32,8 @@ func TestObserve(t *testing.T) {
 }
 
 type ResponseCounts struct {
-	counts map[string]utils.GroupedIncrementer
+	counts            map[string]utils.GroupedIncrementer
+	PossibleResponses map[string]struct{}
 }
 
 func NewResponseCounts(
@@ -43,6 +44,7 @@ func NewResponseCounts(
 ) ResponseCounts {
 	rc := ResponseCounts{}
 	rc.counts = make(map[string]utils.GroupedIncrementer, len(actions))
+	rc.PossibleResponses = map[string]struct{}{}
 	for _, action := range actions {
 		for _, world := range remainingWorlds {
 			reaction := act(gameplay, world, action)
@@ -54,6 +56,7 @@ func NewResponseCounts(
 			c := rc.counts[actionString]
 			c.Increment(responseString, 1.0)
 			rc.counts[actionString] = c
+			rc.PossibleResponses[responseString] = struct{}{}
 		}
 	}
 	return rc
@@ -108,10 +111,9 @@ func (ps *PotentialSymmetries) Print() {
 
 }
 
-func NewPotentialSymmetries(possibleResponses []string, reaction game.Reaction) PotentialSymmetries {
+func NewPotentialSymmetries(reaction game.Reaction) PotentialSymmetries {
 	ps := PotentialSymmetries{}
 	ps.worldActions = game.BUniverse.Actions.WorldActions()
-	ps.possibleResponses = possibleResponses
 	turn1PossibleWorlds := game.BUniverse.PossibleWorlds
 	gameplay := game.InitGamePlay(turn1PossibleWorlds.GetHash())
 	turn2PossibleWorlds := Observe(gameplay, reaction, mastermind.Act, turn1PossibleWorlds)
@@ -123,6 +125,11 @@ func NewPotentialSymmetries(possibleResponses []string, reaction game.Reaction) 
 		ps.worldActions,
 		mastermind.Act,
 	)
+
+	for response := range ps.ResponseCounts.PossibleResponses {
+		ps.possibleResponses = append(ps.possibleResponses, response)
+	}
+	fmt.Println(ps.ResponseCounts.PossibleResponses)
 	for _, worldAction := range ps.worldActions {
 		counts := ps.ResponseCounts.Get(worldAction.String())
 		for _, response := range ps.possibleResponses {
@@ -134,13 +141,12 @@ func NewPotentialSymmetries(possibleResponses []string, reaction game.Reaction) 
 }
 
 func findPotentialSymmetries(
-	possibleResponses []string,
 	reaction game.Reaction,
 ) PotentialSymmetries {
-	ps := NewPotentialSymmetries(possibleResponses, reaction)
+	ps := NewPotentialSymmetries(reaction)
 
 	groupedActions := [][]string{}
-	for _, groupedCounter := range ps.ResponseCounts.GroupByCountHash(possibleResponses) {
+	for _, groupedCounter := range ps.ResponseCounts.GroupByCountHash(ps.possibleResponses) {
 		sort.Strings(groupedCounter.Actions)
 		groupedActions = append(groupedActions, groupedCounter.Actions)
 
@@ -160,15 +166,30 @@ func TestPlayMastermindSymmetry2(t *testing.T) {
 	}
 	game.BUniverse = game.InitUniverse(lines)
 
-	possibleResponses := []string{"!", "W", "WW", "B", "BB"}
 	reaction := game.NewReaction(game.NewAction("AB"), "B", 0.0)
 	potentialSymmetries := findPotentialSymmetries(
-		possibleResponses,
 		reaction,
 	)
 
 	potentialSymmetries.Print()
 	fmt.Printf("%+v\n", potentialSymmetries.GroupedActions)
+	test.AssertDeepEqual(2, 1, t)
+}
+
+func TestPlayMastermindSymmetry3(t *testing.T) {
+	// lines := utils.ReadLinesFromFilePath("../../fixtures/mastermind-ABCD-3.txt")
+	lines := utils.ReadLinesFromFilePath("../../fixtures/commercial-mastermind.txt")
+	game.BUniverse = game.InitUniverse(lines)
+
+	reaction := game.NewReaction(game.NewAction("ABCD"), "B", 0.0)
+	// [AAB ACA     BBA     BCC     CAC CBB    ]
+	// [AAB     ACC BBA BCB     CAA         CBC]
+	potentialSymmetries := findPotentialSymmetries(
+		reaction,
+	)
+
+	potentialSymmetries.Print()
+	fmt.Printf("Len: %d | %+v\n", len(potentialSymmetries.GroupedActions), potentialSymmetries.GroupedActions)
 	test.AssertDeepEqual(2, 1, t)
 }
 

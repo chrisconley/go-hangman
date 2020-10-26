@@ -89,16 +89,67 @@ func (rc ResponseCounts) GroupByCountHash(groups []string) map[uint64]GroupedCou
 }
 
 type PotentialSymmetries struct {
-	GroupedActions [][]string
-	ResponseCounts ResponseCounts
+	GroupedActions    [][]string
+	ResponseCounts    ResponseCounts
+	possibleResponses []string
+	worldActions      []game.Action
+}
+
+func (ps *PotentialSymmetries) Print() {
+	for _, worldAction := range ps.worldActions {
+		counts := ps.ResponseCounts.Get(worldAction.String())
+		fmt.Printf("%s: ", worldAction)
+		for _, response := range ps.possibleResponses {
+			fmt.Printf("%s: %.0f ", response, counts.Get(response))
+		}
+		ps.ResponseCounts.Set(worldAction.String(), counts)
+		fmt.Printf("\n")
+	}
+
+}
+
+func NewPotentialSymmetries(possibleResponses []string, reaction game.Reaction) PotentialSymmetries {
+	ps := PotentialSymmetries{}
+	ps.worldActions = game.BUniverse.Actions.WorldActions()
+	ps.possibleResponses = possibleResponses
+	turn1PossibleWorlds := game.BUniverse.PossibleWorlds
+	gameplay := game.InitGamePlay(turn1PossibleWorlds.GetHash())
+	turn2PossibleWorlds := Observe(gameplay, reaction, mastermind.Act, turn1PossibleWorlds)
+	turn2Worlds := game.PossibleWorldsToWorlds(turn2PossibleWorlds)
+	fmt.Printf("Len: %d | %+v\n", turn2PossibleWorlds.Len(), turn2Worlds)
+	ps.ResponseCounts = NewResponseCounts(
+		gameplay,
+		turn2Worlds,
+		ps.worldActions,
+		mastermind.Act,
+	)
+	for _, worldAction := range ps.worldActions {
+		counts := ps.ResponseCounts.Get(worldAction.String())
+		for _, response := range ps.possibleResponses {
+			counts.Increment(response, 0)
+		}
+		ps.ResponseCounts.Set(worldAction.String(), counts)
+	}
+	return ps
 }
 
 func findPotentialSymmetries(
 	possibleResponses []string,
-	possibleWorlds game.PossibleWorlds,
 	reaction game.Reaction,
 ) PotentialSymmetries {
-	return PotentialSymmetries{}
+	ps := NewPotentialSymmetries(possibleResponses, reaction)
+
+	groupedActions := [][]string{}
+	for _, groupedCounter := range ps.ResponseCounts.GroupByCountHash(possibleResponses) {
+		sort.Strings(groupedCounter.Actions)
+		groupedActions = append(groupedActions, groupedCounter.Actions)
+
+	}
+	sort.Slice(groupedActions, func(i, j int) bool {
+		return groupedActions[i][0] < groupedActions[j][0]
+	})
+	ps.GroupedActions = groupedActions
+	return ps
 }
 func TestPlayMastermindSymmetry2(t *testing.T) {
 	lines := []string{
@@ -107,49 +158,17 @@ func TestPlayMastermindSymmetry2(t *testing.T) {
 		"CA", "CB", "CC", "CD",
 		"DA", "DB", "DC", "DD",
 	}
-	possibleResponses := []string{"!", "W", "WW", "B", "BB"}
 	game.BUniverse = game.InitUniverse(lines)
-	worldActions := game.BUniverse.Actions.WorldActions()
-	turn1PossibleWorlds := game.BUniverse.PossibleWorlds
-	gameplay := game.InitGamePlay(turn1PossibleWorlds.GetHash())
-	reaction := game.NewReaction(game.NewAction("AB"), "B", 0.0)
-	turn2PossibleWorlds := Observe(gameplay, reaction, mastermind.Act, turn1PossibleWorlds)
-	turn2Worlds := game.PossibleWorldsToWorlds(turn2PossibleWorlds)
 
-	// potentialSymmetries := findPotentialSymmetries(
-	// 	possibleResponses,
-	// 	turn2PossibleWorlds,
-	// 	reaction,
-	// )
-	// gameplay.AddTurn(reaction)
-	fmt.Printf("Len: %d | %+v\n", turn2PossibleWorlds.Len(), turn2Worlds)
-	responseCounts := NewResponseCounts(
-		gameplay,
-		turn2Worlds,
-		worldActions,
-		mastermind.Act,
+	possibleResponses := []string{"!", "W", "WW", "B", "BB"}
+	reaction := game.NewReaction(game.NewAction("AB"), "B", 0.0)
+	potentialSymmetries := findPotentialSymmetries(
+		possibleResponses,
+		reaction,
 	)
 
-	for _, worldAction := range worldActions {
-		counts := responseCounts.Get(worldAction.String())
-		fmt.Printf("%s: ", worldAction)
-		for _, response := range possibleResponses {
-			fmt.Printf("%s: %.0f ", response, counts.Get(response))
-
-		}
-		responseCounts.Set(worldAction.String(), counts)
-		fmt.Printf("\n")
-	}
-	groupedActions := [][]string{}
-	for _, groupedCounter := range responseCounts.GroupByCountHash(possibleResponses) {
-		sort.Strings(groupedCounter.Actions)
-		groupedActions = append(groupedActions, groupedCounter.Actions)
-
-	}
-	sort.Slice(groupedActions, func(i, j int) bool {
-		return groupedActions[i][0] < groupedActions[j][0]
-	})
-	fmt.Printf("%+v\n", groupedActions)
+	potentialSymmetries.Print()
+	fmt.Printf("%+v\n", potentialSymmetries.GroupedActions)
 	test.AssertDeepEqual(2, 1, t)
 }
 

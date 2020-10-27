@@ -30,6 +30,12 @@ func logReaction(reaction game.Reaction) {
 	}
 }
 
+func logPossibleWorlds(pw game.PossibleWorlds) {
+	if os.Getenv("DEBUGPREDICTIONS") != "" {
+		fmt.Printf("POSSIBLE WORLDS: %d\n", pw.Len())
+	}
+}
+
 func logProgress(gameIndex uint64, truth game.World) {
 	if gameIndex%100 == 0 && os.Getenv("LOGPROGRESS") != "" {
 		fmt.Printf("%s | ", time.Now().Format("2006.01.02 15:04:05"))
@@ -37,11 +43,58 @@ func logProgress(gameIndex uint64, truth game.World) {
 		fmt.Printf("TRUTH: %s \n", truth)
 	}
 }
+func GetTwoStepPredictions(
+	gameplay game.GamePlay,
+	agreement game.Agreement,
+	possibleWorlds game.PossibleWorlds,
+) (
+	predictions game.Predictions,
+) {
+	// fmt.Printf("PPPOSSIBLE WORLDS: %d\n", possibleWorlds.Len())
+	if possibleWorlds.Len() <= 100 {
+		return Explore(gameplay, agreement, possibleWorlds)
+	}
+
+	actions := agreement.GetActions(gameplay, possibleWorlds, game.BUniverse.Actions)
+	possibleResponses := game.GetPossibleResponses(gameplay, possibleWorlds, actions, agreement.Act)
+	predictions = game.NewPredictions()
+	for _, action := range actions {
+		prediction := game.Prediction{Action: action}
+		// prediction.Entropy = 1.0
+		for _, response := range possibleResponses {
+			// fmt.Printf("Action: %s, Response: %s\n", action, response)
+			nextGameplay, npw := Observe(
+				gameplay,
+				game.NewReaction(action, response, 0.0),
+				agreement.Act,
+				possibleWorlds,
+			)
+			if npw.Len() <= 1 {
+				continue
+			}
+			nextPredictions := Explore(nextGameplay, agreement, npw)
+			for _, nextPrediction := range nextPredictions.PredictionsMap.Values {
+				// fmt.Printf("NESTED %+v\n", prediction)
+				prediction.Entropy += nextPrediction.Entropy
+				prediction.InversedMax += nextPrediction.InversedMax
+				prediction.PartsCount += nextPrediction.PartsCount
+			}
+		}
+		predictions.AddPrediction(action.String(), prediction)
+	}
+	return predictions
+}
 
 // ###########################
 // ### THE DECISION PROCESS ###
 // ###########################
-func Explore(gameplay game.GamePlay, agreement game.Agreement, possibleWorlds game.PossibleWorlds) (predictions game.Predictions) {
+func Explore(
+	gameplay game.GamePlay,
+	agreement game.Agreement,
+	possibleWorlds game.PossibleWorlds,
+) (
+	predictions game.Predictions,
+) {
 	gameHash := gameplay.Hash
 	predictions, err := game.PredictionCache.Get(gameHash)
 	if err != nil {
@@ -53,7 +106,6 @@ func Explore(gameplay game.GamePlay, agreement game.Agreement, possibleWorlds ga
 		predictions = game.ExploreReactions(gameplay, possibleWorlds, actions, agreement.Act)
 		game.PredictionCache.Set(gameHash, predictions)
 	}
-	logPredictions(predictions)
 	return predictions
 }
 
@@ -85,6 +137,7 @@ func Observe(gameplay game.GamePlay, reaction game.Reaction, act game.Act, possi
 		game.ObserveCache.Set(hash, npw)
 	}
 	gameplay.AddTurn(reaction)
+	logPossibleWorlds(npw)
 	return gameplay, npw
 }
 
@@ -132,6 +185,7 @@ func playTurn(
 	game.PossibleWorlds,
 ) {
 	predictions := Explore(gameplay, perspective.Agreement, possibleWorlds)
+	logPredictions(predictions)
 	action := Decide(predictions, perspective.Motivation)
 	reaction := Act(gameplay, action, perspective.Agreement.Act, truth)
 	gameplay, possibleWorlds = Observe(gameplay, reaction, perspective.Agreement.Act, possibleWorlds)

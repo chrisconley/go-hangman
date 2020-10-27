@@ -3,11 +3,14 @@ package game
 import "math"
 
 func Decide(predictions Predictions, motivation Motivation) Prediction {
-	maxWeight := 0.0
+	maxWeight := -1.0
 	maxAction := NewAction("")
 	maxIsValid := false
 	if predictions.Size() == 1 {
 		panic("There is only one prediction for the decision.")
+	}
+	if predictions.Size() == 0 {
+		panic("There are no predictions for the decision.")
 	}
 	for _, prediction := range predictions.PredictionsMap.Values {
 		weight := math.Pow(prediction.Reward, motivation.Reward) *

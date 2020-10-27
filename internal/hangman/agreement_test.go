@@ -13,7 +13,7 @@ func TestGetActions(t *testing.T) {
 	aa := game.BUniverse.Actions
 
 	// When there are the same or more remaining worlds than letters, only use letters
-	remainingWorlds := game.NewPossibleWorlds(2)
+	remainingWorlds := game.NewPossibleWorlds(3)
 	lines := []string{"aa", "bb", "cc"}
 	for index := range lines {
 		remainingWorlds.Add(uint64(index))
@@ -23,7 +23,9 @@ func TestGetActions(t *testing.T) {
 	test.AssertDeepEqual(actions, game.BuildActions("a", "b", "c"), t)
 
 	// When there are less remaining worlds than letters, add the worlds
-	remainingWorlds = game.NewPossibleWorlds(1)
+	game.BUniverse = game.InitUniverse([]string{"aa", "bb", "cc"})
+	aa = game.BUniverse.Actions
+	remainingWorlds = game.NewPossibleWorlds(3)
 	lines = []string{"aa", "bb"}
 	for index := range lines {
 		remainingWorlds.Add(uint64(index))
@@ -33,7 +35,9 @@ func TestGetActions(t *testing.T) {
 	test.AssertDeepEqual(actions, game.BuildActions("a", "b", "c", "aa", "bb"), t)
 
 	// When an action has already been used, don't add it
-	remainingWorlds = game.NewPossibleWorlds(1)
+	game.BUniverse = game.InitUniverse([]string{"aa", "bb", "cc"})
+	aa = game.BUniverse.Actions
+	remainingWorlds = game.NewPossibleWorlds(3)
 	lines = []string{"aa", "bb", "cc"}
 	for index := range lines {
 		remainingWorlds.Add(uint64(index))
@@ -44,7 +48,9 @@ func TestGetActions(t *testing.T) {
 	test.AssertDeepEqual(actions, game.BuildActions("a", "c"), t)
 
 	// When a world action has already been used, don't add it
-	remainingWorlds = game.NewPossibleWorlds(1)
+	game.BUniverse = game.InitUniverse([]string{"aa", "bb", "cc"})
+	aa = game.BUniverse.Actions
+	remainingWorlds = game.NewPossibleWorlds(3)
 	lines = []string{"aa", "bb"}
 	for index := range lines {
 		remainingWorlds.Add(uint64(index))
@@ -53,6 +59,15 @@ func TestGetActions(t *testing.T) {
 	gp.AddTurn(game.NewReaction(game.NewAction("bb"), "-", 0.0))
 	actions = GetActions(gp, remainingWorlds, aa)
 	test.AssertDeepEqual(actions, game.BuildActions("a", "b", "c", "aa"), t)
+
+	// When there is only one remaining world, use that as the action
+	// game.BUniverse = game.InitUniverse([]string{"aa", "bb", "cc"})
+	// aa = game.BUniverse.Actions
+	// remainingWorlds = game.NewPossibleWorlds(3)
+	// remainingWorlds.Add(1) // "bb"
+	// gp = game.InitGamePlay(0.0)
+	// actions = GetActions(gp, remainingWorlds, aa)
+	// test.AssertDeepEqual(actions, game.BuildActions("bb"), t)
 }
 
 func TestAct(t *testing.T) {

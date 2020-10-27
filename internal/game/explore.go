@@ -76,6 +76,29 @@ func ExploreReactionsForAction(
 	return actionMatchesPossibleWorld, counts, rewards, responseWorlds
 }
 
+func GetPossibleResponses(
+	gameplay GamePlay,
+	possibleWorlds PossibleWorlds,
+	actions []Action,
+	act Act,
+) []string {
+	responseSet := map[string]struct{}{}
+	responses := []string{}
+	worldIndices := possibleWorlds.Indices()
+	for _, action := range actions {
+		for _, worldIndex := range worldIndices {
+			world := BUniverse.GetWorldByIndex(worldIndex)
+			reaction := act(gameplay, world, action)
+			responseString := reaction.Response.String()
+			if _, ok := responseSet[responseString]; !ok {
+				responseSet[responseString] = struct{}{}
+				responses = append(responses, responseString)
+			}
+		}
+	}
+	return responses
+}
+
 type Prediction struct {
 	Action                      Action
 	Reward                      float64

@@ -7,7 +7,14 @@ import (
 )
 
 func GetActions(gameplay game.GamePlay, remainingWorlds game.PossibleWorlds, aa game.AvailableActions) []game.Action {
+	// if remainingWorlds.Len() == 1 {
+	// 	worldIndex := remainingWorlds.Indices()[0]
+	// 	world := game.BUniverse.GetWorldByIndex(worldIndex)
+	// 	return []game.Action{game.NewAction(world.String())}
+	// }
+
 	actions := []game.Action{}
+
 	for _, action := range aa.Actions() {
 		if !gameplay.PreviouslyActed(action) {
 			actions = append(actions, action)

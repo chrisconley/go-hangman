@@ -1,12 +1,29 @@
 package game
 
 import (
+	"sort"
 	"testing"
 
 	"github.com/segmentio/fasthash/fnv1a"
 
 	"github.com/chrisconley/go-hangman/test"
 )
+
+func TestGetPossibleResponses(t *testing.T) {
+	lines := []string{"abc", "aab", "bbb"}
+	BUniverse = InitUniverse(lines)
+	pw := BUniverse.PossibleWorlds
+	actions := []Action{
+		NewAction("a"),
+		NewAction("b"),
+		NewAction("c"),
+	}
+
+	actual := GetPossibleResponses(InitGamePlay(0.0), pw, actions, BuildTestAct(1.0))
+
+	sort.Strings(actual)
+	test.AssertDeepEqual(actual, []string{"!", "a", "b", "c"}, t)
+}
 
 func TestBuildPredictions(t *testing.T) {
 	lines := []string{"abc", "aab", "bbb"}

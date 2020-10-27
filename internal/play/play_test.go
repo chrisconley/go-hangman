@@ -117,7 +117,7 @@ func NewPotentialSymmetries(reactions []game.Reaction) PotentialSymmetries {
 	possibleWorlds := game.BUniverse.PossibleWorlds
 	gameplay := game.InitGamePlay(possibleWorlds.GetHash())
 	for _, reaction := range reactions {
-		possibleWorlds = Observe(gameplay, reaction, mastermind.Act, possibleWorlds)
+		_, possibleWorlds = Observe(gameplay, reaction, mastermind.Act, possibleWorlds)
 
 	}
 	worlds := game.PossibleWorldsToWorlds(possibleWorlds)
@@ -256,7 +256,7 @@ func getNewPredictions(
 	for _, prediction := range values {
 		action := prediction.Action
 		for _, responseString := range possibleResponses {
-			npw := Observe(
+			_, npw := Observe(
 				gameplay,
 				game.NewReaction(action, responseString, 0.0),
 				act,

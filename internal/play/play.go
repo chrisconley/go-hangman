@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/chrisconley/go-hangman/internal/game"
-	"github.com/coocood/freecache"
 	"github.com/segmentio/fasthash/fnv1a"
 )
 
@@ -70,12 +69,9 @@ func Act(gameplay game.GamePlay, action game.Action, act game.Act, truth game.Wo
 	return reaction
 }
 
-var TheTestCache = freecache.NewCache(1000 * 1024 * 1024)
-
-func Observe(gameplay game.GamePlay, reaction game.Reaction, act game.Act, possibleWorlds game.PossibleWorlds) game.PossibleWorlds {
+func Observe(gameplay game.GamePlay, reaction game.Reaction, act game.Act, possibleWorlds game.PossibleWorlds) (game.GamePlay, game.PossibleWorlds) {
 	hash := fnv1a.AddUint64(reaction.Response.Hash(), reaction.Action.Hash())
 	hash = fnv1a.AddUint64(hash, gameplay.Hash)
-	hash = fnv1a.AddUint64(hash, possibleWorlds.SetHash())
 	npw, err := game.ObserveCache.Get(hash)
 	if err != nil {
 		npw = game.NewPossibleWorlds(game.BUniverse.Size)
@@ -88,7 +84,8 @@ func Observe(gameplay game.GamePlay, reaction game.Reaction, act game.Act, possi
 		}
 		game.ObserveCache.Set(hash, npw)
 	}
-	return npw
+	gameplay.AddTurn(reaction)
+	return gameplay, npw
 }
 
 // ###########################
@@ -116,11 +113,9 @@ func PlayGames(agreement game.Agreement, motivation game.Motivation, lines []str
 func PlayGame(truth game.World, perspective game.Perspective) (game.GamePlay, game.World) {
 	possibleWorlds := game.BUniverse.PossibleWorlds
 	gameplay := game.InitGamePlay(possibleWorlds.GetHash()) // Should this be on perspective?
-	reaction := game.Reaction{}
 	for true {
-		reaction, possibleWorlds = playTurn(gameplay, truth, perspective, possibleWorlds)
-		gameplay.AddTurn(reaction)
-		if reaction.Action.Matches(truth) {
+		gameplay, possibleWorlds = playTurn(gameplay, truth, perspective, possibleWorlds)
+		if gameplay.LastActionMatches(truth) {
 			break
 		}
 	}
@@ -133,14 +128,14 @@ func playTurn(
 	perspective game.Perspective,
 	possibleWorlds game.PossibleWorlds,
 ) (
-	game.Reaction,
+	game.GamePlay,
 	game.PossibleWorlds,
 ) {
 	predictions := Explore(gameplay, perspective.Agreement, possibleWorlds)
 	action := Decide(predictions, perspective.Motivation)
 	reaction := Act(gameplay, action, perspective.Agreement.Act, truth)
-	possibleWorlds = Observe(gameplay, reaction, perspective.Agreement.Act, possibleWorlds)
-	return reaction, possibleWorlds
+	gameplay, possibleWorlds = Observe(gameplay, reaction, perspective.Agreement.Act, possibleWorlds)
+	return gameplay, possibleWorlds
 }
 
 func BuildTrials(min float64, max float64, stepSize float64, numDimensions int) [][]float64 {

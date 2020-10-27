@@ -73,3 +73,7 @@ func (gp *GamePlay) PreviouslyActed(action Action) bool {
 	}
 	return false
 }
+
+func (gp GamePlay) LastActionMatches(world World) bool {
+	return gp.Reactions[len(gp.Reactions)-1].Action.Matches(world)
+}

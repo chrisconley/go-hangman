@@ -1,6 +1,8 @@
 package game
 
-import "github.com/segmentio/fasthash/fnv1a"
+import (
+	"github.com/segmentio/fasthash/fnv1a"
+)
 
 type World interface {
 	HashedString

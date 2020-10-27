@@ -111,17 +111,20 @@ func (ps *PotentialSymmetries) Print() {
 
 }
 
-func NewPotentialSymmetries(reaction game.Reaction) PotentialSymmetries {
+func NewPotentialSymmetries(reactions []game.Reaction) PotentialSymmetries {
 	ps := PotentialSymmetries{}
 	ps.worldActions = game.BUniverse.Actions.WorldActions()
-	turn1PossibleWorlds := game.BUniverse.PossibleWorlds
-	gameplay := game.InitGamePlay(turn1PossibleWorlds.GetHash())
-	turn2PossibleWorlds := Observe(gameplay, reaction, mastermind.Act, turn1PossibleWorlds)
-	turn2Worlds := game.PossibleWorldsToWorlds(turn2PossibleWorlds)
-	fmt.Printf("Len: %d | %+v\n", turn2PossibleWorlds.Len(), turn2Worlds)
+	possibleWorlds := game.BUniverse.PossibleWorlds
+	gameplay := game.InitGamePlay(possibleWorlds.GetHash())
+	for _, reaction := range reactions {
+		possibleWorlds = Observe(gameplay, reaction, mastermind.Act, possibleWorlds)
+
+	}
+	worlds := game.PossibleWorldsToWorlds(possibleWorlds)
+	fmt.Printf("Len: %d | %+v\n", possibleWorlds.Len(), worlds)
 	ps.ResponseCounts = NewResponseCounts(
 		gameplay,
-		turn2Worlds,
+		worlds,
 		ps.worldActions,
 		mastermind.Act,
 	)
@@ -141,9 +144,9 @@ func NewPotentialSymmetries(reaction game.Reaction) PotentialSymmetries {
 }
 
 func findPotentialSymmetries(
-	reaction game.Reaction,
+	reactions []game.Reaction,
 ) PotentialSymmetries {
-	ps := NewPotentialSymmetries(reaction)
+	ps := NewPotentialSymmetries(reactions)
 
 	groupedActions := [][]string{}
 	for _, groupedCounter := range ps.ResponseCounts.GroupByCountHash(ps.possibleResponses) {
@@ -158,6 +161,7 @@ func findPotentialSymmetries(
 	return ps
 }
 func TestPlayMastermindSymmetry2(t *testing.T) {
+	t.Skip("hi")
 	lines := []string{
 		"AA", "AB", "AC", "AD",
 		"BA", "BB", "BC", "BD",
@@ -166,9 +170,11 @@ func TestPlayMastermindSymmetry2(t *testing.T) {
 	}
 	game.BUniverse = game.InitUniverse(lines)
 
-	reaction := game.NewReaction(game.NewAction("AB"), "B", 0.0)
+	reactions := []game.Reaction{
+		game.NewReaction(game.NewAction("AB"), "B", 0.0),
+	}
 	potentialSymmetries := findPotentialSymmetries(
-		reaction,
+		reactions,
 	)
 
 	potentialSymmetries.Print()
@@ -177,15 +183,25 @@ func TestPlayMastermindSymmetry2(t *testing.T) {
 }
 
 func TestPlayMastermindSymmetry3(t *testing.T) {
-	// lines := utils.ReadLinesFromFilePath("../../fixtures/mastermind-ABCD-3.txt")
-	lines := utils.ReadLinesFromFilePath("../../fixtures/commercial-mastermind.txt")
+	t.Skip("hi")
+	lines := utils.ReadLinesFromFilePath("../../fixtures/mastermind-ABCD-3.txt")
+	// lines := utils.ReadLinesFromFilePath("../../fixtures/commercial-mastermind.txt")
 	game.BUniverse = game.InitUniverse(lines)
+	reactions := []game.Reaction{
+		game.NewReaction(game.NewAction("ABC"), "WW", 0.0),
+		game.NewReaction(game.NewAction("ABD"), "WW", 0.0),
+		// game.NewReaction(game.NewAction("ABB"), "BWW", 0.0),
+	}
 
-	reaction := game.NewReaction(game.NewAction("ABCD"), "B", 0.0)
+	// reactions := []game.Reaction{
+	// 	game.NewReaction(game.NewAction("AABB"), "B", 0.0),
+	// 	// game.NewReaction(game.NewAction("ACCD"), "B", 0.0),
+	// }
+
 	// [AAB ACA     BBA     BCC     CAC CBB    ]
 	// [AAB     ACC BBA BCB     CAA         CBC]
 	potentialSymmetries := findPotentialSymmetries(
-		reaction,
+		reactions,
 	)
 
 	potentialSymmetries.Print()
@@ -194,6 +210,7 @@ func TestPlayMastermindSymmetry3(t *testing.T) {
 }
 
 func TestPlayMastermindSymmetry(t *testing.T) {
+	t.Skip("hi")
 	lines := []string{
 		"AA", "AB", "AC", "AD",
 		"BA", "BB", "BC", "BD",

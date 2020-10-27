@@ -10,7 +10,7 @@ import (
 
 // The default cache size is  100mb
 var cacheSize = 100 * 1024 * 1024
-var cacheExpireSeconds = 60
+var cacheExpireSeconds = 5 * 60
 var ThePredictionsFreeCache = freecache.NewCache(cacheSize)
 
 var PredictionCache = predictionCache{}
@@ -49,19 +49,46 @@ type freecacheStats struct {
 	TouchedCount  int64
 }
 
-func (pc *predictionCache) Stats() freecacheStats {
+func FreeCacheStats(cache *freecache.Cache) freecacheStats {
 	return freecacheStats{
-		EntryCount:    ThePredictionsFreeCache.EntryCount(),
-		EvacuateCount: ThePredictionsFreeCache.EvacuateCount(),
-		ExpiredCount:  ThePredictionsFreeCache.ExpiredCount(),
-		HitCount:      ThePredictionsFreeCache.HitCount(),
-		MissCount:     ThePredictionsFreeCache.MissCount(),
-		TouchedCount:  ThePredictionsFreeCache.TouchedCount(),
+		EntryCount:    cache.EntryCount(),
+		EvacuateCount: cache.EvacuateCount(),
+		ExpiredCount:  cache.ExpiredCount(),
+		HitCount:      cache.HitCount(),
+		MissCount:     cache.MissCount(),
+		TouchedCount:  cache.TouchedCount(),
 	}
 }
 
 func (pc *predictionCache) Size() uint64 {
 	return pc.size
+}
+
+var ObserveCache = observeCache{
+	Cache: freecache.NewCache(cacheSize),
+}
+
+type observeCache struct {
+	Cache *freecache.Cache
+	size  uint64
+}
+
+func (oc *observeCache) Set(hash uint64, possibleWorlds PossibleWorlds) {
+	err := oc.Cache.SetInt(int64(hash), possibleWorlds.ToBytes(), 5*60)
+	if err != nil {
+		panic(err)
+	}
+	oc.size++
+}
+
+func (oc *observeCache) Get(hash uint64) (possibleWorlds PossibleWorlds, err error) {
+	data, err := oc.Cache.GetInt(int64(hash))
+	if err != nil {
+		possibleWorlds = NewPossibleWorlds(BUniverse.Size)
+	} else {
+		possibleWorlds = PossibleWorldsFromBytes(data)
+	}
+	return possibleWorlds, err
 }
 
 func Uint64ToBytes(ui uint64) []byte {

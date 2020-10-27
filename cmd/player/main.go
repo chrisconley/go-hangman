@@ -85,6 +85,9 @@ func main() {
 
 	b, err := json.Marshal(stats)
 	fmt.Printf("GameStats: %s\n", string(b))
-	fmt.Printf("PredictionCache stats: %+v\n", game.PredictionCache.Stats())
+	fmt.Printf("ActionsCache stats: %+v\n", game.FreeCacheStats(mastermind.ActionsCache))
+	fmt.Printf("GetActionsCount: %d\n", mastermind.GetActionsCount)
+	fmt.Printf("ObserveCache stats: %+v\n", game.FreeCacheStats(game.ObserveCache.Cache))
+	fmt.Printf("PredictionCache stats: %+v\n", game.FreeCacheStats(game.ThePredictionsFreeCache))
 	fmt.Printf("PredictionCache size: %+v\n", game.PredictionCache.Size())
 }

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/chrisconley/go-hangman/internal/game"
+	"github.com/coocood/freecache"
 )
 
 type kv struct {
@@ -12,7 +13,12 @@ type kv struct {
 	Value int
 }
 
+var ActionsCache = freecache.NewCache(100 * 1024 * 1024)
+var GetActionsCount = 0
+
 func GetActions(gameplay game.GamePlay, remainingWorlds game.PossibleWorlds, aa game.AvailableActions) []game.Action {
+	GetActionsCount++
+	ActionsCache.SetInt(int64(gameplay.Hash), []byte(""), 0)
 	allColors := make([]string, len(aa.Actions()))
 	for index, action := range aa.Actions() {
 		allColors[index] = action.String()

@@ -65,7 +65,7 @@ func main() {
 
 	fmt.Println("Cache Size in MB: ", *cacheSize)
 	game.ThePredictionsFreeCache = freecache.NewCache(*cacheSize * 1024 * 1024)
-	debug.SetGCPercent(20)
+	debug.SetGCPercent(10)
 
 	agreement := hangman.Agreement
 	if *gameString == "hangman" {
@@ -154,7 +154,10 @@ func main() {
 
 	}
 
-	fmt.Printf("PredictionCache stats: %+v\n", game.PredictionCache.Stats())
+	fmt.Printf("ActionsCache stats: %+v\n", game.FreeCacheStats(mastermind.ActionsCache))
+	fmt.Printf("GetActionsCount: %d\n", mastermind.GetActionsCount)
+	fmt.Printf("ObserveCache stats: %+v\n", game.FreeCacheStats(game.ObserveCache.Cache))
+	fmt.Printf("PredictionCache stats: %+v\n", game.FreeCacheStats(game.ThePredictionsFreeCache))
 	fmt.Printf("PredictionCache size: %+v\n", game.PredictionCache.Size())
 	fmt.Printf("Min Total Turns: %d, %+v\n", minTotalTurns, minTotalTurnsMotivation)
 	fmt.Printf("Min Total Pain: %f, %+v\n", minTotalPain, minTotalPainMotivation)

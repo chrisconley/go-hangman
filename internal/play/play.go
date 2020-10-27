@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/chrisconley/go-hangman/internal/game"
+	"github.com/coocood/freecache"
+	"github.com/segmentio/fasthash/fnv1a"
 )
 
 func logPredictions(predictions game.Predictions) {
@@ -64,14 +66,23 @@ func Act(gameplay game.GamePlay, action game.Action, act game.Act, truth game.Wo
 	return reaction
 }
 
+var TheTestCache = freecache.NewCache(1000 * 1024 * 1024)
+
 func Observe(gameplay game.GamePlay, reaction game.Reaction, act game.Act, possibleWorlds game.PossibleWorlds) game.PossibleWorlds {
-	npw := game.NewPossibleWorlds(game.BUniverse.Size)
-	for _, worldIndex := range possibleWorlds.Indices() {
-		world := game.BUniverse.GetWorldByIndex(worldIndex)
-		testReaction := act(gameplay, world, reaction.Action)
-		if testReaction.Response.Matches(reaction.Response) {
-			npw.Add(worldIndex)
+	hash := fnv1a.AddUint64(reaction.Response.Hash(), reaction.Action.Hash())
+	hash = fnv1a.AddUint64(hash, gameplay.Hash)
+	hash = fnv1a.AddUint64(hash, possibleWorlds.SetHash())
+	npw, err := game.ObserveCache.Get(hash)
+	if err != nil {
+		npw = game.NewPossibleWorlds(game.BUniverse.Size)
+		for _, worldIndex := range possibleWorlds.Indices() {
+			world := game.BUniverse.GetWorldByIndex(worldIndex)
+			testReaction := act(gameplay, world, reaction.Action)
+			if testReaction.Response.Matches(reaction.Response) {
+				npw.Add(worldIndex)
+			}
 		}
+		game.ObserveCache.Set(hash, npw)
 	}
 	return npw
 }

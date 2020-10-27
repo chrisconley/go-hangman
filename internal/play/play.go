@@ -43,13 +43,17 @@ func logProgress(gameIndex uint64, truth game.World) {
 // ### THE DECISION PROCESS ###
 // ###########################
 func Explore(gameplay game.GamePlay, agreement game.Agreement, possibleWorlds game.PossibleWorlds) (predictions game.Predictions) {
-	actions := agreement.GetActions(
-		gameplay,
-		possibleWorlds,
-		game.BUniverse.Actions,
-	)
-	predictions = game.ExploreReactions(gameplay, possibleWorlds, actions, agreement.Act)
-	// predictions = game.BBuildPredictions(actions, possibleWorlds)
+	gameHash := gameplay.Hash
+	predictions, err := game.PredictionCache.Get(gameHash)
+	if err != nil {
+		actions := agreement.GetActions(
+			gameplay,
+			possibleWorlds,
+			game.BUniverse.Actions,
+		)
+		predictions = game.ExploreReactions(gameplay, possibleWorlds, actions, agreement.Act)
+		game.PredictionCache.Set(gameHash, predictions)
+	}
 	logPredictions(predictions)
 	return predictions
 }

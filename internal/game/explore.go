@@ -15,30 +15,25 @@ func ExploreReactions(
 	actions []Action,
 	act Act,
 ) Predictions {
-	gameHash := gameplay.Hash
-	predictions, err := PredictionCache.Get(gameHash)
-	if err != nil {
-		// Only get Indices once to improve performance
-		worldIndices := possibleWorlds.Indices()
-		for _, action := range actions {
-			actionMatchesAPossibleWorld, counts, rewards, _ := ExploreReactionsForAction(
-				gameplay,
-				worldIndices,
-				action,
-				act,
-			)
+	predictions := NewPredictions()
+	// Only get Indices once to improve performance
+	worldIndices := possibleWorlds.Indices()
+	for _, action := range actions {
+		actionMatchesAPossibleWorld, counts, rewards, _ := ExploreReactionsForAction(
+			gameplay,
+			worldIndices,
+			action,
+			act,
+		)
 
-			prediction := Prediction{Action: action}
-			prediction.Reward = rewards.Total() / counts.Total()
-			prediction.Entropy = mth.CalcEntropy(counts.Total(), counts.All())
-			prediction.PartsCount = float64(len(counts.All()))
-			prediction.InversedMax = mth.FindInversedMax(counts.Total(), counts.All())
-			prediction.ActionMatchesAPossibleWorld = actionMatchesAPossibleWorld
-			predictions.AddPrediction(action.String(), prediction)
+		prediction := Prediction{Action: action}
+		prediction.Reward = rewards.Total() / counts.Total()
+		prediction.Entropy = mth.CalcEntropy(counts.Total(), counts.All())
+		prediction.PartsCount = float64(len(counts.All()))
+		prediction.InversedMax = mth.FindInversedMax(counts.Total(), counts.All())
+		prediction.ActionMatchesAPossibleWorld = actionMatchesAPossibleWorld
+		predictions.AddPrediction(action.String(), prediction)
 
-		}
-		PredictionCache.Set(gameHash, predictions)
-		return predictions
 	}
 	return predictions
 

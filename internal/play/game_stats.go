@@ -14,11 +14,13 @@ type Stats struct {
 	TurnCounts    []int
 }
 
-func CalculateStats(games []game.GamePlay) Stats {
+func CalculateStats(games []game.GamePlay, includeTurnCounts bool) Stats {
 	stats := Stats{}
 	stats.GameCount = len(games)
 	for _, gameplay := range games {
-		stats.TurnCounts = append(stats.TurnCounts, gameplay.TurnCount)
+		if includeTurnCounts {
+			stats.TurnCounts = append(stats.TurnCounts, gameplay.TurnCount)
+		}
 		stats.TotalTurns = stats.TotalTurns + gameplay.TurnCount
 		stats.TotalReward += gameplay.TotalReward
 		stats.TotalPain += gameplay.TotalPain

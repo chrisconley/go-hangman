@@ -10,7 +10,7 @@ import (
 
 // The default cache size is  100mb
 var cacheSize = 100 * 1024 * 1024
-var cacheExpireSeconds = 5 * 60
+var cacheExpireSeconds = 60 * 60
 var ThePredictionsFreeCache = freecache.NewCache(cacheSize)
 
 var PredictionCache = predictionCache{}
@@ -29,14 +29,18 @@ func (pc *predictionCache) Set(group uint64, value Predictions) {
 	pc.size++
 }
 
-func (pc *predictionCache) Get(group uint64) (predictions Predictions, err error) {
+func (pc predictionCache) Get(group uint64) (predictions Predictions, err error) {
 	bKey := Uint64ToBytes(group)
+	// buffer := make([]byte, 1376134)
+	// data, err := ThePredictionsFreeCache.GetWithBuf(bKey, buffer)
 	data, err := ThePredictionsFreeCache.Get(bKey)
 	if err != nil {
 		predictions = NewPredictions()
 	} else {
 		predictions = NewPredictionsFromBytes(data)
 	}
+	data = nil
+
 	return predictions, err
 }
 
@@ -74,7 +78,7 @@ type observeCache struct {
 }
 
 func (oc *observeCache) Set(hash uint64, possibleWorlds PossibleWorlds) {
-	err := oc.Cache.SetInt(int64(hash), possibleWorlds.ToBytes(), 5*60)
+	err := oc.Cache.SetInt(int64(hash), possibleWorlds.ToBytes(), cacheExpireSeconds)
 	if err != nil {
 		panic(err)
 	}

@@ -27,7 +27,7 @@ type optimizationResults struct {
 func TryTry(motivation game.Motivation, agreement game.Agreement, lines []string, c chan optimizationResults, wg *sync.WaitGroup) {
 	limit := len(lines)
 	games := play.PlayGames(agreement, motivation, lines, limit)
-	stats := play.CalculateStats(games)
+	stats := play.CalculateStats(games, true)
 
 	results := optimizationResults{Motivation: motivation, GameStats: stats}
 	js, err := json.Marshal(results)
@@ -65,7 +65,7 @@ func main() {
 
 	fmt.Println("Cache Size in MB: ", *cacheSize)
 	game.ThePredictionsFreeCache = freecache.NewCache(*cacheSize * 1024 * 1024)
-	debug.SetGCPercent(10)
+	debug.SetGCPercent(1)
 
 	agreement := hangman.Agreement
 	if *gameString == "hangman" {
@@ -81,7 +81,8 @@ func main() {
 			profile.ProfilePath(*profilingProfilePath)).Stop()
 	} else if *profiling == "mem" {
 		defer profile.Start(
-			profile.MemProfile,
+			// profile.MemProfile,
+			profile.MemProfileHeap,
 			profile.MemProfileRate(4096*10),
 			profile.ProfilePath(*profilingProfilePath),
 		).Stop()

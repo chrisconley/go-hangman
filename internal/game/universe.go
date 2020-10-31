@@ -51,7 +51,13 @@ func (pw *PossibleWorlds) ToBytes() []byte {
 }
 
 func PossibleWorldsFromBytes(data []byte) PossibleWorlds {
-	buffer := bytes.NewBuffer(data[:16])
+	// We make a copy of data to ensure the slice being passed in
+	// can be garbage collected.
+	pwBytes := make([]byte, len(data), len(data))
+	copy(pwBytes, data)
+	data = nil // make sure we don't accidentally reference data below
+
+	buffer := bytes.NewBuffer(pwBytes[:16])
 	var hash uint64
 	var capacity uint32
 	var count uint32
@@ -60,7 +66,7 @@ func PossibleWorldsFromBytes(data []byte) PossibleWorlds {
 	binary.Read(buffer, binary.LittleEndian, &count)
 
 	bitmap := *roaring64.BitmapOf(uint64(capacity) + 1)
-	bitmap.UnmarshalBinary(data[16:])
+	bitmap.UnmarshalBinary(pwBytes[16:])
 
 	return PossibleWorlds{
 		hash:     hash,

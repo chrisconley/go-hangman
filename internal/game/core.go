@@ -24,12 +24,8 @@ func NewAction(actionString string) Action {
 	return newHashedString(actionString)
 }
 
-func NewActionFromBytes(actionBytes []byte) Action {
-	hs := hashedString{}
-	hs.bytes = actionBytes
-	hs.hash = fnv1a.HashBytes64(actionBytes)
-	hs.length = len(actionBytes)
-	return hs
+func NewActionFromBytes(data []byte) Action {
+	return newHashedStringFromBytes(data)
 }
 
 type Response interface {
@@ -42,12 +38,8 @@ func NewResponse(responseString string) Response {
 	return newHashedString(responseString)
 }
 
-func NewResponseFromBytes(responseBytes []byte) Action {
-	hs := hashedString{}
-	hs.bytes = responseBytes
-	hs.hash = fnv1a.HashBytes64(responseBytes)
-	hs.length = len(responseBytes)
-	return hs
+func NewResponseFromBytes(data []byte) Response {
+	return newHashedStringFromBytes(data)
 }
 
 type HashedString interface {
@@ -69,6 +61,21 @@ func newHashedString(str string) HashedString {
 	hs.bytes = []byte(str)
 	hs.hash = fnv1a.HashBytes64(hs.bytes)
 	hs.length = len(str)
+	return hs
+}
+
+func newHashedStringFromBytes(data []byte) HashedString {
+	// We make a copy of data to ensure the slice being passed in
+	// can be garbage collected.
+	hsBytes := make([]byte, len(data), len(data))
+	copy(hsBytes, data)
+	data = nil // make sure we don't accidentally reference data below
+
+	hs := hashedString{}
+	hs.bytes = hsBytes
+	hs.hash = fnv1a.HashBytes64(hsBytes)
+	hs.length = len(hsBytes)
+
 	return hs
 }
 

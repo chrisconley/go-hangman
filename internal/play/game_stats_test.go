@@ -16,7 +16,7 @@ func TestCalculateStats(t *testing.T) {
 		game.GamePlay{TurnCount: 11},
 		game.GamePlay{TurnCount: 7},
 	}
-	stats := CalculateStats(games)
+	stats := CalculateStats(games, true)
 
 	test.AssertDeepEqual(stats.GameCount, 6, t)
 	test.AssertDeepEqual(stats.TotalTurns, 29, t)
@@ -51,7 +51,7 @@ func TestCalculateStatsReward(t *testing.T) {
 	g4.AddTurn(buildTestReaction(1.0))
 
 	games := []game.GamePlay{g1, g2, g3, g4}
-	stats := CalculateStats(games)
+	stats := CalculateStats(games, false)
 
 	test.AssertAlmostEqual(stats.AverageReward, 0.7708, 4, t)
 	test.AssertAlmostEqual(stats.TotalReward, 3.0833, 4, t)

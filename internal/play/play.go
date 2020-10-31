@@ -1,6 +1,7 @@
 package play
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"os"
@@ -36,11 +37,16 @@ func logPossibleWorlds(pw game.PossibleWorlds) {
 	}
 }
 
-func logProgress(gameIndex uint64, truth game.World) {
+func logProgress(gameIndex uint64, truth game.World, games []game.GamePlay) {
 	if gameIndex%100 == 0 && os.Getenv("LOGPROGRESS") != "" {
-		fmt.Printf("%s | ", time.Now().Format("2006.01.02 15:04:05"))
+		fmt.Printf("############# %s | ", time.Now().Format("2006.01.02 15:04:05"))
 		fmt.Printf("GAME #: %d | ", gameIndex)
-		fmt.Printf("TRUTH: %s \n", truth)
+		fmt.Printf("TRUTH: %s\n", truth)
+		stats := CalculateStats(games, false)
+		b, _ := json.Marshal(stats)
+		fmt.Printf("GameStats: %s\n", string(b))
+		fmt.Printf("PredictionCache: %+v\n", game.FreeCacheStats(game.ThePredictionsFreeCache))
+		fmt.Printf("ObserveCache stats: %+v\n", game.FreeCacheStats(game.ObserveCache.Cache))
 	}
 }
 func GetTwoStepPredictions(
@@ -156,9 +162,13 @@ func PlayGames(agreement game.Agreement, motivation game.Motivation, lines []str
 
 		truth := game.BUniverse.GetWorldByIndex(j)
 		gameplay, _ := PlayGame(truth, perspective)
-		logProgress(j+1, truth)
 		games = append(games, gameplay)
+		logProgress(j, truth, games)
+		// if j%10 == 0 {
+		// 	runtime.GC()
+		// }
 	}
+	// runtime.GC()
 
 	return games
 }

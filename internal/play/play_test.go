@@ -2,6 +2,7 @@ package play
 
 import (
 	"fmt"
+	"runtime"
 	"sort"
 	"testing"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/chrisconley/go-hangman/internal/hangman"
 	"github.com/chrisconley/go-hangman/internal/mastermind"
 	"github.com/chrisconley/go-hangman/internal/utils"
+	"github.com/pkg/profile"
 
 	"github.com/chrisconley/go-hangman/test"
 )
@@ -360,18 +362,40 @@ func TestIntegrationVerifyMiniMaxMastermind(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping TestIntegrationVerifyMiniMaxMastermind in short mode.")
 	}
+
+	rtm := runtime.MemStats{}
+	runtime.GC()
+	runtime.ReadMemStats(&rtm)
+	test.AssertDeepEqual(int(rtm.HeapInuse/1024/1024), 0, t)
+
 	lines := utils.ReadLinesFromFilePath("../../fixtures/commercial-mastermind.txt")
 
+	defer profile.Start(
+		profile.MemProfile,
+		profile.MemProfileRate(4096*10),
+		profile.ProfilePath("/tmp/test-profile/"),
+	).Stop()
 	motivation := game.Motivation{MiniMax: 1.0}
 	limit := len(lines)
 	games := PlayGames(mastermind.Agreement, motivation, lines, limit)
-	stats := CalculateStats(games)
+
+	runtime.GC()
+	runtime.ReadMemStats(&rtm)
+	test.AssertDeepEqual(int(rtm.HeapInuse/1024/1024), 0, t)
+
+	stats := CalculateStats(games, true)
 	test.AssertDeepEqual(stats.GameCount, 1296, t)
 	test.AssertDeepEqual(stats.MaxTurns, 5, t)
 	// Note that Ville (Optimal Mastermind Strategy) shows that total turns is 5801.
 	// Because of symmetrical action pruning, this implmentation reduces that by 1 to 5800.
 	test.AssertDeepEqual(stats.TotalTurns, 5800, t)
 	test.AssertAlmostEqual(stats.AverageTurns, 4.4753, 4, t)
+
+	runtime.ReadMemStats(&rtm)
+	test.AssertDeepEqual(int(rtm.HeapInuse/1024/1024), 0, t)
+	runtime.GC()
+	runtime.ReadMemStats(&rtm)
+	test.AssertDeepEqual(int(rtm.HeapInuse/1024/1024), 0, t)
 }
 
 func TestIntegrationVerifyMostPartsMastermind(t *testing.T) {
@@ -383,7 +407,7 @@ func TestIntegrationVerifyMostPartsMastermind(t *testing.T) {
 	motivation := game.Motivation{MostParts: 1.0}
 	limit := len(lines)
 	games := PlayGames(mastermind.Agreement, motivation, lines, limit)
-	stats := CalculateStats(games)
+	stats := CalculateStats(games, true)
 	test.AssertDeepEqual(stats.GameCount, 1296, t)
 	test.AssertDeepEqual(stats.MaxTurns, 6, t)
 	test.AssertDeepEqual(stats.TotalTurns, 5668, t)
@@ -399,7 +423,7 @@ func TestIntegrationVerifyEntropyMastermind(t *testing.T) {
 	motivation := game.Motivation{Entropy: 1.0}
 	limit := len(lines)
 	games := PlayGames(mastermind.Agreement, motivation, lines, limit)
-	stats := CalculateStats(games)
+	stats := CalculateStats(games, true)
 	test.AssertDeepEqual(stats.GameCount, 1296, t)
 	test.AssertDeepEqual(stats.MaxTurns, 6, t)
 	test.AssertDeepEqual(stats.TotalTurns, 5723, t)
@@ -416,7 +440,7 @@ func TestIntegrationVerifyEntropyHangman(t *testing.T) {
 	motivation := game.Motivation{Entropy: 1.0}
 	limit := len(lines)
 	games := PlayGames(mastermind.Agreement, motivation, lines, limit)
-	stats := CalculateStats(games)
+	stats := CalculateStats(games, true)
 	test.AssertDeepEqual(stats.GameCount, 25011, t)
 	test.AssertDeepEqual(stats.MaxTurns, 13, t)
 	test.AssertDeepEqual(stats.TotalTurns, 146356, t)
@@ -433,7 +457,7 @@ func TestIntegrationVerifyMiniMaxHangman(t *testing.T) {
 	motivation := game.Motivation{MiniMax: 1.0}
 	limit := len(lines)
 	games := PlayGames(mastermind.Agreement, motivation, lines, limit)
-	stats := CalculateStats(games)
+	stats := CalculateStats(games, true)
 	test.AssertDeepEqual(stats.GameCount, 25011, t)
 	test.AssertDeepEqual(stats.MaxTurns, 12, t)
 	test.AssertDeepEqual(stats.TotalTurns, 149552, t)

@@ -121,7 +121,13 @@ func (p Prediction) ToBytes() []byte {
 }
 
 func NewPredictionFromBytes(data []byte) Prediction {
-	buffer := bytes.NewBuffer(data[:33])
+	// We make a copy of data to ensure the slice being passed in
+	// can be garbage collected.
+	predictionBytes := make([]byte, len(data), len(data))
+	copy(predictionBytes, data)
+	data = nil // make sure we don't accidentally reference data below
+
+	buffer := bytes.NewBuffer(predictionBytes[:33])
 	var reward float64
 	var entropy float64
 	var inversedMax float64
@@ -133,7 +139,7 @@ func NewPredictionFromBytes(data []byte) Prediction {
 	binary.Read(buffer, binary.LittleEndian, &partsCount)
 	binary.Read(buffer, binary.LittleEndian, &actionMatches)
 
-	action := NewActionFromBytes(data[33:])
+	action := NewActionFromBytes(predictionBytes[33:])
 
 	return Prediction{
 		Action:                      action,
@@ -212,20 +218,26 @@ func NewPredictions() Predictions {
 }
 
 func NewPredictionsFromBytes(data []byte) Predictions {
+	// We make a copy of data to ensure the slice being passed in
+	// can be garbage collected.
+	predictionsBytes := make([]byte, len(data), len(data))
+	copy(predictionsBytes, data)
+	data = nil // make sure we don't accidentally reference data below
+
 	p := NewPredictions()
 	pointer := 0
 	int32Size := 4
 	var size uint32
 	var predictionDataLength uint32
 
-	size = binary.LittleEndian.Uint32(data[pointer : pointer+int32Size])
+	size = binary.LittleEndian.Uint32(predictionsBytes[pointer : pointer+int32Size])
 	pointer += int32Size
 
 	for i := 0; i < int(size); i++ {
-		predictionDataLength = binary.LittleEndian.Uint32(data[pointer : pointer+int32Size])
+		predictionDataLength = binary.LittleEndian.Uint32(predictionsBytes[pointer : pointer+int32Size])
 		pointer += int32Size
 
-		predictionData := data[pointer : pointer+int(predictionDataLength)]
+		predictionData := predictionsBytes[pointer : pointer+int(predictionDataLength)]
 		pointer += int(predictionDataLength)
 
 		prediction := NewPredictionFromBytes(predictionData)

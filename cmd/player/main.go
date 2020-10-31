@@ -43,7 +43,9 @@ func main() {
 	cacheSize := flag.Int("cacheSize", 1000, "Cache size in MB. Defaults to 1000MB (1GB).")
 	flag.Parse()
 
+	fmt.Println("Cache Size in MB: ", *cacheSize)
 	game.ThePredictionsFreeCache = freecache.NewCache(*cacheSize * 1024 * 1024)
+	game.ObserveCache.Cache = freecache.NewCache(*cacheSize * 1024 * 1024)
 	debug.SetGCPercent(20)
 
 	if *reward+*entropy+*minimax+*mostparts != 1.0 {
@@ -81,7 +83,7 @@ func main() {
 	}
 
 	games := play.PlayGames(agreement, motivation, lines, *limit)
-	stats := play.CalculateStats(games)
+	stats := play.CalculateStats(games, true)
 
 	b, err := json.Marshal(stats)
 	fmt.Printf("GameStats: %s\n", string(b))

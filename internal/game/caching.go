@@ -10,7 +10,7 @@ import (
 
 // The default cache size is  100mb
 var cacheSize = 100 * 1024 * 1024
-var cacheExpireSeconds = 60 * 60
+var cacheExpireSeconds = 10 * 60
 var ThePredictionsFreeCache = freecache.NewCache(cacheSize)
 
 var PredictionCache = predictionCache{}

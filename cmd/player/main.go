@@ -45,7 +45,7 @@ func main() {
 
 	fmt.Println("Cache Size in MB: ", *cacheSize)
 	game.ThePredictionsFreeCache = freecache.NewCache(*cacheSize * 1024 * 1024)
-	game.ObserveCache.Cache = freecache.NewCache(*cacheSize * 1024 * 1024)
+	game.ObserveCache.Cache = freecache.NewCache(500 * 1024 * 1024)
 	debug.SetGCPercent(20)
 
 	if *reward+*entropy+*minimax+*mostparts != 1.0 {

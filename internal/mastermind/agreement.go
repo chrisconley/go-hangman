@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/chrisconley/go-hangman/internal/game"
+	"github.com/segmentio/fasthash/fnv1a"
 )
 
 type kv struct {
@@ -102,6 +103,13 @@ func Act(gameplay game.GamePlay, world game.World, action game.Action) (r game.R
 	// 6 does not garner a "white" response becuase the "6" in the code word was already "used"
 	//     for the first "6" in the guess
 	// This results in a response of 'WWW'.
+	// hash := fnv1a.AddUint64(gameplay.Hash, world.Hash())
+	hash := fnv1a.AddUint64(world.Hash(), action.Hash())
+	reaction, err := game.ReactionCache.Get(hash, action)
+
+	if err == nil {
+		return reaction
+	}
 
 	if gameplay.PreviouslyActed(action) {
 		panic("This action is not allowed because it has already been used")
@@ -152,7 +160,8 @@ func Act(gameplay game.GamePlay, world game.World, action game.Action) (r game.R
 	if response == "" {
 		response = "!"
 	}
-	reaction := game.NewReaction(action, response, reward)
+	reaction = game.NewReaction(action, response, reward)
+	game.ReactionCache.Set(hash, reaction)
 	return reaction
 }
 

@@ -112,35 +112,3 @@ func Float64ToBytes(f float64) []byte {
 func BytesToFloat64(data []byte) float64 {
 	return math.Float64frombits(BytesToUint64(data[:]))
 }
-
-var ReactionCache = reactionCache{
-	Cache: freecache.NewCache(cacheSize),
-}
-
-type reactionCache struct {
-	Cache *freecache.Cache
-	size  uint64
-}
-
-func (oc *reactionCache) Set(hash uint64, reaction Reaction) {
-	var bKey [8]byte
-	binary.LittleEndian.PutUint64(bKey[:], hash)
-	err := oc.Cache.Set(bKey[:], reaction.ToBytes(), 60)
-	if err != nil {
-		panic(err)
-	}
-	oc.size++
-}
-
-func (oc *reactionCache) Get(hash uint64, action Action) (reaction Reaction, err error) {
-	var bKey [8]byte
-	binary.LittleEndian.PutUint64(bKey[:], hash)
-	oc.Cache.Touch(bKey[:], 60)
-	data, err := oc.Cache.Get(bKey[:])
-	if err != nil {
-		reaction = Reaction{}
-	} else {
-		reaction = NewReactionFromBytes(action, data)
-	}
-	return reaction, err
-}

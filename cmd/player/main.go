@@ -46,7 +46,6 @@ func main() {
 	fmt.Println("Cache Size in MB: ", *cacheSize)
 	game.ThePredictionsFreeCache = freecache.NewCache(*cacheSize * 1024 * 1024)
 	game.ObserveCache.Cache = freecache.NewCache(500 * 1024 * 1024)
-	game.ReactionCache.Cache = freecache.NewCache(2000 * 1024 * 1024)
 	debug.SetGCPercent(20)
 
 	if *reward+*entropy+*minimax+*mostparts != 1.0 {
@@ -89,6 +88,5 @@ func main() {
 	b, err := json.Marshal(stats)
 	fmt.Printf("GameStats: %s\n", string(b))
 	fmt.Printf("ObserveCache stats: %+v\n", game.FreeCacheStats(game.ObserveCache.Cache))
-	fmt.Printf("ReactionCache stats: %+v\n", game.FreeCacheStats(game.ReactionCache.Cache))
 	fmt.Printf("PredictionCache stats: %+v\n", game.FreeCacheStats(game.ThePredictionsFreeCache))
 }

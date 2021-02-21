@@ -119,7 +119,7 @@ func TestIntegrationVerifyMiniMaxMastermind(t *testing.T) {
 	rtm := runtime.MemStats{}
 	runtime.GC()
 	runtime.ReadMemStats(&rtm)
-	test.AssertDeepEqual(int(rtm.HeapInuse/1024/1024), 0, t)
+	test.AssertDeepEqualWithMessage(int(rtm.HeapInuse/1024/1024), 203, "When starting", t)
 
 	lines := utils.ReadLinesFromFilePath("../../fixtures/commercial-mastermind.txt")
 
@@ -134,7 +134,7 @@ func TestIntegrationVerifyMiniMaxMastermind(t *testing.T) {
 
 	runtime.GC()
 	runtime.ReadMemStats(&rtm)
-	test.AssertDeepEqual(int(rtm.HeapInuse/1024/1024), 0, t)
+	test.AssertDeepEqualWithMessage(int(rtm.HeapInuse/1024/1024), 250, "After playing games", t)
 
 	stats := CalculateStats(games, true)
 	test.AssertDeepEqual(stats.GameCount, 1296, t)
@@ -145,10 +145,10 @@ func TestIntegrationVerifyMiniMaxMastermind(t *testing.T) {
 	test.AssertAlmostEqual(stats.AverageTurns, 4.4753, 4, t)
 
 	runtime.ReadMemStats(&rtm)
-	test.AssertDeepEqual(int(rtm.HeapInuse/1024/1024), 0, t)
+	test.AssertDeepEqualWithMessage(int(rtm.HeapInuse/1024/1024), 250, "Before GC", t)
 	runtime.GC()
 	runtime.ReadMemStats(&rtm)
-	test.AssertDeepEqual(int(rtm.HeapInuse/1024/1024), 0, t)
+	test.AssertDeepEqualWithMessage(int(rtm.HeapInuse/1024/1024), 203, "After GC", t)
 }
 
 func TestIntegrationVerifyMostPartsMastermind(t *testing.T) {

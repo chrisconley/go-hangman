@@ -2,9 +2,12 @@ package play
 
 import (
 	"fmt"
+	"os"
+	"regexp"
 	"runtime"
 	"sort"
 	"testing"
+	"text/tabwriter"
 
 	"github.com/chrisconley/go-hangman/internal/game"
 	"github.com/chrisconley/go-hangman/internal/hangman"
@@ -102,15 +105,19 @@ type PotentialSymmetries struct {
 
 func (ps *PotentialSymmetries) Print() {
 	for _, worldAction := range ps.worldActions {
-		counts := ps.ResponseCounts.Get(worldAction.String())
-		fmt.Printf("%s: ", worldAction)
-		for _, response := range ps.possibleResponses {
-			fmt.Printf("%s: %.0f ", response, counts.Get(response))
-		}
-		ps.ResponseCounts.Set(worldAction.String(), counts)
-		fmt.Printf("\n")
+		fmt.Println(ps.ResponseCounts.ToString(worldAction.String(), ps.possibleResponses))
 	}
 
+}
+
+func (rc *ResponseCounts) ToString(actionString string, possibleResponses []string) string {
+	result := ""
+	counts := rc.Get(actionString)
+	result += fmt.Sprintf("%s: ", actionString)
+	for _, response := range possibleResponses {
+		result += fmt.Sprintf("%s: %.0f\t", response, counts.Get(response))
+	}
+	return result
 }
 
 func NewPotentialSymmetries(reactions []game.Reaction) PotentialSymmetries {
@@ -123,7 +130,7 @@ func NewPotentialSymmetries(reactions []game.Reaction) PotentialSymmetries {
 
 	}
 	worlds := game.PossibleWorldsToWorlds(possibleWorlds)
-	fmt.Printf("Len: %d | %+v\n", possibleWorlds.Len(), worlds)
+	// fmt.Printf("Possible Worlds | Len: %d | %+v\n", possibleWorlds.Len(), worlds)
 	ps.ResponseCounts = NewResponseCounts(
 		gameplay,
 		worlds,
@@ -134,7 +141,11 @@ func NewPotentialSymmetries(reactions []game.Reaction) PotentialSymmetries {
 	for response := range ps.ResponseCounts.PossibleResponses {
 		ps.possibleResponses = append(ps.possibleResponses, response)
 	}
-	fmt.Println(ps.ResponseCounts.PossibleResponses)
+
+	sort.Slice(ps.possibleResponses, func(i, j int) bool {
+		return ps.possibleResponses[i] < ps.possibleResponses[j]
+	})
+
 	for _, worldAction := range ps.worldActions {
 		counts := ps.ResponseCounts.Get(worldAction.String())
 		for _, response := range ps.possibleResponses {
@@ -163,7 +174,7 @@ func findPotentialSymmetries(
 	return ps
 }
 func TestPlayMastermindSymmetry2(t *testing.T) {
-	t.Skip("hi")
+	// t.Skip("hi")
 	lines := []string{
 		"AA", "AB", "AC", "AD",
 		"BA", "BB", "BC", "BD",
@@ -184,30 +195,92 @@ func TestPlayMastermindSymmetry2(t *testing.T) {
 	test.AssertDeepEqual(2, 1, t)
 }
 
+func countUniqueCharacters(s string) int {
+	set := make(map[rune]int)
+	uniqueCount := 0
+	for _, c := range s {
+		if _, ok := set[c]; !ok {
+			uniqueCount++
+		}
+		set[c]++
+	}
+	return uniqueCount
+}
+func TestCountUniqueCharacters(t *testing.T) {
+	actual := countUniqueCharacters("aab")
+	test.AssertDeepEqual(actual, 2, t)
+
+	actual = countUniqueCharacters("cba")
+	test.AssertDeepEqual(actual, 3, t)
+
+	actual = countUniqueCharacters("ccbbaadd")
+	test.AssertDeepEqual(actual, 4, t)
+}
+
+func countHeldCharacters(g string, s string) int {
+	heldCount := 0
+	for index, char := range s {
+		if g[index] == byte(char) {
+			heldCount++
+		}
+	}
+	return heldCount
+}
+
+func TestCountHeldCharacters(t *testing.T) {
+	actual := countHeldCharacters("abc", "abc")
+	test.AssertDeepEqual(actual, 3, t)
+
+	actual = countHeldCharacters("abc", "cba")
+	test.AssertDeepEqual(actual, 1, t)
+
+	actual = countHeldCharacters("abc", "cab")
+	test.AssertDeepEqual(actual, 0, t)
+}
+
 func TestPlayMastermindSymmetry3(t *testing.T) {
-	t.Skip("hi")
-	lines := utils.ReadLinesFromFilePath("../../fixtures/mastermind-ABCD-3.txt")
-	// lines := utils.ReadLinesFromFilePath("../../fixtures/commercial-mastermind.txt")
+	// lines := utils.ReadLinesFromFilePath("../../fixtures/mastermind-ABCD-3.txt")
+	lines := utils.ReadLinesFromFilePath("../../fixtures/commercial-mastermind.txt")
+	// lines := utils.ReadLinesFromFilePath("../../fixtures/mastermind-ABCDEFG-6.txt")
 	game.BUniverse = game.InitUniverse(lines)
 	reactions := []game.Reaction{
-		game.NewReaction(game.NewAction("ABC"), "WW", 0.0),
-		game.NewReaction(game.NewAction("ABD"), "WW", 0.0),
-		// game.NewReaction(game.NewAction("ABB"), "BWW", 0.0),
+		// game.NewReaction(game.NewAction("AAAA"), "!", 0.0),
+		game.NewReaction(game.NewAction("ABCD"), "BW", 0.0),
+		// game.NewReaction(game.NewAction("AAB"), "WW", 0.0),
 	}
 
-	// reactions := []game.Reaction{
-	// 	game.NewReaction(game.NewAction("AABB"), "B", 0.0),
-	// 	// game.NewReaction(game.NewAction("ACCD"), "B", 0.0),
-	// }
+	fmt.Printf("Reactions | Len: %d\n", len(reactions))
+	for _, reaction := range reactions {
+		fmt.Printf("Action: %s | Response: %s\n", reaction.Action, reaction.Response)
+	}
 
-	// [AAB ACA     BBA     BCC     CAC CBB    ]
-	// [AAB     ACC BBA BCB     CAA         CBC]
 	potentialSymmetries := findPotentialSymmetries(
 		reactions,
 	)
 
-	potentialSymmetries.Print()
-	fmt.Printf("Len: %d | %+v\n", len(potentialSymmetries.GroupedActions), potentialSymmetries.GroupedActions)
+	// fmt.Printf("Potential Symmetries | Len: %d \n", len(potentialSymmetries.GroupedActions))
+	writer := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
+	for _, ga := range potentialSymmetries.GroupedActions {
+		if ok, _ := regexp.MatchString(`[G|H]`, ga[0]); ok {
+			continue
+		}
+		// fmt.Fprintf(writer, "%s,", ga[0])
+
+		printableGA := ga
+		// if len(ga) > 50 {
+		// 	printableGA = ga[:49]
+		// 	printableGA = append(printableGA, "...")
+		// }
+		fmt.Fprintf(writer, "%v,", countUniqueCharacters(ga[0]))
+		fmt.Fprintf(writer, "%v,", countHeldCharacters(
+			reactions[0].Action.String(),
+			ga[0],
+		))
+		fmt.Fprintf(writer, "%v\n", printableGA)
+		// rc := potentialSymmetries.ResponseCounts.ToString(ga[0], potentialSymmetries.possibleResponses)
+		// fmt.Fprintf(writer, "%s\n", rc)
+	}
+	writer.Flush()
 	test.AssertDeepEqual(2, 1, t)
 }
 

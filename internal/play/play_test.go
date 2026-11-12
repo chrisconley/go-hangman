@@ -119,7 +119,10 @@ func TestIntegrationVerifyMiniMaxMastermind(t *testing.T) {
 	rtm := runtime.MemStats{}
 	runtime.GC()
 	runtime.ReadMemStats(&rtm)
-	test.AssertDeepEqualWithMessage(int(rtm.HeapInuse/1024/1024), 203, "When starting", t)
+	// Heap sizes are upper bounds (recorded MB + 10%): exact 250 MB was asserted under Go 1.15 (go.mod); Go 1.27.2 measures 247 MB.
+	if heap := int(rtm.HeapInuse / 1024 / 1024); heap > 223 {
+		t.Errorf("When starting\ngot %d MB\nmax %d MB", heap, 223)
+	}
 
 	lines := utils.ReadLinesFromFilePath("../../fixtures/commercial-mastermind.txt")
 
@@ -134,7 +137,9 @@ func TestIntegrationVerifyMiniMaxMastermind(t *testing.T) {
 
 	runtime.GC()
 	runtime.ReadMemStats(&rtm)
-	test.AssertDeepEqualWithMessage(int(rtm.HeapInuse/1024/1024), 250, "After playing games", t)
+	if heap := int(rtm.HeapInuse / 1024 / 1024); heap > 275 {
+		t.Errorf("After playing games\ngot %d MB\nmax %d MB", heap, 275)
+	}
 
 	stats := CalculateStats(games, true)
 	test.AssertDeepEqual(stats.GameCount, 1296, t)
@@ -145,10 +150,14 @@ func TestIntegrationVerifyMiniMaxMastermind(t *testing.T) {
 	test.AssertAlmostEqual(stats.AverageTurns, 4.4753, 4, t)
 
 	runtime.ReadMemStats(&rtm)
-	test.AssertDeepEqualWithMessage(int(rtm.HeapInuse/1024/1024), 250, "Before GC", t)
+	if heap := int(rtm.HeapInuse / 1024 / 1024); heap > 275 {
+		t.Errorf("Before GC\ngot %d MB\nmax %d MB", heap, 275)
+	}
 	runtime.GC()
 	runtime.ReadMemStats(&rtm)
-	test.AssertDeepEqualWithMessage(int(rtm.HeapInuse/1024/1024), 203, "After GC", t)
+	if heap := int(rtm.HeapInuse / 1024 / 1024); heap > 223 {
+		t.Errorf("After GC\ngot %d MB\nmax %d MB", heap, 223)
+	}
 }
 
 func TestIntegrationVerifyMostPartsMastermind(t *testing.T) {

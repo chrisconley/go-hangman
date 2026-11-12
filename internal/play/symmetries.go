@@ -45,7 +45,6 @@ func NewPotentialSymmetries(reactions []game.Reaction) ResponseCounts {
 		worldActions,
 		mastermind.Act,
 	)
-	fmt.Printf("%+v\n", game.PossibleWorldsToWorlds(possibleWorlds))
 
 	return responseCounts
 }

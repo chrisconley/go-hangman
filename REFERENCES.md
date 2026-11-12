@@ -15,3 +15,6 @@ These documents were kept as PDFs in `resources/` and `docs/` in earlier version
 
 4. **Mastermind Game Rules** (rules sheet for the 4-peg, 6-colour game; the document does not name its publisher). https://magisterrex.files.wordpress.com/2014/07/mastermindrules.pdf
    Formerly `docs/mastermindrules.pdf`, later `resources/mastermindrules.pdf`, the same file as at this link. The examples in `TestActInstructionsExamples` in `internal/mastermind/agreement_test.go` come from it.
+
+5. **Koyama, K., & Lai, T. W.** (1993). An optimal Mastermind strategy. *Journal of Recreational Mathematics*, 25(4), 251–256.
+   Never kept in this repository. The README cites it for the optimal strategy on 4 pegs and 6 colours: 5,625 guesses over the 1,296 codes, an average of 4.340.

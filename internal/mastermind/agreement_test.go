@@ -175,7 +175,7 @@ func TestActWhiteCounting(t *testing.T) {
 }
 
 func TestActInstructionsExamples(t *testing.T) {
-	// Instructions examples from docs/mastermindrules.pdf
+	// Instructions examples from the Mastermind rules sheet (see REFERENCES.md)
 	// https://magisterrex.files.wordpress.com/2014/07/mastermindrules.pdf
 
 	// Basic example responding with "BW"
@@ -225,7 +225,7 @@ func TestActFromPythonImplementation(t *testing.T) {
 
 func TestKnuthCounts(t *testing.T) {
 	// This verifies that this implementation follows the example in
-	// knuth-mastermind.pdf with the same counts given in Figure 1.
+	// Knuth's paper (see REFERENCES.md) with the same counts given in Figure 1.
 	lines := utils.ReadLinesFromFilePath("../../fixtures/commercial-mastermind.txt")
 	groupedResponses := buildGroupedResponses(lines, "AABB")
 	test.AssertDeepEqual(len(groupedResponses["WWWW"]), 1, t)

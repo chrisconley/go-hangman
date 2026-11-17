@@ -7,6 +7,8 @@ import (
 	"os"
 	"runtime"
 	"runtime/debug"
+	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/coocood/freecache"
@@ -41,6 +43,28 @@ func TryTry(motivation game.Motivation, agreement game.Agreement, lines []string
 	c <- results
 }
 
+// parseWeights reads the -weights list into trials, each in the order BuildTrials uses: entropy,
+// minimax, mostparts, reward.
+func parseWeights(list string) [][]float64 {
+	trials := [][]float64{}
+	for _, weighting := range strings.Split(list, ",") {
+		parts := strings.Split(weighting, ":")
+		if len(parts) != 4 {
+			panic(fmt.Sprintf("-weights: %q should be reward:entropy:minimax:mostparts", weighting))
+		}
+		values := make([]float64, 4)
+		for i, part := range parts {
+			value, err := strconv.ParseFloat(part, 64)
+			if err != nil {
+				panic(fmt.Sprintf("-weights: %q is not a number", part))
+			}
+			values[i] = value
+		}
+		trials = append(trials, []float64{values[1], values[2], values[3], values[0]})
+	}
+	return trials
+}
+
 func handleResults(input chan optimizationResults, output chan []optimizationResults, wg *sync.WaitGroup) {
 	var results []optimizationResults
 	for trialResult := range input {
@@ -60,6 +84,7 @@ func main() {
 	gameString := flag.String("game", "none", "What game to play. Valid games: hangman, mastermind, wordle. Required")
 	wordleGuesses := flag.String("wordle.guesses", "", "With -game wordle: file of allowed guesses, one per line. The answers come on stdin.")
 	trialStepSize := flag.Float64("trial.stepSize", 0.5, "What step size to take when building brute force trials")
+	weights := flag.String("weights", "", "Play only these weightings instead of every combination at -trial.stepSize: a comma-separated list, each written reward:entropy:minimax:mostparts, e.g. 0:1:0:0,0:0.7:0.15:0.15")
 	profiling := flag.String("profiling", "off", "Set 'mem' or 'cpu' profiling. Defaults to off.")
 	profilingProfilePath := flag.String("profiling.profilePath", "/tmp/profiling", "Path where profile should be written")
 	cacheSize := flag.Int("cacheSize", 1000, "Cache size in MB. Defaults to 1000MB (1GB).")
@@ -94,6 +119,9 @@ func main() {
 
 	game.BUniverse = game.InitUniverse(lines)
 	trials := play.BuildTrials(0.0, 1.0, *trialStepSize, 4)
+	if *weights != "" {
+		trials = parseWeights(*weights)
+	}
 	trialLimit := 0
 	if *limit == -1 {
 		trialLimit = len(trials)

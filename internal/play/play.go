@@ -11,9 +11,9 @@ import (
 	"github.com/segmentio/fasthash/fnv1a"
 )
 
-func logPredictions(predictions game.Predictions) {
+func logPredictions(predictions []game.Prediction) {
 	if os.Getenv("DEBUGPREDICTIONS") != "" {
-		for _, prediction := range predictions.PredictionsMap.Values {
+		for _, prediction := range predictions {
 			fmt.Printf("PREDICTION: %+v\n", prediction)
 		}
 	}
@@ -202,7 +202,7 @@ func playTurn(
 	game.PossibleWorlds,
 ) {
 	predictions := Explore(gameplay, perspective.Agreement, possibleWorlds)
-	logPredictions(predictions)
+	logPredictions(predictions.PredictionsMap.Values)
 	action := Decide(predictions, perspective.Motivation)
 	reaction := Act(gameplay, action, perspective.Agreement.Act, truth)
 	gameplay, possibleWorlds = Observe(gameplay, reaction, perspective.Agreement.Act, possibleWorlds)

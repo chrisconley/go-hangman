@@ -140,7 +140,7 @@ func TestBuildTrialsAndShard(t *testing.T) {
 	}
 	for _, m := range trials {
 		if seen[m] != 2 {
-			t.Errorf("%+v is in %d shards over the two shard layouts, want 2", m, seen[m])
+			t.Errorf("%+v is given to %d processes over the two ways of splitting, want 2", m, seen[m])
 		}
 	}
 }

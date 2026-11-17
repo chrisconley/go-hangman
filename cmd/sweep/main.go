@@ -285,7 +285,7 @@ func main() {
 	debug.SetGCPercent(20)
 
 	trials := shard(buildTrials(*stepSize, *motivations, *mostPartsZero), *shardIndex, *shardCount, *shardContiguous)
-	fmt.Fprintf(os.Stderr, "words: %d, games per trial: %d, trials: %d, mode: %s\n", len(lines), *limit, len(trials), *mode)
+	fmt.Fprintf(os.Stderr, "words: %d, games per weighting: %d, weightings: %d, mode: %s\n", len(lines), *limit, len(trials), *mode)
 
 	var logWriter *bufio.Writer
 	if *gameLog != "" {
@@ -311,7 +311,7 @@ func main() {
 		start := time.Now()
 		games, checkedStates := playTrial(agreement, lines, motivation, settings)
 		if *check {
-			fmt.Fprintf(os.Stderr, "%s: %d states checked against the engine's ExploreReactions and Decide\n", key(motivation), checkedStates)
+			fmt.Fprintf(os.Stderr, "%s: %d positions checked against the engine's scores and choices\n", key(motivation), checkedStates)
 		}
 		stats := play.CalculateStats(games, true)
 		js, err := json.Marshal(trialResult{Motivation: motivation, GameStats: stats, Seconds: time.Since(start).Seconds()})

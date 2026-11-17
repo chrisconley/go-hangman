@@ -65,7 +65,7 @@ GameStats: {
 | `fixtures/mastermind-ABCDEFGH-5.txt` | `-game mastermind` | 32,768 | 5 pegs, 8 colours |
 | `fixtures/five-letter-words.txt` | `-game wordle` | 676 | common five-letter English words, written for this repository |
 
-You can also pipe in your own list, one answer per line. For Wordle any list of five-letter words works: the answers come on stdin, the allowed guesses come from the file given to `-wordle.guesses`, and every answer must also be an allowed guess. The New York Times answer and guess lists are not in this repository.
+You can also pipe in your own list, one answer per line. For Wordle any list of five-letter words works: the answers come on stdin, the allowed guesses come from the file given to `-wordle.guesses`, and every answer must also be an allowed guess. The answer and guess lists from the original Wordle game are not in this repository.
 
 ### More examples
 

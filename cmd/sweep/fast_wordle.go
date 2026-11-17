@@ -1,15 +1,17 @@
 package main
 
-// The -tree.fast explorer for Wordle. It computes, for every state the tree walk reaches, the same four
-// statistics per action that game.ExploreReactions computes (Reward = summed per-world reward / worlds,
-// Entropy = mth.CalcEntropy over the response-class counts in first-appearance order, InversedMax =
-// mth.FindInversedMax, PartsCount = number of classes, valid = the guess is a remaining world), from a
-// precomputed guess x answer pattern table instead of strings, maps and bitmaps, adding the per-world
-// rewards in the same order so every float is bit-identical. It then picks the action with the same rule
-// as game.Decide (argmax of Reward^a * Entropy^b * InversedMax^c * PartsCount^d multiplied left to
-// right, ties to a valid action, then to the lexically smallest). -tree.check runs the engine's own
-// ExploreReactions and Decide at every state as well and panics on any difference in a statistic or in
-// the decision; sweep_test.go runs it.
+// -tree.fast for Wordle. Before the first game it works out, for every allowed guess and every possible
+// answer, the response the guess would get, and keeps them in a table. At each position it then scores
+// every guess from that table, without the strings, maps and bitmaps the engine uses. A guess gets the
+// same four scores the engine's game.ExploreReactions gives it: Reward (the average reward over the
+// answers still possible), Entropy (mth.CalcEntropy over how many answers give each response, counted in
+// the order the responses first appear), InversedMax (mth.FindInversedMax) and PartsCount (how many
+// different responses there are), and whether the guess could itself be the answer. The rewards are added
+// in the same order as the engine adds them, so every score is exactly the same number. It then picks
+// the guess the way game.Decide does: the highest Reward^a * Entropy^b * InversedMax^c * PartsCount^d,
+// multiplied left to right; on a tie, a guess that could be the answer, then the alphabetically first.
+// -tree.check also runs the engine's own ExploreReactions and Decide at every position and stops with an
+// error if any score or any choice differs; sweep_test.go runs it.
 
 import (
 	"fmt"
@@ -151,7 +153,7 @@ func (t *treePlayer) playFast(gameplay game.GamePlay, possibleWorlds game.Possib
 		reaction := t.agreement.Act(gameplay, game.BUniverse.GetWorldByIndex(groups[code][0]), action)
 		nextGameplay, nextWorlds := play.Observe(branch(gameplay), reaction, t.agreement.Act, possibleWorlds)
 		if nextWorlds.Len() != len(groups[code]) {
-			panic("Observe disagrees with the pattern table")
+			panic("Observe and the response table disagree on which answers are left")
 		}
 		if code == allGreen {
 			t.games[groups[code][0]] = nextGameplay
@@ -173,17 +175,17 @@ func (t *treePlayer) checkState(gameplay game.GamePlay, possibleWorlds game.Poss
 		}
 	}
 	if len(actions) != available {
-		panic(fmt.Sprintf("GetActions offers %d actions, the fast explorer %d", len(actions), available))
+		panic(fmt.Sprintf("the engine offers %d guesses, the response table %d", len(actions), available))
 	}
 	for _, prediction := range predictions.PredictionsMap.Values {
 		s := f.stats[f.index[prediction.Action.String()]]
 		if s.reward != prediction.Reward || s.entropy != prediction.Entropy || s.inversedMax != prediction.InversedMax || s.partsCount != prediction.PartsCount || s.valid != prediction.ActionMatchesAPossibleWorld {
-			panic(fmt.Sprintf("statistics differ for %s: fast %+v engine %+v", prediction.Action.String(), s, prediction))
+			panic(fmt.Sprintf("scores differ for %s: table %+v engine %+v", prediction.Action.String(), s, prediction))
 		}
 	}
 	engine := game.Decide(predictions, t.motivation).Action.String()
 	if engine != f.guesses[g] {
-		panic(fmt.Sprintf("decision differs: fast %s engine %s", f.guesses[g], engine))
+		panic(fmt.Sprintf("chosen guess differs: table %s engine %s", f.guesses[g], engine))
 	}
 	t.checkedStates++
 }

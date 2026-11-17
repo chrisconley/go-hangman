@@ -1,19 +1,21 @@
 // cmd/sweep plays a list of weightings and prints one line of JSON per weighting, in the same shape as
-// cmd/optimize. The weightings are either listed with -motivations or enumerated with -trial.stepSize
-// exactly as cmd/optimize enumerates them. Every game is played with the engine's own Explore, Decide,
-// Act and Observe; nothing in the engine changes.
+// cmd/optimize. You either list the weightings with -motivations, or give -trial.stepSize to try every
+// combination at that step, in the same order as cmd/optimize. Every game is played with the engine's
+// own functions for scoring the guesses, picking one and narrowing the answers; nothing in the engine
+// changes.
 //
 // -mode games (the default) plays the games one after another with play.PlayGames, as cmd/player does.
-// -mode tree plays all the games of a weighting at once. From each game state it calls the engine's
-// ExploreReactions and Decide once, then splits the remaining answers by their response to the chosen
-// guess and follows each group. A state many games pass through is explored once instead of once per
-// game, and its predictions never go through the cache serializer. The guess depends only on the state,
-// so every game plays the same guesses as in -mode games; sweep_test.go checks that the totals agree.
-// -tree.cacheStates keeps the predictions of the shallowest states (at most -tree.cacheDepth turns in)
-// from one weighting to the next, which is where neighbouring weightings share work.
+// -mode tree plays all the games of a weighting together. At each position (the guesses so far and
+// their responses) it scores the guesses once with the engine's ExploreReactions, picks one with
+// Decide, then splits the answers still possible by the response they give and carries on with each
+// group. A position that many games reach is scored once instead of once per game, and its scores are
+// never written to and read back from the cache. The guess chosen depends only on the position, so
+// every game gets the same guesses as in -mode games; sweep_test.go checks that the totals agree.
+// -tree.cacheStates keeps the scores of positions near the start (at most -tree.cacheDepth turns in)
+// from one weighting to the next, since neighbouring weightings often reach the same early positions.
 //
-// -gamelog writes one JSON record per game. -shard.index and -shard.count split the weightings across
-// independent processes.
+// -gamelog writes one JSON line per game. -shard.index and -shard.count split the weightings across
+// separate processes.
 package main
 
 import (
@@ -100,9 +102,10 @@ type treePlayer struct {
 	checkedStates int
 }
 
-// branch gives a child state its own copy of the reaction history. GamePlay.AddTurn appends to
-// Reactions, and sibling states grown from one parent value would otherwise share (and overwrite) the
-// parent's backing array; play.PlayGames never hits this because each game owns its GamePlay.
+// branch gives the next position its own copy of the guesses and responses so far. GamePlay.AddTurn
+// appends to Reactions, so positions that follow from the same earlier position would otherwise share,
+// and overwrite, one backing array. play.PlayGames never meets this because each game has its own
+// GamePlay.
 func branch(gameplay game.GamePlay) game.GamePlay {
 	gameplay.Reactions = append(make([]game.Reaction, 0, len(gameplay.Reactions)+1), gameplay.Reactions...)
 	return gameplay
@@ -136,14 +139,14 @@ func (t *treePlayer) play(gameplay game.GamePlay, possibleWorlds game.PossibleWo
 			reactions[response] = reaction
 			order = append(order, response)
 		} else if first.Reward != reaction.Reward {
-			panic("worlds with the same response gave different rewards; -mode tree needs reward to be a function of the response")
+			panic("two answers gave the same response but different rewards; -mode tree needs the reward to follow from the response")
 		}
 		groups[response] = append(groups[response], worldIndex)
 	}
 	for _, response := range order {
 		nextGameplay, nextWorlds := play.Observe(branch(gameplay), reactions[response], t.agreement.Act, possibleWorlds)
 		if nextWorlds.Len() != len(groups[response]) {
-			panic("Observe disagrees with the response partition")
+			panic("Observe and the split by response disagree on which answers are left")
 		}
 		if len(groups[response]) == 1 && action.Matches(game.BUniverse.GetWorldByIndex(groups[response][0])) {
 			t.games[groups[response][0]] = nextGameplay
@@ -165,7 +168,7 @@ type trialSettings struct {
 }
 
 // playTrial plays the games of one weighting and returns them in input order, with the number of
-// states -tree.check compared against the engine.
+// positions -tree.check compared against the engine.
 func playTrial(agreement game.Agreement, lines []string, motivation game.Motivation, s trialSettings) ([]game.GamePlay, int) {
 	game.ObserveCache.Cache = freecache.NewCache(500 * 1024 * 1024)
 	if s.mode != "tree" {
@@ -183,8 +186,8 @@ func playTrial(agreement game.Agreement, lines []string, motivation game.Motivat
 	return player.games, player.checkedStates
 }
 
-// buildTrials returns the weightings enumerated at stepSize (none when it is 0) followed by the
-// reward:entropy:minimax:mostparts tuples in motivations.
+// buildTrials returns every combination of weights at stepSize (none when it is 0), followed by the
+// reward:entropy:minimax:mostparts weightings listed in motivations.
 func buildTrials(stepSize float64, motivations string, mostPartsZero bool) []game.Motivation {
 	trials := []game.Motivation{}
 	if stepSize > 0 {
@@ -222,7 +225,8 @@ func buildTrials(stepSize float64, motivations string, mostPartsZero bool) []gam
 	return trials
 }
 
-// shard returns the trials shard index of count runs: every count-th trial, or one contiguous block.
+// shard returns the weightings that process index of count should play: every count-th one, or one
+// block of neighbours when contiguous is set.
 func shard(trials []game.Motivation, index int, count int, contiguous bool) []game.Motivation {
 	if count <= 1 {
 		return trials
@@ -239,21 +243,21 @@ func shard(trials []game.Motivation, index int, count int, contiguous bool) []ga
 
 func main() {
 	gameString := flag.String("game", "hangman", "hangman, mastermind or wordle")
-	wordleGuesses := flag.String("wordle.guesses", "", "with -game wordle: file of allowed guesses, one per line (the answers come on stdin)")
-	mode := flag.String("mode", "games", "games (play.PlayGames, one game after another) or tree (every state explored once per trial)")
-	cacheStates := flag.Int("tree.cacheStates", 0, "with -mode tree: keep the predictions of up to this many shallow states across trials (LRU)")
-	cacheDepth := flag.Int("tree.cacheDepth", 1, "with -mode tree: cache states reached after at most this many turns")
-	fast := flag.Bool("tree.fast", false, "with -mode tree -game wordle: explore with the pattern-table explorer (bit-identical statistics, see fast_wordle.go)")
-	check := flag.Bool("tree.check", false, "with -tree.fast: also run the engine's ExploreReactions and Decide at every state and panic on any difference")
-	stepSize := flag.Float64("trial.stepSize", 0, "enumerate the 4-D weight simplex with play.BuildTrials exactly as cmd/optimize does (0 disables)")
-	motivations := flag.String("motivations", "", "comma-separated reward:entropy:minimax:mostparts tuples, e.g. 0.75:0.25:0:0,1:0:0:0")
-	mostPartsZero := flag.Bool("mostparts.zero", false, "with -trial.stepSize keep only trials whose MostParts weight is 0")
-	gameLog := flag.String("gamelog", "", "write one JSON record per game to this path")
-	cacheSize := flag.Int("cacheSize", 1000, "prediction cache size in MB (cmd/player default)")
-	limit := flag.Int("limit", 0, "games per trial; 0 plays every word on stdin")
-	shardIndex := flag.Int("shard.index", 0, "with -shard.count, run only this shard's trials")
-	shardCount := flag.Int("shard.count", 1, "split the trial list across this many independent processes")
-	shardContiguous := flag.Bool("shard.contiguous", false, "give each shard a contiguous block of the trial list instead of every shard.count-th trial")
+	wordleGuesses := flag.String("wordle.guesses", "", "with -game wordle: file of allowed guesses, one per line (the possible answers come on stdin)")
+	mode := flag.String("mode", "games", "games (one game after another, as cmd/player) or tree (all games of a weighting together, each position scored once)")
+	cacheStates := flag.Int("tree.cacheStates", 0, "with -mode tree: keep the scores of up to this many early positions from one weighting to the next, dropping the least recently used")
+	cacheDepth := flag.Int("tree.cacheDepth", 1, "with -mode tree: keep only positions reached after at most this many turns")
+	fast := flag.Bool("tree.fast", false, "with -mode tree -game wordle: score guesses from a table of responses worked out in advance; the results are exactly the same numbers (see fast_wordle.go)")
+	check := flag.Bool("tree.check", false, "with -tree.fast: also score and choose with the engine at every position, and stop with an error on any difference")
+	stepSize := flag.Float64("trial.stepSize", 0, "try every combination of the four weights at this step, as cmd/optimize does (0 for none)")
+	motivations := flag.String("motivations", "", "weightings to play, comma-separated, each as reward:entropy:minimax:mostparts, e.g. 0.75:0.25:0:0,1:0:0:0")
+	mostPartsZero := flag.Bool("mostparts.zero", false, "with -trial.stepSize: keep only the combinations whose MostParts weight is 0")
+	gameLog := flag.String("gamelog", "", "write each game's guesses and responses to this file, one JSON line per game")
+	cacheSize := flag.Int("cacheSize", 1000, "with -mode games: size of the cache of scored positions in MB (the cmd/player default)")
+	limit := flag.Int("limit", 0, "games per weighting; 0 plays every word on stdin")
+	shardIndex := flag.Int("shard.index", 0, "with -shard.count: which share of the weightings this process plays, from 0")
+	shardCount := flag.Int("shard.count", 1, "split the weightings across this many separate processes")
+	shardContiguous := flag.Bool("shard.contiguous", false, "give each process a block of neighbouring weightings instead of every shard.count-th one")
 	flag.Parse()
 
 	lines, err := utils.ReadLinesFromStdin()
@@ -276,7 +280,7 @@ func main() {
 		panic("game must be hangman, mastermind or wordle")
 	}
 	if *mode == "tree" && *limit != len(lines) {
-		panic("-mode tree plays every world; drop -limit or truncate stdin")
+		panic("-mode tree plays every answer on stdin; drop -limit or shorten the list")
 	}
 	debug.SetGCPercent(20)
 

@@ -43,7 +43,7 @@ func assertSameStats(t *testing.T, name string, motivation game.Motivation, game
 	}
 }
 
-// Tree mode explores each state once and games mode plays one game at a time; both must play the same
+// Tree mode scores each position once and games mode plays one game at a time; both must make the same
 // guesses, so every total and every game's turn count must agree.
 func TestTreeModeMatchesGamesMode(t *testing.T) {
 	words := utils.ReadLinesFromFilePath("../../fixtures/five-letter-words.txt")
@@ -73,9 +73,9 @@ func TestTreeModeMatchesGamesMode(t *testing.T) {
 	}
 }
 
-// The fast Wordle explorer must compute the same statistics and pick the same guess as the engine's
-// ExploreReactions and Decide at every state; -tree.check panics on any difference.
-func TestFastWordleMatchesEngine(t *testing.T) {
+// Scoring Wordle guesses from the table of responses (-tree.fast) must give the same scores and pick the
+// same guess as the engine at every position; -tree.check stops with an error on any difference.
+func TestWordleTableMatchesEngine(t *testing.T) {
 	words := utils.ReadLinesFromFilePath("../../fixtures/five-letter-words.txt")
 	answers := words[:200]
 	agreement := wordle.NewAgreement(words)
@@ -86,9 +86,9 @@ func TestFastWordleMatchesEngine(t *testing.T) {
 		s.check = true
 		games, checked := playTrial(agreement, answers, motivation, s)
 		if checked == 0 {
-			t.Errorf("%+v: no states were checked", motivation)
+			t.Errorf("%+v: no positions were checked", motivation)
 		}
-		assertSameStats(t, "fast wordle", motivation, slow, play.CalculateStats(games, true))
+		assertSameStats(t, "wordle table", motivation, slow, play.CalculateStats(games, true))
 	}
 }
 
@@ -125,10 +125,10 @@ func TestHangmanEntropyResult(t *testing.T) {
 func TestBuildTrialsAndShard(t *testing.T) {
 	trials := buildTrials(0.5, "0.75:0.25:0:0", false)
 	if len(trials) != 11 || trials[10] != (game.Motivation{Reward: 0.75, Entropy: 0.25}) {
-		t.Fatalf("expected the 10 trials of step 0.5 and the listed one, got %v", trials)
+		t.Fatalf("expected the 10 combinations of step 0.5 and the listed one, got %v", trials)
 	}
 	if n := len(buildTrials(0.5, "", true)); n != 6 {
-		t.Errorf("-mostparts.zero at step 0.5: %d trials, want 6", n)
+		t.Errorf("-mostparts.zero at step 0.5: %d combinations, want 6", n)
 	}
 	seen := map[game.Motivation]int{}
 	for _, contiguous := range []bool{false, true} {

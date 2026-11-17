@@ -1,8 +1,8 @@
 # go-hangman
 
-go-hangman is a Go engine that plays guessing games like hangman and Mastermind. On each turn it looks at every guess it could make and asks how that guess would split the answers that are still possible. It scores each guess on four measures:
+go-hangman is a Go engine that plays guessing games like hangman, Mastermind and Wordle. On each turn it looks at every guess it could make and asks how that guess would split the answers that are still possible. It scores each guess on four measures:
 
-- **Reward**: the expected reward of the guess. In hangman that means the chance the letter is in the word; in Mastermind it's the expected black/white score.
+- **Reward**: the expected reward of the guess. In hangman that means the chance the letter is in the word; in Mastermind it's the expected black/white score; in Wordle a green counts 1/5 and a yellow 1/10.
 - **Entropy**: the information the guess gives, in bits.
 - **MiniMax**: how small the largest group of remaining answers would be (Knuth's 1976 rule).
 - **MostParts**: how many different responses the guess can produce.
@@ -29,7 +29,7 @@ cat fixtures/nine-letter-words.txt | go run ./cmd/player -game hangman -motivati
 The parts of that command:
 
 - `cat fixtures/nine-letter-words.txt |` is the dictionary, one answer per line on stdin. Every line is a possible answer, and the engine plays one game against each line.
-- `-game hangman` picks the rules: `hangman` (guess a letter, see where it appears) or `mastermind` (guess a code, get black and white pegs). Required.
+- `-game hangman` picks the rules: `hangman` (guess a letter, see where it appears), `mastermind` (guess a code, get black and white pegs) or `wordle` (guess a word, get a green, yellow or gray mark for each letter). Required. Wordle also needs `-wordle.guesses`, the file of allowed guesses.
 - `-motivation.entropy 1.0` sets the weights. There are four flags, `-motivation.reward`, `-motivation.entropy`, `-motivation.minimax` and `-motivation.mostparts`. Each defaults to 0, and they must sum to exactly 1.0.
 - `-limit N` (optional) stops after the first N lines of the file, so you can try a run without playing all 25,011 games. The engine still treats every line in the file as a word the answer could be.
 
@@ -63,8 +63,9 @@ GameStats: {
 | `fixtures/mastermind-ABCD-3.txt` | `-game mastermind` | 64 | 3 pegs, 4 colours |
 | `fixtures/mastermind-ABCDEFG-4.txt` | `-game mastermind` | 2,401 | 4 pegs, 7 colours |
 | `fixtures/mastermind-ABCDEFGH-5.txt` | `-game mastermind` | 32,768 | 5 pegs, 8 colours |
+| `fixtures/five-letter-words.txt` | `-game wordle` | 676 | common five-letter English words, written for this repository |
 
-You can also pipe in your own list, one answer per line.
+You can also pipe in your own list, one answer per line. For Wordle any list of five-letter words works: the answers come on stdin, the allowed guesses come from the file given to `-wordle.guesses`, and every answer must also be an allowed guess. The answer and guess lists from the original Wordle game are not in this repository.
 
 ### More examples
 
@@ -79,6 +80,13 @@ Standard Mastermind with MostParts alone (1,296 games, 5,668 turns, at most 6 pe
 
 ```
 cat fixtures/commercial-mastermind.txt | go run ./cmd/player -game mastermind -motivation.mostparts 1.0
+```
+
+Wordle with Entropy alone, using the same file for the answers and the allowed guesses (676 games, 2,028 turns, at most 5 per game, about 2 seconds):
+
+```
+cat fixtures/five-letter-words.txt | go run ./cmd/player -game wordle \
+    -wordle.guesses fixtures/five-letter-words.txt -motivation.entropy 1.0
 ```
 
 The smallest game, for a quick try (64 games, 208 turns, at most 4 per game):

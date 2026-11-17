@@ -16,6 +16,7 @@ import (
 	"github.com/chrisconley/go-hangman/internal/mastermind"
 	"github.com/chrisconley/go-hangman/internal/play"
 	"github.com/chrisconley/go-hangman/internal/utils"
+	"github.com/chrisconley/go-hangman/internal/wordle"
 	"github.com/pkg/profile"
 )
 
@@ -56,7 +57,8 @@ func main() {
 		os.Exit(2)
 	}
 	limit := flag.Int("limit", -1, "Number of trials to run. Defaults to all generated")
-	gameString := flag.String("game", "none", "What game to play. Valid games: hangman, mastermind. Required")
+	gameString := flag.String("game", "none", "What game to play. Valid games: hangman, mastermind, wordle. Required")
+	wordleGuesses := flag.String("wordle.guesses", "", "With -game wordle: file of allowed guesses, one per line. The answers come on stdin.")
 	trialStepSize := flag.Float64("trial.stepSize", 0.5, "What step size to take when building brute force trials")
 	profiling := flag.String("profiling", "off", "Set 'mem' or 'cpu' profiling. Defaults to off.")
 	profilingProfilePath := flag.String("profiling.profilePath", "/tmp/profiling", "Path where profile should be written")
@@ -72,6 +74,8 @@ func main() {
 		agreement = hangman.Agreement
 	} else if *gameString == "mastermind" {
 		agreement = mastermind.Agreement
+	} else if *gameString == "wordle" {
+		agreement = wordle.NewAgreement(utils.ReadLinesFromFilePath(*wordleGuesses))
 	} else {
 		panic("A game must be specified.")
 	}

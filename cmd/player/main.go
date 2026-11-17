@@ -18,6 +18,7 @@ import (
 	"github.com/chrisconley/go-hangman/internal/game"
 	"github.com/chrisconley/go-hangman/internal/hangman"
 	"github.com/chrisconley/go-hangman/internal/mastermind"
+	"github.com/chrisconley/go-hangman/internal/wordle"
 	"github.com/coocood/freecache"
 	"github.com/pkg/profile"
 
@@ -33,7 +34,8 @@ func main() {
 	}
 
 	limit := flag.Int("limit", len(lines), "How many games to play. Defaults to all games piped in from stdin.")
-	gameString := flag.String("game", "none", "What game to play. Valid games: hangman, mastermind. Required")
+	gameString := flag.String("game", "none", "What game to play. Valid games: hangman, mastermind, wordle. Required")
+	wordleGuesses := flag.String("wordle.guesses", "", "With -game wordle: file of allowed guesses, one per line. The answers come on stdin.")
 	reward := flag.Float64("motivation.reward", 0.0, "How much weight to put into Reward.")
 	entropy := flag.Float64("motivation.entropy", 0.0, "How much weight to put into Entropy.")
 	minimax := flag.Float64("motivation.minimax", 0.0, "How much weight to put into MiniMax.")
@@ -58,6 +60,8 @@ func main() {
 		agreement = hangman.Agreement
 	} else if *gameString == "mastermind" {
 		agreement = mastermind.Agreement
+	} else if *gameString == "wordle" {
+		agreement = wordle.NewAgreement(utils.ReadLinesFromFilePath(*wordleGuesses))
 	} else {
 		panic("A game must be specified.")
 	}

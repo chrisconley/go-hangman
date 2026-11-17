@@ -156,7 +156,7 @@ func (t *treePlayer) playFast(gameplay game.GamePlay, possibleWorlds game.Possib
 			panic("Observe and the response table disagree on which answers are left")
 		}
 		if code == allGreen {
-			t.games[groups[code][0]] = nextGameplay
+			t.finish(groups[code], action, nextGameplay)
 			continue
 		}
 		t.playFast(nextGameplay, nextWorlds, acted)

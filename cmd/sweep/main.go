@@ -56,7 +56,7 @@ type gameRecord struct {
 }
 
 func key(m game.Motivation) string {
-	return fmt.Sprintf("%.3f|%.3f|%.3f|%.3f", m.Reward, m.Entropy, m.MiniMax, m.MostParts)
+	return fmt.Sprintf("%g|%g|%g|%g", m.Reward, m.Entropy, m.MiniMax, m.MostParts)
 }
 
 type stateCache struct {
@@ -148,11 +148,22 @@ func (t *treePlayer) play(gameplay game.GamePlay, possibleWorlds game.PossibleWo
 		if nextWorlds.Len() != len(groups[response]) {
 			panic("Observe and the split by response disagree on which answers are left")
 		}
-		if len(groups[response]) == 1 && action.Matches(game.BUniverse.GetWorldByIndex(groups[response][0])) {
-			t.games[groups[response][0]] = nextGameplay
+		if action.Matches(game.BUniverse.GetWorldByIndex(groups[response][0])) {
+			t.finish(groups[response], action, nextGameplay)
 			continue
 		}
 		t.play(nextGameplay, nextWorlds)
+	}
+}
+
+// finish ends the game of every answer in a group the guess has just solved. The group holds more than
+// one answer only when the same word appears more than once on stdin.
+func (t *treePlayer) finish(group []uint64, action game.Action, gameplay game.GamePlay) {
+	for _, worldIndex := range group {
+		if !action.Matches(game.BUniverse.GetWorldByIndex(worldIndex)) {
+			panic("a guess solved one answer in a group but not another")
+		}
+		t.games[worldIndex] = gameplay
 	}
 }
 
@@ -293,9 +304,12 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		defer f.Close()
+		defer func() {
+			if err := f.Close(); err != nil {
+				panic(err)
+			}
+		}()
 		logWriter = bufio.NewWriterSize(f, 1<<20)
-		defer logWriter.Flush()
 	}
 
 	cache := &stateCache{capacity: *cacheStates, order: list.New(), entries: map[uint64]*list.Element{}}
@@ -327,11 +341,15 @@ func main() {
 					rec.Actions = append(rec.Actions, reaction.Action.String())
 					rec.Responses = append(rec.Responses, reaction.Response.String())
 				}
-				b, _ := json.Marshal(rec)
-				logWriter.Write(b)
-				logWriter.WriteString("\n")
+				b, err := json.Marshal(rec)
+				if err != nil {
+					panic(err)
+				}
+				logWriter.Write(append(b, '\n'))
 			}
-			logWriter.Flush()
+			if err := logWriter.Flush(); err != nil {
+				panic(fmt.Sprintf("writing -gamelog: %v", err))
+			}
 		}
 	}
 }

@@ -73,6 +73,25 @@ func TestTreeModeMatchesGamesMode(t *testing.T) {
 	}
 }
 
+// An answer that appears twice on stdin is played twice, in tree mode as in games mode.
+func TestRepeatedAnswers(t *testing.T) {
+	words := utils.ReadLinesFromFilePath("../../fixtures/five-letter-words.txt")
+	wordleAnswers := append(append([]string{}, words[:30]...), words[3], words[10])
+	hangmanWords := utils.ReadLinesFromFilePath("../../fixtures/nine-letter-words.txt")[:200]
+	hangmanWords = append(hangmanWords, hangmanWords[7])
+	agreement := wordle.NewAgreement(words)
+	for _, motivation := range testMotivations {
+		gamesStats := totals(t, agreement, wordleAnswers, motivation, newSettings("games", wordleAnswers))
+		assertSameStats(t, "wordle, repeated answers", motivation, gamesStats, totals(t, agreement, wordleAnswers, motivation, newSettings("tree", wordleAnswers)))
+		s := newSettings("tree", wordleAnswers)
+		s.fast = newFastWordle(words, game.InitUniverse(wordleAnswers).Worlds)
+		assertSameStats(t, "wordle table, repeated answers", motivation, gamesStats, totals(t, agreement, wordleAnswers, motivation, s))
+		assertSameStats(t, "hangman, repeated answers", motivation,
+			totals(t, hangman.Agreement, hangmanWords, motivation, newSettings("games", hangmanWords)),
+			totals(t, hangman.Agreement, hangmanWords, motivation, newSettings("tree", hangmanWords)))
+	}
+}
+
 // Scoring Wordle guesses from the table of responses (-tree.fast) must give the same scores and pick the
 // same guess as the engine at every position; -tree.check stops with an error on any difference.
 func TestWordleTableMatchesEngine(t *testing.T) {

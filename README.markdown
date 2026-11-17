@@ -115,14 +115,16 @@ The fewest misses (total pain 34,695) is a tie between Reward 0.75 / Entropy 0.2
 
 The CSV has one row per weight combination. The full output of that run also listed every game's turn count; it isn't in the repository, and `cmd/optimize` regenerates it with `-trial.stepSize 0.05`.
 
-**Mastermind, 1,296 codes (4 pegs, 6 colours)** (`mastermind-results.json`, step 0.05)
+**Mastermind, 1,296 codes (4 pegs, 6 colours)** (`cmd/optimize`, step 0.05)
 
 | Weights | Total turns | Max turns |
 |---|---|---|
 | MostParts alone (best) | 5,668 | 6 |
 | Entropy alone | 5,723 | 6 |
-| MiniMax alone | 5,801 | 5 |
-| Best with at most 5 turns: Entropy 0.05, MiniMax 0.70, MostParts 0.25 | 5,677 | 5 |
+| MiniMax alone | 5,800 | 5 |
+| Best with at most 5 turns: Entropy 0.10, MiniMax 0.75, MostParts 0.15 | 5,683 | 5 |
+
+`mastermind-results.json` holds an earlier run of the same search. Its totals are what the engine gives when it scores every code, without the shortcut described under Optimizations, so two of them differ from the table: MiniMax alone took 5,801 guesses, and the best blend with at most 5 turns was Entropy 0.05 / MiniMax 0.70 / MostParts 0.25 with 5,677.
 
 ## Optimizations
 
@@ -130,7 +132,7 @@ The slow part is scoring every guess against every remaining answer on every tur
 
 - **Remaining answers as a bitmap.** The set of answers still possible is a compressed bitmap (`roaring64`) with a 64-bit hash, so a set is cheap to copy, store and compare.
 - **Two caches shared by all games.** Many games pass through the same situation. The engine keeps the scores of every guess for a situation (the prediction cache) and the answers left after a guess and its response (the observe cache), each under a hash. In the nine-letter run above, 146,356 turns needed 30,139 scoring passes; the rest were cache hits. Both caches use `freecache`, which keeps them out of the garbage collector's way. `-cacheSize` sets the prediction cache in MB (default 1000).
-- **Fewer Mastermind guesses to score.** Before the first guess, AABB, CCDD and EEFF are the same guess with the colours renamed, so only one of them needs scoring. The engine uses that idea on every turn for the colours that haven't been played yet and scores one guess per pattern: 5 opening guesses in place of 1,296. This is a shortcut, not an exact reduction. From the third guess on it can skip a guess that isn't truly equivalent to the one it keeps, so a total can differ slightly from scoring every code. With MiniMax alone, the 1,296 games of standard Mastermind take 5,800 guesses with the shortcut and 5,801 without it; the difference is tie-order noise. The code is `GetActions` in `internal/mastermind/agreement.go`.
+- **Fewer Mastermind guesses to score.** Before the first guess, AABB, CCDD and EEFF are the same guess with the colours renamed, so only one of them needs scoring. The engine uses that idea on every turn for the colours that haven't been played yet and scores one guess per pattern: 5 opening guesses in place of 1,296. This is a shortcut, not an exact reduction. From the third guess on it can skip a guess that isn't truly equivalent to the one it keeps, so a total can differ slightly from scoring every code. With MiniMax alone, the 1,296 games of standard Mastermind take 5,800 guesses with the shortcut and 5,801 without it; the difference is tie-order noise. A blend can move more: Entropy 0.05 / MiniMax 0.70 / MostParts 0.25 takes 5,690 guesses with the shortcut, at most 6 in a game, and 5,677 without it, at most 5. The code is `GetActions` in `internal/mastermind/agreement.go`.
 - **Weight combinations in parallel.** `cmd/optimize` runs one combination per CPU at a time.
 
 `-profiling cpu` or `-profiling mem` writes a profile to `/tmp/profiling`, or to the path given with `-profiling.profilePath`.
@@ -145,18 +147,18 @@ The single-measure rules are the ones studied in the Mastermind literature, and 
 |---|---|---|---|
 | 4 pegs, 6 colours | Most parts | 5,668 (Kooi 2005, Ville 2013) | 5,668 |
 | 4 pegs, 6 colours | Entropy | 5,723 (Ville 2013); 5,722 (Kooi 2005) | 5,723 |
-| 4 pegs, 6 colours | Largest group, Knuth's rule (MiniMax here) | 5,801 (Ville 2013) | 5,801 in `mastermind-results.json`; 5,800 with the guess pruning above |
-| 4 pegs, 7 colours | Entropy | 11,382 (Ville 2013) | 11,381 |
+| 4 pegs, 6 colours | Largest group, Knuth's rule (MiniMax here) | 5,801 (Ville 2013) | 5,800; 5,801 when every code is scored, without the shortcut above |
+| 4 pegs, 7 colours | Entropy | 11,382 (Ville 2013) | 11,382 |
 | 4 pegs, 7 colours | Most parts | 11,388 (Ville 2013) | 11,388 |
-| 4 pegs, 7 colours | Largest group | 11,613 (Ville 2013) | 11,613 |
+| 4 pegs, 7 colours | Largest group | 11,613 (Ville 2013) | 11,612 |
 
-The 7-colour figures are from `mastermind4x7-noreward-results.json`. The one-guess differences come from which guess is played when several score the same: Kooi's own tables give 5,722 for Entropy with one tie order and 5,723 with the reverse.
+The 7-colour figures are from `cmd/player` on `fixtures/mastermind-ABCDEFG-4.txt`. `mastermind4x7-noreward-results.json` is an earlier run made without the shortcut, which gave 11,381 for Entropy and 11,613 for the largest group. The one-guess differences come from which guess is played when several score the same: Kooi's own tables give 5,722 for Entropy with one tie order and 5,723 with the reverse.
 
 These rules look one guess ahead. The published optimal strategy for 4 pegs and 6 colours needs 5,625 guesses (Koyama and Lai 1993). This engine does not search for optimal strategies.
 
 What this engine adds:
 
-- **Blends.** Any weighted mix of the four measures can be played, and `cmd/optimize` searches the mixes. On standard Mastermind, Entropy 0.05 / MiniMax 0.70 / MostParts 0.25 needs 5,677 guesses and never more than 5 in a game. That is 124 fewer than Knuth's rule, with the same 5-guess limit. With 7 colours, Entropy 0.85 / MostParts 0.15 needs 11,366, fewer than any single measure.
+- **Blends.** Any weighted mix of the four measures can be played, and `cmd/optimize` searches the mixes. On standard Mastermind, Entropy 0.10 / MiniMax 0.75 / MostParts 0.15 needs 5,683 guesses and never more than 5 in a game. That is 117 fewer than Knuth's rule (5,800 here), with the same 5-guess limit. With 7 colours, Entropy 0.85 / MostParts 0.15 needs 11,367, fewer than any single measure.
 - **Reward and pain.** A fourth measure, the expected immediate reward of a guess, and a second total, pain, so a strategy can be judged on misses as well as on guesses.
 - **Hangman.** The same engine and the same four measures play a letter-guessing game. Nothing in the scoring is specific to Mastermind.
 

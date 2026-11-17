@@ -18,6 +18,12 @@ import (
 func playGamesTogether(agreement game.Agreement, motivation game.Motivation, lines []string, limit int) []game.GamePlay {
 	game.BUniverse = game.InitUniverse(lines)
 	w := walk{agreement: agreement, motivation: motivation, limit: uint64(limit), games: make([]game.GamePlay, len(lines))}
+	w.explore = func(gameplay game.GamePlay, possibleWorlds game.PossibleWorlds, actions []game.Action) game.Predictions {
+		return game.ExploreReactions(gameplay, possibleWorlds, actions, agreement.Act)
+	}
+	if agreement.NewExplore != nil {
+		w.explore = agreement.NewExplore(game.BUniverse)
+	}
 	root := game.InitGamePlay(game.BUniverse.PossibleWorlds.GetHash())
 	w.play(root, game.BUniverse.PossibleWorlds)
 	return w.games[:limit]
@@ -27,13 +33,14 @@ type walk struct {
 	agreement  game.Agreement
 	motivation game.Motivation
 	limit      uint64
+	explore    game.Explore
 	games      []game.GamePlay
 	finished   []game.GamePlay
 }
 
 func (w *walk) play(gameplay game.GamePlay, possibleWorlds game.PossibleWorlds) {
 	actions := w.agreement.GetActions(gameplay, possibleWorlds, game.BUniverse.Actions)
-	predictions := game.ExploreReactions(gameplay, possibleWorlds, actions, w.agreement.Act)
+	predictions := w.explore(gameplay, possibleWorlds, actions)
 	logPredictions(predictions)
 	action := Decide(predictions, w.motivation)
 

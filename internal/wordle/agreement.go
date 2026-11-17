@@ -106,7 +106,7 @@ func NewAgreement(guesses []string) game.Agreement {
 		}
 		return available
 	}
-	return game.Agreement{GetActions: getActions, Act: Act}
+	return game.Agreement{GetActions: getActions, Act: Act, NewExplore: newTableExplore(guesses)}
 }
 
 func isWord(s string) bool {

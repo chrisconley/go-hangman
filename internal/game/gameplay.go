@@ -13,7 +13,13 @@ type GetActions func(gp GamePlay, w PossibleWorlds, aa AvailableActions) []Actio
 type Agreement struct {
 	GetActions GetActions
 	Act        Act
+	// NewExplore is optional. When set, PlayGames calls it once with the universe and uses the function
+	// it returns to score the guesses at each position. That function must return exactly what
+	// ExploreReactions would, number for number.
+	NewExplore func(universe Universe) Explore
 }
+
+type Explore func(gp GamePlay, w PossibleWorlds, actions []Action) Predictions
 
 type Reaction struct {
 	Action   Action

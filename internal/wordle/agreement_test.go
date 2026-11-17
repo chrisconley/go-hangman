@@ -92,7 +92,8 @@ func loadPublishedLists(t *testing.T) ([]string, []string) {
 	return utils.ReadLinesFromFilePath(answers), utils.ReadLinesFromFilePath(guesses)
 }
 
-func classes(answers []string, guess string) map[int]int {
+// groups counts, for each response guess can get, how many answers give it.
+func groups(answers []string, guess string) map[int]int {
 	counts := map[int]int{}
 	for _, answer := range answers {
 		code, _, _ := Score(answer, guess)
@@ -102,26 +103,27 @@ func classes(answers []string, guess string) map[int]int {
 }
 
 // Published first-guess facts for the original lists (2,315 answers, 12,972 allowed guesses):
-// TRACE has 150 response patterns, the most of any guess, and SLATE 147 (real-statistics.com, "Best First
-// Two Guesses in Wordle"; caseyho/wordle-solver-benchmarks lists TRACE as the max-partitions opener);
-// ARISE and RAISE are the best minimax openers, leaving at most 168 answers (graphallthethings.com/posts/wordle);
-// SOARE has the most entropy, 5.89 bits (HKUST Science Focus, "Demystifying Wordle"; caseyho lists SOARE as the max-entropy opener).
+// TRACE can get 150 different responses, the most of any guess, and SLATE 147 (real-statistics.com, "Best
+// First Two Guesses in Wordle"; caseyho/wordle-solver-benchmarks also names TRACE as the first guess with
+// the most responses). ARISE and RAISE leave the fewest answers in the worst case, at most 168
+// (graphallthethings.com/posts/wordle). SOARE gives the most information, 5.89 bits (HKUST Science Focus,
+// "Demystifying Wordle"; caseyho names SOARE as the first guess with the most entropy).
 func TestPublishedFirstGuessFacts(t *testing.T) {
 	answers, allowed := loadPublishedLists(t)
 	if len(answers) != 2315 || len(allowed) != 12972 {
 		t.Fatalf("expected 2,315 answers and 12,972 allowed guesses, got %d and %d", len(answers), len(allowed))
 	}
-	if n := len(classes(answers, "trace")); n != 150 {
-		t.Errorf("trace: %d classes, want 150", n)
+	if n := len(groups(answers, "trace")); n != 150 {
+		t.Errorf("trace: %d different responses, want 150", n)
 	}
-	if n := len(classes(answers, "slate")); n != 147 {
-		t.Errorf("slate: %d classes, want 147", n)
+	if n := len(groups(answers, "slate")); n != 147 {
+		t.Errorf("slate: %d different responses, want 147", n)
 	}
 	bestParts, bestMax, bestEntropy := 0, math.MaxInt32, 0.0
 	partsWord, entropyWord := "", ""
 	maxOf := map[string]int{}
 	for _, guess := range allowed {
-		counts := classes(answers, guess)
+		counts := groups(answers, guess)
 		values := []float64{}
 		largest := 0
 		for _, c := range counts {
@@ -143,13 +145,13 @@ func TestPublishedFirstGuessFacts(t *testing.T) {
 		}
 	}
 	if bestParts != 150 || partsWord != "trace" {
-		t.Errorf("most classes: %s with %d, want trace with 150", partsWord, bestParts)
+		t.Errorf("most different responses: %s with %d, want trace with 150", partsWord, bestParts)
 	}
 	if bestMax != 168 || maxOf["arise"] != 168 || maxOf["raise"] != 168 {
-		t.Errorf("minimax: best largest class %d, arise %d, raise %d; want 168 for both", bestMax, maxOf["arise"], maxOf["raise"])
+		t.Errorf("fewest answers left in the worst case: %d, arise %d, raise %d; want 168 for both", bestMax, maxOf["arise"], maxOf["raise"])
 	}
 	if entropyWord != "soare" || bestEntropy < 5.885 || bestEntropy >= 5.895 {
-		t.Errorf("max entropy: %s with %.4f bits, want soare with 5.89", entropyWord, bestEntropy)
+		t.Errorf("most information: %s with %.4f bits, want soare with 5.89", entropyWord, bestEntropy)
 	}
 }
 
@@ -162,7 +164,7 @@ func TestNewAgreementRejectsOtherWordLengths(t *testing.T) {
 	NewAgreement([]string{"crane", "aardvarks"})
 }
 
-// The engine plays Wordle to the end: every game's last action is its answer.
+// The engine plays Wordle to the end: every game's last guess is its answer.
 func TestPlayGamesEndsOnTheAnswer(t *testing.T) {
 	words := utils.ReadLinesFromFilePath("../../fixtures/five-letter-words.txt")
 	sample := words[:40]

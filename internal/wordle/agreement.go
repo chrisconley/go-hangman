@@ -1,8 +1,10 @@
-// Package wordle plays Wordle through the same game.Agreement seam as the hangman and mastermind
-// packages, so the engine's Explore, Decide, Act and Observe loop plays it without changes. The possible
-// answers are the worlds, read one per line from stdin as for the other games. The allowed guesses are
-// the actions; the agreement carries them because the universe only knows its worlds. Every answer must
-// also be an allowed guess, and every word must be five lowercase letters.
+// Package wordle supplies the rules of Wordle to the engine. It plugs in the same way the hangman and
+// mastermind packages do, with a game.Agreement: the pair of rules saying which guesses may be played and
+// how a guess is answered. The engine's turn loop (score every guess, pick one, see the answer to it,
+// cross off the answers that no longer fit) then plays Wordle without changes. The possible answers come
+// one per line on stdin, as for the other games. The allowed guesses are passed to NewAgreement, because
+// the engine otherwise only knows the possible answers. Every answer must also be an allowed guess, and
+// every word must be five lowercase letters.
 //
 // The response to a guess is one character per position: G when the letter is in the answer at that
 // position, Y when it is in the answer somewhere else, and - when it is not. A letter that appears more
@@ -39,8 +41,9 @@ func buildPatterns() []string {
 	return out
 }
 
-// Score returns the response of guess against answer as a base-3 number (gray 0, yellow 1, green 2,
-// first position most significant) along with its green and yellow counts.
+// Score returns the response to guess when the answer is answer, as a number from 0 to 242 in which each
+// letter is one base-3 digit (gray 0, yellow 1, green 2, first letter first), and the numbers of greens
+// and yellows.
 func Score(answer string, guess string) (code int, greens int, yellows int) {
 	var remaining [26]int8
 	var marks [WordLength]int8
@@ -69,7 +72,7 @@ func Score(answer string, guess string) (code int, greens int, yellows int) {
 	return code, greens, yellows
 }
 
-// Feedback returns the response string of guess against answer, e.g. Feedback("abbey", "babes") == "YYGG-".
+// Feedback returns the response to guess when the answer is answer, e.g. Feedback("abbey", "babes") == "YYGG-".
 func Feedback(answer string, guess string) string {
 	code, _, _ := Score(answer, guess)
 	return patterns[code]
@@ -84,8 +87,8 @@ func Act(gameplay game.GamePlay, world game.World, action game.Action) game.Reac
 	return game.NewReaction(action, patterns[code], Reward(greens, yellows))
 }
 
-// NewAgreement returns the Wordle agreement whose actions are the given allowed guesses. A guess that
-// has already been played in the game is not offered again.
+// NewAgreement returns the rules of Wordle with the given words as the allowed guesses. A guess that has
+// already been played in the game is not offered again.
 func NewAgreement(guesses []string) game.Agreement {
 	actions := make([]game.Action, len(guesses))
 	for i, guess := range guesses {

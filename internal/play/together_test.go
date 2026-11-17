@@ -52,7 +52,7 @@ func TestPlayingTogetherMatchesOneAtATime(t *testing.T) {
 		for _, motivation := range comparedMotivations {
 			game.ThePredictionsFreeCache.Clear()
 			game.ObserveCache.Cache.Clear()
-			oneAtATime := PlayGames(c.agreement, motivation, c.lines, c.limit)
+			oneAtATime := playGamesOneAtATime(c.agreement, motivation, c.lines, c.limit)
 			together := playGamesTogether(c.agreement, motivation, c.lines, c.limit)
 			if len(together) != len(oneAtATime) {
 				t.Fatalf("%s %+v: %d games together, %d one at a time", c.name, motivation, len(together), len(oneAtATime))

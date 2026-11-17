@@ -10,6 +10,9 @@ import (
 // from there. The guess chosen at a position depends only on the position, so every game gets the same
 // guesses, responses and rewards as when it is played on its own.
 //
+// No position is reached twice within one weighting, so nothing is cached: the scores of a position are
+// worked out once and dropped when the walk moves on.
+//
 // As when playing one game at a time, every line is a possible answer, but only the games for the first
 // limit lines are played: a group is followed only while it holds one of those answers.
 func playGamesTogether(agreement game.Agreement, motivation game.Motivation, lines []string, limit int) []game.GamePlay {

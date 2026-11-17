@@ -91,6 +91,4 @@ func main() {
 
 	b, err := json.Marshal(stats)
 	fmt.Printf("GameStats: %s\n", string(b))
-	fmt.Printf("ObserveCache stats: %+v\n", game.FreeCacheStats(game.ObserveCache.Cache))
-	fmt.Printf("PredictionCache stats: %+v\n", game.FreeCacheStats(game.ThePredictionsFreeCache))
 }

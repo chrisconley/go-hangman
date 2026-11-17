@@ -159,8 +159,6 @@ func main() {
 
 	}
 
-	fmt.Printf("ObserveCache stats: %+v\n", game.FreeCacheStats(game.ObserveCache.Cache))
-	fmt.Printf("PredictionCache stats: %+v\n", game.FreeCacheStats(game.ThePredictionsFreeCache))
 	fmt.Printf("Min Total Turns: %d, %+v\n", minTotalTurns, minTotalTurnsMotivation)
 	fmt.Printf("Min Total Pain: %f, %+v\n", minTotalPain, minTotalPainMotivation)
 	fmt.Printf("Min Total Pain/Reward Ratio: %f, %+v\n", minTotalPainRewardRatio, minTotalPainRewardRatioMotivation)

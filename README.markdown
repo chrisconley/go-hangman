@@ -105,6 +105,15 @@ cat fixtures/nine-letter-words.txt | go run ./cmd/optimize -game hangman -trial.
 
 A step of 0.5 gives 10 combinations and takes about 40 seconds on 4 CPUs. The results below used a step of 0.05, which gives 1,771 combinations and takes roughly 177 times as long.
 
+`cmd/sweep` plays a list of weightings you choose and prints the same line of JSON for each. List them with `-motivations`, each as reward:entropy:minimax:mostparts, or enumerate them with `-trial.stepSize` as `cmd/optimize` does. With `-mode tree` it plays all the games of a weighting together: a position that many games reach is scored once instead of once per game. Every game still gets the same guesses as in `cmd/player`, and one weighting of nine-letter hangman takes about 3.5 seconds on one CPU.
+
+```
+cat fixtures/nine-letter-words.txt | go run ./cmd/sweep -game hangman -mode tree \
+    -motivations 0:0.7:0.15:0.15,0:1:0:0,0:0:0:1
+```
+
+That plays the best blend, Entropy alone and MostParts alone from the hangman results below (146,258, 146,356 and 148,401 turns) in about 11 seconds. For Wordle, `-tree.fast` scores guesses from a precomputed table and gets the same results; with the original lists (2,315 answers, 12,972 allowed guesses) one weighting takes about 4 seconds. `-gamelog FILE` writes each game's guesses and responses as one JSON line, and `-shard.index` with `-shard.count` splits the weightings across separate processes.
+
 ## Results in this repository
 
 "Turns" means the total number of guesses over all games.

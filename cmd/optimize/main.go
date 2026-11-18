@@ -118,9 +118,11 @@ func main() {
 	}
 
 	game.BUniverse = game.InitUniverse(lines)
-	trials := play.BuildTrials(0.0, 1.0, *trialStepSize, 4)
+	var trials [][]float64
 	if *weights != "" {
 		trials = parseWeights(*weights)
+	} else {
+		trials = play.BuildTrials(0.0, 1.0, *trialStepSize, 4)
 	}
 	trialLimit := 0
 	if *limit == -1 {

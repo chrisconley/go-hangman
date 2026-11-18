@@ -50,11 +50,13 @@ func (w *walk) play(gameplay game.GamePlay, possibleWorlds game.PossibleWorlds, 
 	}
 	logPredictions(predictions)
 	action := game.DecideAction(predictions, w.motivation)
-	var row int32
-	for i, prediction := range predictions {
+	for _, prediction := range predictions {
 		if prediction.Action.Matches(action) {
 			logDecision(prediction)
 		}
+	}
+	var row int32
+	for i := range actions {
 		if actions[i].Matches(action) {
 			row = rowsOfActions[i]
 		}

@@ -150,7 +150,14 @@ func Observe(gameplay game.GamePlay, reaction game.Reaction, act game.Act, possi
 // ###########################
 // ### THE GAME ###
 // ###########################
+// PlayGames plays one game against each of the first limit lines, with every line a possible answer,
+// and returns the games in the same order.
 func PlayGames(agreement game.Agreement, motivation game.Motivation, lines []string, limit int) []game.GamePlay {
+	return playGamesTogether(agreement, motivation, lines, limit)
+}
+
+// playGamesOneAtATime plays the same games as PlayGames one after another. The tests compare the two.
+func playGamesOneAtATime(agreement game.Agreement, motivation game.Motivation, lines []string, limit int) []game.GamePlay {
 	game.BUniverse = game.InitUniverse(lines)
 	// defer profile.Start().Stop()
 	games := []game.GamePlay{}

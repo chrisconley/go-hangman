@@ -26,9 +26,10 @@ func ExploreReactions(
 			act,
 		)
 
+		reward, sizes := GroupsInFixedOrder(counts.All(), rewards.All())
 		prediction := Prediction{Action: action}
-		prediction.Reward = rewards.Total() / counts.Total()
-		prediction.Entropy = mth.CalcEntropy(counts.Total(), counts.All())
+		prediction.Reward = reward / counts.Total()
+		prediction.Entropy = mth.CalcEntropy(counts.Total(), sizes)
 		prediction.PartsCount = float64(len(counts.All()))
 		prediction.InversedMax = mth.FindInversedMax(counts.Total(), counts.All())
 		prediction.ActionMatchesAPossibleWorld = actionMatchesAPossibleWorld
@@ -37,6 +38,29 @@ func ExploreReactions(
 	}
 	return predictions
 
+}
+
+// GroupsInFixedOrder returns a guess's total reward and its group sizes, with the groups taken in a
+// fixed order (smallest reward first, then smallest group) instead of the order the answers happen to
+// come in. Adding the same numbers in a different order can change the last decimal place of the sum, so
+// without this two guesses that split the answers into exactly the same groups could score a hair apart,
+// and the tie between them would be settled by rounding instead of by Decide's rule.
+func GroupsInFixedOrder(sizes []float64, rewards []float64) (float64, []float64) {
+	orderedRewards := make([]float64, len(sizes))
+	ordered := make([]float64, len(sizes))
+	for i := range sizes {
+		j := i
+		for j > 0 && (rewards[i] < orderedRewards[j-1] || (rewards[i] == orderedRewards[j-1] && sizes[i] < ordered[j-1])) {
+			orderedRewards[j], ordered[j] = orderedRewards[j-1], ordered[j-1]
+			j--
+		}
+		orderedRewards[j], ordered[j] = rewards[i], sizes[i]
+	}
+	reward := 0.0
+	for _, r := range orderedRewards {
+		reward += r
+	}
+	return reward, ordered
 }
 
 func ExploreReactionsForAction(

@@ -29,6 +29,8 @@ type responseTable struct {
 	counts          []int32
 	firstSeen       []uint16
 	groupSizes      []float64
+	groupRewards    []float64
+	groupRewardList []float64
 	position        int
 }
 
@@ -59,6 +61,7 @@ func newResponseTable() *responseTable {
 		guessNumbers:    map[uint64]int32{},
 		responseNumbers: map[uint64]uint16{},
 		counts:          make([]int32, 1<<16),
+		groupRewards:    make([]float64, 1<<16),
 	}
 }
 
@@ -146,9 +149,10 @@ func (t *responseTable) keep(r responses, places []int) responses {
 	return kept
 }
 
-// score gives every guess the same scores as game.ExploreReactions, in the same order. It adds the
-// rewards and counts the groups answer by answer, as game.ExploreReactions does, so that every sum comes
-// out the same. A guess offered twice is scored once, as it is in game.Predictions.
+// score gives every guess the same scores as game.ExploreReactions, in the same order. It counts the
+// groups answer by answer and adds up each group's rewards, then takes the groups in the fixed order of
+// game.GroupsInFixedOrder, as game.ExploreReactions does, so that every sum comes out the same. A guess
+// offered twice is scored once, as it is in game.Predictions.
 func (t *responseTable) score(r responses, rowsOfActions []int32, possibleWorlds game.PossibleWorlds, actions []game.Action) []game.Prediction {
 	t.position++
 	total := float64(len(r.answers))
@@ -161,24 +165,27 @@ func (t *responseTable) score(r responses, rowsOfActions []int32, possibleWorlds
 		info.scoredAt = t.position
 
 		firstSeen := t.firstSeen[:0]
-		reward := 0.0
 		for _, number := range r.row(rowsOfActions[i]) {
 			if t.counts[number] == 0 {
 				firstSeen = append(firstSeen, number)
 			}
 			t.counts[number]++
-			reward += info.rewards[number]
+			t.groupRewards[number] += info.rewards[number]
 		}
 		groupSizes := t.groupSizes[:0]
+		groupRewardList := t.groupRewardList[:0]
 		for _, number := range firstSeen {
 			groupSizes = append(groupSizes, float64(t.counts[number]))
+			groupRewardList = append(groupRewardList, t.groupRewards[number])
 			t.counts[number] = 0
+			t.groupRewards[number] = 0
 		}
-		t.firstSeen, t.groupSizes = firstSeen, groupSizes
+		t.firstSeen, t.groupSizes, t.groupRewardList = firstSeen, groupSizes, groupRewardList
+		reward, orderedSizes := game.GroupsInFixedOrder(groupSizes, groupRewardList)
 
 		prediction := game.Prediction{Action: action}
 		prediction.Reward = reward / total
-		prediction.Entropy = mth.CalcEntropy(total, groupSizes)
+		prediction.Entropy = mth.CalcEntropy(total, orderedSizes)
 		prediction.PartsCount = float64(len(groupSizes))
 		prediction.InversedMax = mth.FindInversedMax(total, groupSizes)
 		for _, answer := range info.solvedBy {

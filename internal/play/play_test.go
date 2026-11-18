@@ -78,14 +78,10 @@ func TestPlayMastermind(t *testing.T) {
 	}
 }
 func TestIntegrationPlayKnuthMastermind(t *testing.T) {
-	t.Skip("Skipping TestIntegrationPlayKnuthMastermind since it's no longer correct with mastermind action pruing.")
 	// In Knuth's paper, the second guess is ACDD since it leaves at most 44 remaining choices
 	// and is lexigraphically first out of other choices that also minimize the max remaining choices.
-	// Since the first guess is AABB, the remaining "free colors" are C, D, E, and F.
-	// When pruning symmetrical actions, ACDD and ACCD are symetrical and ACCD is used because
-	// it is lexigraphically before ACDD. ACCD leaves at most 51 remaining choices and is therefore
-	// not selected. Instead CCBD is selected with 44 remaining choices.
-	// Pruning symmetrical actions results in 5800 total turns instead of 5801.
+	// GetActions used to treat ACDD and ACCD as the same guess and kept only ACCD, which leaves at most
+	// 51 choices, so CCBD was played instead. It now offers ACDD.
 
 	lines := utils.ReadLinesFromFilePath("../../fixtures/commercial-mastermind.txt")
 	game.BUniverse = game.InitUniverse(lines)
@@ -145,9 +141,8 @@ func TestIntegrationVerifyMiniMaxMastermind(t *testing.T) {
 	test.AssertDeepEqual(stats.GameCount, 1296, t)
 	test.AssertDeepEqual(stats.MaxTurns, 5, t)
 	// Note that Ville (Optimal Mastermind Strategy) shows that total turns is 5801.
-	// Because of symmetrical action pruning, this implmentation reduces that by 1 to 5800.
-	test.AssertDeepEqual(stats.TotalTurns, 5800, t)
-	test.AssertAlmostEqual(stats.AverageTurns, 4.4753, 4, t)
+	test.AssertDeepEqual(stats.TotalTurns, 5801, t)
+	test.AssertAlmostEqual(stats.AverageTurns, 4.4761, 4, t)
 
 	runtime.ReadMemStats(&rtm)
 	if heap := int(rtm.HeapInuse / 1024 / 1024); heap > 275 {

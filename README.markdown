@@ -112,7 +112,7 @@ cat fixtures/nine-letter-words.txt | go run ./cmd/optimize -game hangman \
     -weights 0:0.7:0.15:0.15,0:1:0:0,0:0:0:1
 ```
 
-That plays the best blend, Entropy alone and MostParts alone from the hangman results below (146,258, 146,356 and 148,401 turns) in about 2 seconds. `-trial.stepSize` is ignored when `-weights` is given.
+That plays the best blend, Entropy alone and MostParts alone from the hangman results below (146,258, 146,356 and 148,401 turns) in about a second. `-trial.stepSize` is ignored when `-weights` is given.
 
 ## Results in this repository
 

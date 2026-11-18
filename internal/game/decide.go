@@ -3,16 +3,22 @@ package game
 import "math"
 
 func Decide(predictions Predictions, motivation Motivation) Prediction {
+	maxAction := DecideAction(predictions.PredictionsMap.Values, motivation)
+	return predictions.Get(maxAction.String())
+}
+
+// DecideAction picks the guess Decide picks, from a plain list of scores.
+func DecideAction(predictions []Prediction, motivation Motivation) Action {
 	maxWeight := -1.0
 	maxAction := NewAction("")
 	maxIsValid := false
-	if predictions.Size() == 1 {
+	if len(predictions) == 1 {
 		panic("There is only one prediction for the decision.")
 	}
-	if predictions.Size() == 0 {
+	if len(predictions) == 0 {
 		panic("There are no predictions for the decision.")
 	}
-	for _, prediction := range predictions.PredictionsMap.Values {
+	for _, prediction := range predictions {
 		weight := math.Pow(prediction.Reward, motivation.Reward) *
 			math.Pow(prediction.Entropy, motivation.Entropy) *
 			math.Pow(prediction.InversedMax, motivation.MiniMax) *
@@ -35,5 +41,5 @@ func Decide(predictions Predictions, motivation Motivation) Prediction {
 			maxIsValid = isValid
 		}
 	}
-	return predictions.Get(maxAction.String())
+	return maxAction
 }

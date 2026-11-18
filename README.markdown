@@ -33,7 +33,7 @@ The parts of that command:
 - `-motivation.entropy 1.0` sets the weights. There are four flags, `-motivation.reward`, `-motivation.entropy`, `-motivation.minimax` and `-motivation.mostparts`. Each defaults to 0, and they must sum to exactly 1.0.
 - `-limit N` (optional) stops after the first N lines of the file, so you can try a run without playing all 25,011 games. The engine still treats every line in the file as a word the answer could be.
 
-It runs for about 3 seconds and prints one line of JSON. It is laid out here for reading, with the averages rounded and the per-game list cut short:
+It runs in under a second and prints one line of JSON. It is laid out here for reading, with the averages rounded and the per-game list cut short:
 
 ```
 GameStats: {
@@ -82,7 +82,7 @@ Standard Mastermind with MostParts alone (1,296 games, 5,668 turns, at most 6 pe
 cat fixtures/commercial-mastermind.txt | go run ./cmd/player -game mastermind -motivation.mostparts 1.0
 ```
 
-Wordle with Entropy alone, using the same file for the answers and the allowed guesses (676 games, 2,028 turns, at most 5 per game, about a second):
+Wordle with Entropy alone, using the same file for the answers and the allowed guesses (676 games, 2,028 turns, at most 5 per game, under a second):
 
 ```
 cat fixtures/five-letter-words.txt | go run ./cmd/player -game wordle \
@@ -103,7 +103,7 @@ cat fixtures/mastermind-ABCD-3.txt | go run ./cmd/player -game mastermind -motiv
 cat fixtures/nine-letter-words.txt | go run ./cmd/optimize -game hangman -trial.stepSize 0.5
 ```
 
-A step of 0.5 gives 10 combinations and takes about 35 seconds on 2 CPUs. The results below used a step of 0.05, which gives 1,771 combinations and takes roughly 177 times as long.
+A step of 0.5 gives 10 combinations and takes under 10 seconds on 2 CPUs. The results below used a step of 0.05, which gives 1,771 combinations and takes roughly 177 times as long.
 
 To play only some weightings, list them with `-weights`, each written reward:entropy:minimax:mostparts:
 
@@ -112,7 +112,7 @@ cat fixtures/nine-letter-words.txt | go run ./cmd/optimize -game hangman \
     -weights 0:0.7:0.15:0.15,0:1:0:0,0:0:0:1
 ```
 
-That plays the best blend, Entropy alone and MostParts alone from the hangman results below (146,258, 146,356 and 148,401 turns) in about 8 seconds. `-trial.stepSize` is ignored when `-weights` is given.
+That plays the best blend, Entropy alone and MostParts alone from the hangman results below (146,258, 146,356 and 148,401 turns) in about 2 seconds. `-trial.stepSize` is ignored when `-weights` is given.
 
 ## Results in this repository
 
@@ -143,10 +143,11 @@ The CSV has one row per weight combination. The full output of that run also lis
 
 ## Optimizations
 
-The slow part is scoring every guess against every remaining answer on every turn. The engine cuts that work down in four ways.
+The slow part is scoring every guess against every remaining answer on every turn. The engine cuts that work down in five ways.
 
 - **Remaining answers as a bitmap.** The set of answers still possible is a compressed bitmap (`roaring64`) with a 64-bit hash, so a set is cheap to copy, store and compare.
 - **Each position scored once.** Many games pass through the same position: the same guesses so far, with the same responses. `PlayGames` plays all the games of a weighting together. It scores the guesses at a position once, splits the answers still possible by the response they give to the chosen guess, and carries on with each group. Every game gets the same guesses as it would if it were played on its own. In the nine-letter run above, 146,356 turns needed 30,139 scoring passes, one per position. The engine's two caches (`freecache`, sized with `-cacheSize`) are no longer used by `cmd/player` or `cmd/optimize`.
+- **A table of responses.** The first time a guess is offered on the way down from the first position, the engine works out, with the game's own rules, the response every answer still possible gives to it, and stores each response as a small number. Every position further down scores that guess by counting those numbers instead of working the responses out again. Each position keeps the numbers for its own answers only, side by side in memory, and the numbers for a guess are dropped when the walk goes back up past the position that first offered it. Every game is handled the same way. Hangman's whole-word guesses are offered only once few answers remain, so they never need a row for all 25,011 words: the nine-letter run holds at most 51 guesses (1.8 MB) at a time. The original Wordle lists (2,315 answers and 12,972 allowed guesses, not in this repository) need at most 65 MB, and Mastermind with 5 pegs and 8 colours (32,768 codes) at most 127 MB, where a table of every code against every code would take 2 GiB.
 - **Fewer Mastermind guesses to score.** Before the first guess, AABB, CCDD and EEFF are the same guess with the colours renamed, so only one of them needs scoring. The engine uses that idea on every turn for the colours that haven't been played yet and scores one guess per pattern: 5 opening guesses in place of 1,296. This is a shortcut, not an exact reduction. From the third guess on it can skip a guess that isn't truly equivalent to the one it keeps, so a total can differ slightly from scoring every code. With MiniMax alone, the 1,296 games of standard Mastermind take 5,800 guesses with the shortcut and 5,801 without it; the difference is tie-order noise. The code is `GetActions` in `internal/mastermind/agreement.go`.
 - **Weight combinations in parallel.** `cmd/optimize` runs one combination per CPU at a time.
 

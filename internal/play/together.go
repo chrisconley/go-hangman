@@ -41,6 +41,10 @@ type walk struct {
 // play scores the guesses at a position, picks one, and carries on with each group of answers that give
 // the same response to it. r holds the answers still possible, in list order, and the rows made so far.
 func (w *walk) play(gameplay game.GamePlay, possibleWorlds game.PossibleWorlds, r responses) {
+	if len(r.answers) == 1 {
+		w.guessTheLastWord(gameplay, r.answers[0])
+		return
+	}
 	actions := w.agreement.GetActions(gameplay, possibleWorlds, game.BUniverse.Actions)
 	r, rowsOfActions, rowCount := w.table.add(gameplay, r, actions, w.agreement.Act)
 	defer w.table.drop(rowCount)
@@ -93,6 +97,22 @@ func (w *walk) play(gameplay game.GamePlay, possibleWorlds game.PossibleWorlds, 
 		logPossibleWorlds(nextWorlds)
 		w.play(next, nextWorlds, group)
 	}
+}
+
+// guessTheLastWord plays the one answer left, without scoring any guesses. Scoring would pick it anyway:
+// with one answer left every guess leaves one group, so every guess has entropy 0, MiniMax 0 and one
+// part, and the answer itself has the top reward, 1. Whatever the weights, the answer ties for the top
+// weight, and a tie goes to a guess that could be the answer, which only the answer itself is. The
+// answer is played even when the game's GetActions would not have offered it.
+func (w *walk) guessTheLastWord(gameplay game.GamePlay, answer uint64) {
+	truth := game.BUniverse.GetWorldByIndex(answer)
+	action := game.NewAction(truth.String())
+	reaction := w.agreement.Act(gameplay, truth, action)
+	next := gameplay
+	next.Reactions = append(make([]game.Reaction, 0, len(gameplay.Reactions)+1), gameplay.Reactions...)
+	next.AddTurn(reaction)
+	logReaction(reaction)
+	w.finish([]uint64{answer}, action, next)
 }
 
 // finish ends the game of every answer in a group the guess has just solved. A group holds more than

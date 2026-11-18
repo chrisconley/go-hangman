@@ -42,6 +42,7 @@ func TestPlayingTogetherMatchesOneAtATime(t *testing.T) {
 		{"hangman, first 40 of 300", hangman.Agreement, nineLetters[:300], 40},
 		{"hangman, a word twice", hangman.Agreement, repeat(nineLetters[:100], 7), 101},
 		{"hangman, one word", hangman.Agreement, nineLetters[:1], 1},
+		{"hangman, a word twice before the guess that wins", hangman.Agreement, []string{"ace", "ace", "abe"}, 3},
 		{"mastermind", mastermind.Agreement, codes, len(codes)},
 		{"mastermind, first 10", mastermind.Agreement, codes, 10},
 		{"mastermind, a code twice", mastermind.Agreement, repeat(codes, 5), len(codes) + 1},

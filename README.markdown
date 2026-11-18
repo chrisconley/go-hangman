@@ -38,13 +38,13 @@ It runs in under a second and prints one line of JSON. It is laid out here for r
 ```
 GameStats: {
   "GameCount": 25011,
-  "TotalTurns": 146356,
+  "TotalTurns": 146349,
   "AverageTurns": 5.85,
   "MaxTurns": 13,
-  "TotalReward": 103686,
+  "TotalReward": 103768,
   "AverageReward": 4.15,
-  "TotalPain": 42670,
-  "AveragePain": 1.71,
+  "TotalPain": 42581,
+  "AveragePain": 1.70,
   "TurnCounts": [3, 5, 6, 7, 7, ...]
 }
 ```
@@ -82,7 +82,7 @@ Standard Mastermind with MostParts alone (1,296 games, 5,668 turns, at most 6 pe
 cat fixtures/commercial-mastermind.txt | go run ./cmd/player -game mastermind -motivation.mostparts 1.0
 ```
 
-Wordle with Entropy alone, using the same file for the answers and the allowed guesses (676 games, 2,028 turns, at most 5 per game, under a second):
+Wordle with Entropy alone, using the same file for the answers and the allowed guesses (676 games, 2,027 turns, at most 5 per game, under a second):
 
 ```
 cat fixtures/five-letter-words.txt | go run ./cmd/player -game wordle \
@@ -112,27 +112,29 @@ cat fixtures/nine-letter-words.txt | go run ./cmd/optimize -game hangman \
     -weights 0:0.7:0.15:0.15,0:1:0:0,0:0:0:1
 ```
 
-That plays the best blend, Entropy alone and MostParts alone from the hangman results below (146,258, 146,356 and 148,401 turns) in about a second. `-trial.stepSize` is ignored when `-weights` is given.
+That plays the best blend, Entropy alone and MostParts alone from the hangman results below (146,258, 146,349 and 148,401 turns) in about a second. `-trial.stepSize` is ignored when `-weights` is given.
 
 ## Results in this repository
 
 "Turns" means the total number of guesses over all games.
 
-**Hangman, 25,011 nine-letter words** (`hangman-results-oct26.csv`, step 0.05)
+**Hangman, 25,011 nine-letter words** (`cmd/optimize -trial.stepSize 0.05`)
 
 | Weights | Total turns | Max turns |
 |---|---|---|
-| Entropy 0.70, MiniMax 0.15, MostParts 0.15 (best) | 146,258 | 13 |
-| Entropy alone | 146,356 | 13 |
+| Entropy 0.70, MiniMax 0.15, MostParts 0.15 (best) | 146,255 | 13 |
+| Entropy alone | 146,349 | 13 |
 | MostParts alone | 148,401 | 15 |
 | MiniMax alone | 149,500 | 12 |
 | Reward alone | 170,676 | 14 |
 
-The fewest misses (total pain 34,695) is a tie between Reward 0.75 / Entropy 0.25 (156,126 turns) and Reward 0.70 / Entropy 0.30 (155,451 turns).
+The fewest misses (total pain 34,695) is Reward 0.70 / Entropy 0.30 (155,451 turns). Reward 0.75 / Entropy 0.25 is one miss behind (34,696, 156,125 turns).
 
-The CSV has one row per weight combination. The full output of that run also listed every game's turn count; it isn't in the repository, and `cmd/optimize` regenerates it with `-trial.stepSize 0.05`.
+The search adds 0.05 at a time, so its 0.70 is not exactly the 0.7 typed in the example above; typed, the best blend takes 146,258 turns. When two guesses score exactly the same, a weight that differs in the last decimal place can tip the choice.
 
-**Mastermind, 1,296 codes (4 pegs, 6 colours)** (`mastermind-results.json`, step 0.05)
+`hangman-results-oct26.csv` holds the same search, run before guesses with the same groups were given exactly the same scores (see "Ties" below). 795 of its 1,771 totals differ from today's, by at most 8 turns: it has 146,258 for the best blend and 146,356 for Entropy alone. The CSV has one row per weight combination. The full output of that run also listed every game's turn count; it isn't in the repository, and `cmd/optimize` regenerates it with `-trial.stepSize 0.05`.
+
+**Mastermind, 1,296 codes (4 pegs, 6 colours)** (`cmd/optimize -trial.stepSize 0.05`)
 
 | Weights | Total turns | Max turns |
 |---|---|---|
@@ -141,40 +143,46 @@ The CSV has one row per weight combination. The full output of that run also lis
 | MiniMax alone | 5,801 | 5 |
 | Best with at most 5 turns: Entropy 0.05, MiniMax 0.70, MostParts 0.25 | 5,677 | 5 |
 
+71 of the 1,771 weightings finish every game within 5 turns, and 5,677 is the fewest among them; several weightings tie at 5,677. `mastermind-results.json` is an earlier run of the same search; 55 of its totals differ from today's by at most 2 turns, none of them in this table.
+
+### Ties
+
+When several guesses get the same weight, the engine plays one that could be the answer, then the alphabetically first. Two guesses that split the answers into exactly the same groups always get exactly the same scores: each guess's groups are added up in a fixed order, because adding the same numbers in a different order can change the last decimal place. Two guesses with different groups whose scores are equal on paper, such as groups of 4, 1, 1, 1 and 1 against groups of 2, 2, 2 and 2 (both 2 bits of entropy), can still come out a last decimal place apart, and then rounding picks between them.
+
 ## Optimizations
 
 The slow part is scoring every guess against every remaining answer on every turn. The engine cuts that work down in five ways.
 
 - **Remaining answers as a bitmap.** The set of answers still possible is a compressed bitmap (`roaring64`) with a 64-bit hash, so a set is cheap to copy, store and compare.
-- **Each position scored once.** Many games pass through the same position: the same guesses so far, with the same responses. `PlayGames` plays all the games of a weighting together. It scores the guesses at a position once, splits the answers still possible by the response they give to the chosen guess, and carries on with each group. Every game gets the same guesses as it would if it were played on its own. In the nine-letter run above, 146,356 turns needed 30,139 scoring passes, one per position. The engine's two caches (`freecache`, sized with `-cacheSize`) are no longer used by `cmd/player` or `cmd/optimize`.
-- **A table of responses.** The first time a guess is offered on the way down from the first position, the engine works out, with the game's own rules, the response every answer still possible gives to it, and stores each response as a small number. Every position further down scores that guess by counting those numbers instead of working the responses out again. Each position keeps the numbers for its own answers only, side by side in memory, and the numbers for a guess are dropped when the walk goes back up past the position that first offered it. Every game is handled the same way. Hangman's whole-word guesses are offered only once few answers remain, so they never need a row for all 25,011 words: the nine-letter run holds at most 51 guesses (1.8 MB) at a time. The original Wordle lists (2,315 answers and 12,972 allowed guesses, not in this repository) need at most 65 MB, and Mastermind with 5 pegs and 8 colours (32,768 codes) at most 127 MB, where a table of every code against every code would take 2 GiB.
-- **Fewer Mastermind guesses to score.** Before the first guess, AABB, CCDD and EEFF are the same guess with the colours renamed, so only one of them needs scoring. The engine uses that idea on every turn for the colours that haven't been played yet and scores one guess per pattern: 5 opening guesses in place of 1,296. This is a shortcut, not an exact reduction. From the third guess on it can skip a guess that isn't truly equivalent to the one it keeps, so a total can differ slightly from scoring every code. With MiniMax alone, the 1,296 games of standard Mastermind take 5,800 guesses with the shortcut and 5,801 without it; the difference is tie-order noise. The code is `GetActions` in `internal/mastermind/agreement.go`.
+- **Each position scored once.** Many games pass through the same position: the same guesses so far, with the same responses. `PlayGames` plays all the games of a weighting together. It scores the guesses at a position once, splits the answers still possible by the response they give to the chosen guess, and carries on with each group. Every game gets the same guesses as it would if it were played on its own. In the nine-letter run above, 146,349 turns needed 11,190 scoring passes, one per position with more than one answer left. When one answer is left it is guessed without scoring. The engine's two caches (`freecache`, sized with `-cacheSize`) are no longer used by `cmd/player` or `cmd/optimize`.
+- **A table of responses.** The first time a guess is offered on the way down from the first position, the engine works out, with the game's own rules, the response every answer still possible gives to it, and stores each response as a small number. Every position further down scores that guess by counting those numbers instead of working the responses out again. Each position keeps the numbers for its own answers only, side by side in memory, and the numbers for a guess are dropped when the walk goes back up past the position that first offered it. Every game is handled the same way. Hangman's whole-word guesses are offered only once few answers remain, so they never need a row for all 25,011 words: the nine-letter run holds at most 51 guesses (1.8 MB) at a time. The original Wordle lists (2,315 answers and 12,972 allowed guesses, not in this repository) need at most 65 MB, and Mastermind with 5 pegs and 8 colours (32,768 codes) at most 80 MB, where a table of every code against every code would take 2 GiB.
+- **Fewer Mastermind guesses to score.** Some guesses are certain to split the remaining codes exactly as another guess does, so only one of them needs scoring. Move the pegs of a guess to other positions and rename its colours, in a way that leaves every guess played so far unchanged. The same move turns each remaining code into another remaining code, and that code gets the same black and white pegs against the moved guess as the first code got against the original guess. So the two guesses split the remaining codes into the same groups and get the same scores. Before the first guess every move is allowed, so AABB, ABAB and CCDD are one guess, and only 5 of the 1,296 codes need scoring. After that, colours that haven't been played can still be renamed freely, and pegs can be moved only where every played guess looks the same afterwards. Of each set of such guesses the engine scores the alphabetically first, the one the tie rule would play, so every game is exactly what it would be if every code were scored. For a list of codes that isn't every combination of the colours, only moves that turn the list into itself are used, and codes of more than 6 pegs keep their pegs in place. The code is `GetActions` in `internal/mastermind/agreement.go`.
 - **Weight combinations in parallel.** `cmd/optimize` runs one combination per CPU at a time.
 
 `-profiling cpu` or `-profiling mem` writes a profile to `/tmp/profiling`, or to the path given with `-profiling.profilePath`.
 
-`symmetries.markdown` (2022) tests a tempting way to prune further: call two guesses equivalent whenever they split the remaining codes into groups of the same sizes. Such guesses get the same score on all four measures, so it looks safe to keep just one. After an opening ABCD, the second guesses fall into 57 families that really are equivalent. The size rule finds exactly those 57 when the first response is two pegs. When it is one peg, it finds only 53: four pairs of different families happen to give the same group sizes. With three pegs, two pairs do. Two guesses with the same group sizes are equally good for this turn but can leave different positions behind, so the rule would change how games play out. The note lists every case, and the rule isn't used in play.
+`symmetries.markdown` (2022) tests a tempting way to prune further: call two guesses equivalent whenever they split the remaining codes into groups of the same sizes. Such guesses get the same score on all four measures, so it looks safe to keep just one. After an opening ABCD, the second guesses fall into 57 families that really are equivalent. The size rule finds exactly those 57 when the first response is two pegs. When it is one peg, it finds only 53: four pairs of different families happen to give the same group sizes. With three pegs, two pairs do. Two guesses with the same group sizes are equally good for this turn but can leave different positions behind, so the rule would change how games play out. The note lists every case, and the rule isn't used in play: `GetActions` uses the moves described above, which after ABCD give exactly the 57 families.
 
 ## Compared with published results
 
-The single-measure rules are the ones studied in the Mastermind literature, and their totals here agree with the published ones to within one guess.
+The single-measure rules are the ones studied in the Mastermind literature, and their totals here agree with the published ones to within two guesses.
 
 | Game | Rule | Published | This repository |
 |---|---|---|---|
 | 4 pegs, 6 colours | Most parts | 5,668 (Kooi 2005, Ville 2013) | 5,668 |
 | 4 pegs, 6 colours | Entropy | 5,723 (Ville 2013); 5,722 (Kooi 2005) | 5,723 |
-| 4 pegs, 6 colours | Largest group, Knuth's rule (MiniMax here) | 5,801 (Ville 2013) | 5,801 in `mastermind-results.json`; 5,800 with the guess pruning above |
-| 4 pegs, 7 colours | Entropy | 11,382 (Ville 2013) | 11,381 |
+| 4 pegs, 6 colours | Largest group, Knuth's rule (MiniMax here) | 5,801 (Ville 2013) | 5,801 |
+| 4 pegs, 7 colours | Entropy | 11,382 (Ville 2013) | 11,384 |
 | 4 pegs, 7 colours | Most parts | 11,388 (Ville 2013) | 11,388 |
 | 4 pegs, 7 colours | Largest group | 11,613 (Ville 2013) | 11,613 |
 
-The 7-colour figures are from `mastermind4x7-noreward-results.json`. The one-guess differences come from which guess is played when several score the same: Kooi's own tables give 5,722 for Entropy with one tie order and 5,723 with the reverse.
+The 7-colour figures come from `cmd/player` on `fixtures/mastermind-ABCDEFG-4.txt`. `mastermind4x7-noreward-results.json` is an earlier run, made before guesses with the same groups were given exactly the same scores; it has 11,381 for Entropy. The differences from the published figures come from which guess is played when several score the same: Kooi's own tables give 5,722 for Entropy with one tie order and 5,723 with the reverse.
 
 These rules look one guess ahead. The published optimal strategy for 4 pegs and 6 colours needs 5,625 guesses (Koyama and Lai 1993). This engine does not search for optimal strategies.
 
 What this engine adds:
 
-- **Blends.** Any weighted mix of the four measures can be played, and `cmd/optimize` searches the mixes. On standard Mastermind, Entropy 0.05 / MiniMax 0.70 / MostParts 0.25 needs 5,677 guesses and never more than 5 in a game. That is 124 fewer than Knuth's rule, with the same 5-guess limit. With 7 colours, Entropy 0.85 / MostParts 0.15 needs 11,366, fewer than any single measure.
+- **Blends.** Any weighted mix of the four measures can be played, and `cmd/optimize` searches the mixes. On standard Mastermind, Entropy 0.05 / MiniMax 0.70 / MostParts 0.25 needs 5,677 guesses and never more than 5 in a game. That is 124 fewer than Knuth's rule, with the same 5-guess limit. With 7 colours, Entropy 0.85 / MostParts 0.15 needs 11,370, fewer than any single measure.
 - **Reward and pain.** A fourth measure, the expected immediate reward of a guess, and a second total, pain, so a strategy can be judged on misses as well as on guesses.
 - **Hangman.** The same engine and the same four measures play a letter-guessing game. Nothing in the scoring is specific to Mastermind.
 
